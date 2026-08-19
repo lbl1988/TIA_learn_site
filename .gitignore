@@ -1,0 +1,30 @@
+# 操作系统缓存 / 编辑器临时文件
+Thumbs.db
+ehthumbs.db
+*.DS_Store
+Desktop.ini
+
+# 编辑器/IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# 常见构建产物（静态站一般无构建，留作扩展项目时用）
+dist/
+build/
+node_modules/
+
+# 日志
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 环境变量 / 私密配置
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
