@@ -534,5 +534,136 @@
 </footer>
 <script src="../assets/js/auth.js"></script>
 <script src="../assets/js/notes.js"></script>
+<script>
+/* ========== 视频播放列表控制 ========== */
+(function(){
+  'use strict';
+
+  // 为每个视频板块添加主播放器 + 列表切换
+  const sections = document.querySelectorAll('.vid-section');
+
+  sections.forEach(function(sec){
+    const grid = sec.querySelector('.vid-grid');
+    if(!grid) return;
+
+    const cards = grid.querySelectorAll('.vid-card');
+    if(cards.length === 0) return;
+
+    // 创建主播放器
+    const playerWrap = document.createElement('div');
+    playerWrap.className = 'vid-player-main';
+    playerWrap.innerHTML = `
+      <div class="vid-frame">
+        <iframe id="mainPlayer" scrolling="no" border="0" frameborder="0" framespacing="0" allowfullscreen="true" sandbox="allow-scripts allow-same-origin allow-popups"></iframe>
+      </div>
+      <div class="vid-body">
+        <div class="vid-info">
+          <div class="vid-title">点击下方视频开始播放</div>
+          <div class="vid-author">选择一个视频</div>
+        </div>
+        <button class="playlist-btn" type="button">☰ 播放列表</button>
+      </div>
+      <div class="vid-list-panel">
+        <div class="vid-list-inner"></div>
+      </div>
+    `;
+
+    // 收集视频数据
+    const videos = [];
+    cards.forEach(function(card){
+      const iframe = card.querySelector('iframe');
+      const title = card.querySelector('.vid-title');
+      const author = card.querySelector('.vid-author');
+      if(!iframe || !title) return;
+      videos.push({
+        src: iframe.getAttribute('src'),
+        title: title.textContent.trim(),
+        author: author ? author.textContent.trim() : '',
+        rawCard: card
+      });
+    });
+
+    // 构建播放列表
+    const listInner = playerWrap.querySelector('.vid-list-inner');
+    videos.forEach(function(v, idx){
+      const item = document.createElement('div');
+      item.className = 'vid-list-item';
+      item.innerHTML = `
+        <div class="thumb">▶</div>
+        <div class="meta">
+          <div class="t"></div>
+          <div class="s"></div>
+        </div>
+        <div class="playing-badge" style="display:none">● 正在播放</div>
+      `;
+      item.querySelector('.t').textContent = v.title;
+      item.querySelector('.s').textContent = v.author;
+      item.addEventListener('click', function(){
+        playVideo(idx);
+      });
+      listInner.appendChild(item);
+    });
+
+    // 插入主播放器到 grid 前面
+    grid.parentNode.insertBefore(playerWrap, grid);
+
+    // 隐藏原卡片（保留 DOM 结构但隐藏）
+    cards.forEach(function(c){ c.style.display = 'none'; });
+
+    const mainPlayer = playerWrap.querySelector('#mainPlayer');
+    const infoTitle = playerWrap.querySelector('.vid-title');
+    const infoAuthor = playerWrap.querySelector('.vid-author');
+    const listPanel = playerWrap.querySelector('.vid-list-panel');
+    const listBtn = playerWrap.querySelector('.playlist-btn');
+    let currentIdx = -1;
+
+    function playVideo(idx){
+      if(idx === currentIdx){
+        // 同一视频，重载
+        mainPlayer.src = videos[idx].src;
+      } else {
+        currentIdx = idx;
+        mainPlayer.src = videos[idx].src;
+        infoTitle.textContent = videos[idx].title;
+        infoAuthor.textContent = videos[idx].author;
+
+        // 更新列表高亮
+        const items = listInner.querySelectorAll('.vid-list-item');
+        items.forEach(function(it, i){
+          it.classList.toggle('playing', i === idx);
+          const badge = it.querySelector('.playing-badge');
+          badge.style.display = i === idx ? 'block' : 'none';
+        });
+      }
+      listPanel.classList.remove('open');
+    }
+
+    listBtn.addEventListener('click', function(){
+      listPanel.classList.toggle('open');
+    });
+
+    // 自动播放第一个
+    if(videos.length > 0){
+      playVideo(0);
+    }
+  });
+
+  // 全局：点击视频卡片跳转对应板块
+  document.querySelectorAll('a[href^="#p"]').forEach(function(a){
+    a.addEventListener('click', function(e){
+      const id = a.getAttribute('href').substring(1);
+      setTimeout(function(){
+        const target = document.getElementById(id);
+        if(target){
+          target.scrollIntoView({behavior:'smooth', block:'start'});
+          const firstBtn = target.querySelector('.vid-list-item');
+          if(firstBtn) firstBtn.click();
+        }
+      }, 100);
+    });
+  });
+
+})();
+</script>
 </body>
 </html>

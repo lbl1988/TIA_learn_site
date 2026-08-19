@@ -70,7 +70,7 @@
   <!-- 章节列表 -->
   <div class="chapters">
 
-    <div class="chapter">
+    <div class="chapter detail">
       <div class="no">01</div>
       <div>
         <h3>PLC 工作原理与数据类型</h3>
@@ -81,6 +81,149 @@
           <span class="tag">存储器区</span>
           <span class="tag">I / Q / M / DB</span>
         </div>
+
+        <!-- === 01 详解：扫描周期 === -->
+        <div class="detail-block">
+          <div class="detail-title">🔁 PLC 扫描周期原理</div>
+          <div class="detail-body">
+            <p>PLC 的工作方式是 <b style="color:var(--cyan)">循环扫描</b>，而非 PC 的中断响应。每个扫描周期分为 4 个阶段：</p>
+            <div class="flow-diagram">
+              <div class="flow-node"><span class="flow-num">1</span>初始化</div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node"><span class="flow-num">2</span><b>输入采样</b><br><small>读 I 区 → 写入输入映象区</small></div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node"><span class="flow-num">3</span><b>程序执行</b><br><small>CPU 逐条执行 OB/FB/FC</small></div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node"><span class="flow-num">4</span><b>输出刷新</b><br><small>输出映象区 → 写 Q 区</small></div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node flow-cycle">↺ 下一周期</div>
+            </div>
+            <p style="margin-top:10px"><b style="color:var(--warn)">关键概念</b>：</p>
+            <ul class="detail-list">
+              <li><b>扫描时间 (Scan Cycle Time)</b>：S7-1200 通常 1~10ms，S7-1500 约 0.5~3ms。程序越长扫描越慢。</li>
+              <li><b>输入映象区</b>：扫描周期开始时锁存 I 端子状态，周期内即使外部信号变化，映象区不变。</li>
+              <li><b>输出映象区</b>：程序执行结果暂存于此，周期末尾统一刷新到 Q 端子。</li>
+              <li><b>立即刷新 (Immediate I/O)</b>：用 <code>WIW</code>（立即读）/ <code>WOW</code>（立即写）可跳过映象区，适合高速响应。</li>
+              <li><b>保持型扫描</b>：S7-1200 默认启用，扫描周期超时自动触发 OB85 诊断。</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- === 01 详解：数据类型 === -->
+        <div class="detail-block">
+          <div class="detail-title">📊 基本数据类型</div>
+          <div class="detail-body">
+            <p>TIA Portal 支持 <b style="color:var(--cyan)">IEC 61131-3</b> 标准数据类型，编程时必须指定类型。常见类型如下：</p>
+            <table class="tbl dtype-tbl">
+              <thead>
+                <tr><th>类型</th><th>位长</th><th>取值范围</th><th>典型用途</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><code>BOOL</code></td><td>1 bit</td><td>TRUE / FALSE</td><td>开关量（电机启停、气缸到位）</td></tr>
+                <tr><td><code>BYTE</code></td><td>8 bit</td><td>0 ~ 255</td><td>状态码、协议字节</td></tr>
+                <tr><td><code>WORD</code></td><td>16 bit</td><td>0 ~ 65535</td><td>无符号计数器、频率值</td></tr>
+                <tr><td><code>DWORD</code></td><td>32 bit</td><td>0 ~ 4294967295</td><td>脉冲累积、时间戳</td></tr>
+                <tr><td><code>INT</code></td><td>16 bit</td><td>-32768 ~ 32767</td><td>有符号温度、位置</td></tr>
+                <tr><td><code>DINT</code></td><td>32 bit</td><td>-2³¹ ~ 2³¹-1</td><td>大范围计数、流量累积</td></tr>
+                <tr><td><code>REAL</code></td><td>32 bit</td><td>±1.18×10⁻³⁸ ~ ±3.4×10³⁸</td><td>浮点温度 / 压力 / PID 调节</td></tr>
+                <tr><td><code>LREAL</code></td><td>64 bit</td><td>双精度浮点</td><td>高精度算法、复杂运算</td></tr>
+                <tr><td><code>TIME</code></td><td>32 bit</td><td>T#0ms ~ T#24d</td><td>定时器 / 延时</td></tr>
+                <tr><td><code>STRING</code></td><td>可变</td><td>最多 254 字符</td><td>HMI 显示文本、配方名</td></tr>
+                <tr><td><code>DATE_AND_TIME</code></td><td>64 bit</td><td>DT#2000-01-01 ~ 2099</td><td>时间戳、数据记录</td></tr>
+              </tbody>
+            </table>
+            <p style="margin-top:8px"><b style="color:var(--warn)">进制说明</b>：LAD/SCL 中可用 <code>2#</code>（二进制）、<code>16#</code>（十六进制）、<code>10#</code>（十进制）、<code>8#</code>（八进制）表示字面量。例如 <code>16#FF</code> = <code>2#11111111</code> = <code>255</code>。</p>
+          </div>
+        </div>
+
+        <!-- === 01 详解：存储器区 === -->
+        <div class="detail-block">
+          <div class="detail-title">💾 PLC 存储器区详解</div>
+          <div class="detail-body">
+            <p>PLC 内部有多个存储区，每个区用途和访问方式不同。S7-1200/1500 主要存储器区：</p>
+            <table class="tbl mem-tbl">
+              <thead>
+                <tr><th>区名</th><th>前缀</th><th>用途</th><th>寻址示例</th><th>备注</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><b>输入映象区</b></td><td><code>I</code></td><td>外部开关/传感器状态缓存</td><td><code>I0.0</code>, <code>IW1</code>, <code>ID2</code></td><td>扫描周期开始时锁存，只读</td></tr>
+                <tr><td><b>输出映象区</b></td><td><code>Q</code></td><td>程序执行结果缓存</td><td><code>Q0.1</code>, <code>QW2</code></td><td>扫描周期末尾刷新到端子</td></tr>
+                <tr><td><b>内部标志区</b></td><td><code>M</code></td><td>中间继电器、状态标志</td><td><code>M0.0</code>, <code>MW10</code></td><td>断电保持型 M 区：MB0~MB31</td></tr>
+                <tr><td><b>定时器区</b></td><td><code>T</code></td><td>S5/S7 传统定时器</td><td><code>T0</code>, <code>T37</code></td><td>S7-1200 推荐用 IEC 定时器</td></tr>
+                <tr><td><b>计数器区</b></td><td><code>C</code></td><td>传统计数器</td><td><code>C0</code>, <code>C10</code></td><td>同定时器，IEC 计数器更灵活</td></tr>
+                <tr><td><b>数据块</b></td><td><code>DB</code></td><td>用户定义数据存储</td><td><code>DB1.DBD0</code>, <code>"DB".Tag</code></td><td>优化块访问推荐符号寻址</td></tr>
+                <tr><td><b>局部数据栈</b></td><td><code>L</code></td><td>FC/FB 临时变量</td><td><code>L0.0</code>, <code>LW1</code></td><td>块退出时释放，不持久</td></tr>
+                <tr><td><b>外设地址区</b></td><td><code>P</code></td><td>直接访问 I/O 硬件</td><td><code>PIW256</code>, <code>PQW256</code></td><td>立即读写，不经过映象区</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- === 01 详解：I/Q/M/DB 深入 === -->
+        <div class="detail-block">
+          <div class="detail-title">🔍 I / Q / M / DB 四大核心区深入</div>
+          <div class="detail-body">
+            <div class="deep-dive">
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag cyan">I 区</span>输入映象区 Input</div>
+                <p>PLC 扫描周期 <b style="color:var(--cyan)">开始时</b>将外部输入端子（数字量 DI / 模拟量 AI）状态读入 I 区。程序执行过程中读取的 I 值始终是这个快照，不会随外部变化而变化。</p>
+                <pre class="code"><span class="c">// I 区寻址示例</span>
+%I0.0  <span class="c">// 位寻址（第 0 字节第 0 位）</span>
+%IW0   <span class="c">// 字寻址（AIW0 模拟量输入值）</span>
+%ID0   <span class="c">// 双字寻址（32 位数据）</span>
+
+<span class="c">// 推荐：使用符号寻址</span>
+"StartButton"  <span class="c">// 对应 I0.0，可读性好</span></pre>
+                <p class="tip">💡 <b>实际应用</b>：急停按钮接 I0.0，传感器接 I0.1~I0.7，模拟量温度传感器接 AIW256。</p>
+              </div>
+
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag warn">Q 区</span>输出映象区 Output</div>
+                <p>程序执行过程中运算的结果暂存于 Q 区，扫描周期 <b style="color:var(--warn)">末尾</b>统一写入输出端子（DO / AQ）。因此同一周期内 Q 区可能被多次赋值，但只有最后一次生效。</p>
+                <pre class="code"><span class="c">// Q 区寻址示例</span>
+%Q0.1  <span class="c">// 位寻址（电机启动输出）</span>
+%QW2   <span class="c">// 字寻址（AQW2 模拟量输出，如 PID 调节输出）</span>
+
+<span class="c">// 自锁电路：Q0.1 同时作为条件和输出</span>
+<span class="c">// 扫描周期内读到的 Q0.1 是上一周期的值</span></pre>
+                <p class="tip">💡 <b>实际应用</b>：电机接触器接 Q0.1，气缸电磁阀接 Q0.2，模拟量 PID 输出接 AQW256。</p>
+              </div>
+
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag brand">M 区</span>内部标志区 Merker</div>
+                <p>M 区是 PLC 的 <b style="color:var(--brand)">内部存储区</b>，用于存储中间运算结果、状态标志、计数器/定时器当前值。M 区不直接对应外部端子，仅在 CPU 内部运算时使用。</p>
+                <pre class="code"><span class="c">// M 区典型用途</span>
+M0.0  <span class="c">// 中间继电器（启保停逻辑中的自锁触点）</span>
+M10.0 <span class="c">// 故障标志（电机过载）</span>
+MW20  <span class="c">// 运算中间值（计数累积）</span>
+MD30  <span class="c">// 32 位运算结果</span>
+
+<span class="c">// M 区保持型：MB0~MB31 断电保持</span>
+<span class="c">// S7-1200 M 区总容量：4096 字节</span></pre>
+                <p class="tip">💡 <b>实际应用</b>：自锁逻辑用 M0.0 替代 Q0.1 避免竞争；故障标志用 M10.0~M10.7 做报警汇总。</p>
+              </div>
+
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag ok">DB 区</span>数据块 Data Block</div>
+                <p>DB 区是 <b style="color:var(--ok)">用户可定义</b>的存储区，用于存储大量参数、配方、运行数据。S7-1200/1500 推荐使用 <b>优化块访问</b>（默认开启），通过符号名访问，不再使用绝对地址。</p>
+                <pre class="code"><span class="c">// DB 区访问方式</span>
+<span class="c">// 传统绝对寻址（非优化块）</span>
+%DB1.DBD0   <span class="c">// 数据块 1 的双字偏移 0</span>
+
+<span class="c">// 推荐符号寻址（优化块）</span>
+"MotorDB".CurrentSpeed   <span class="c">// 读电机当前转速</span>
+"RecipeDB".Tank1.Volume  <span class="c">// 读配方罐 1 容量</span>
+
+<span class="c">// DB 类型</span>
+<span class="c">// ① 实例 DB（背景 DB）：绑定 FB/FC 接口</span>
+<span class="c">// ② 全局 DB：通用数据存储</span>
+<span class="c">// ③ UDT 类型 DB：用户自定义数据结构</span></pre>
+                <p class="tip">💡 <b>最佳实践</b>：每个设备配一个独立 DB（如 Motor_DB、Conveyor_DB），用 UDT 定义结构，多实例 FB 共享。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
       <div class="sidebar">
         <span class="tag">2 天</span>
@@ -279,5 +422,81 @@
 </footer>
 <script src="../assets/js/auth.js"></script>
 <script src="../assets/js/notes.js"></script>
+<script>
+/* 视频卡片播放切换 */
+(function(){
+  const grids = document.querySelectorAll('.vid-grid');
+  grids.forEach(function(grid){
+    const cards = grid.querySelectorAll('.vid-card');
+    if(cards.length < 2) return;
+
+    const playerWrap = document.createElement('div');
+    playerWrap.className = 'vid-player-main';
+    playerWrap.innerHTML = `
+      <div class="vid-frame">
+        <iframe id="mainPlayer" scrolling="no" border="0" frameborder="0" framespacing="0" allowfullscreen="true" sandbox="allow-scripts allow-same-origin allow-popups"></iframe>
+      </div>
+      <div class="vid-body">
+        <div class="vid-info">
+          <div class="vid-title">选择视频开始播放</div>
+          <div class="vid-author"></div>
+        </div>
+        <button class="playlist-btn" type="button">☰ 播放列表</button>
+      </div>
+      <div class="vid-list-panel"><div class="vid-list-inner"></div></div>
+    `;
+
+    const videos = [];
+    cards.forEach(function(card){
+      const iframe = card.querySelector('iframe');
+      const title = card.querySelector('.vid-title');
+      const author = card.querySelector('.vid-author');
+      if(!iframe || !title) return;
+      videos.push({
+        src: iframe.getAttribute('src'),
+        title: title.textContent.trim(),
+        author: author ? author.textContent.trim() : ''
+      });
+    });
+
+    const listInner = playerWrap.querySelector('.vid-list-inner');
+    videos.forEach(function(v, idx){
+      const item = document.createElement('div');
+      item.className = 'vid-list-item';
+      item.innerHTML = `<div class="thumb">▶</div><div class="meta"><div class="t"></div><div class="s"></div></div><div class="playing-badge" style="display:none">● 正在播放</div>`;
+      item.querySelector('.t').textContent = v.title;
+      item.querySelector('.s').textContent = v.author;
+      item.addEventListener('click', ()=>playVideo(idx));
+      listInner.appendChild(item);
+    });
+
+    grid.parentNode.insertBefore(playerWrap, grid);
+    cards.forEach(c => c.style.display = 'none');
+
+    const mainPlayer = playerWrap.querySelector('#mainPlayer');
+    const infoTitle = playerWrap.querySelector('.vid-title');
+    const infoAuthor = playerWrap.querySelector('.vid-author');
+    const listPanel = playerWrap.querySelector('.vid-list-panel');
+    const listBtn = playerWrap.querySelector('.playlist-btn');
+    let currentIdx = -1;
+
+    function playVideo(idx){
+      currentIdx = idx;
+      mainPlayer.src = videos[idx].src;
+      infoTitle.textContent = videos[idx].title;
+      infoAuthor.textContent = videos[idx].author;
+      const items = listInner.querySelectorAll('.vid-list-item');
+      items.forEach((it,i)=>{
+        it.classList.toggle('playing', i===idx);
+        it.querySelector('.playing-badge').style.display = i===idx?'block':'none';
+      });
+      listPanel.classList.remove('open');
+    }
+
+    listBtn.addEventListener('click', ()=>listPanel.classList.toggle('open'));
+    if(videos.length > 0) playVideo(0);
+  });
+})();
+</script>
 </body>
 </html>

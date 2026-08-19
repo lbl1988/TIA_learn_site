@@ -232,5 +232,60 @@
 </footer>
 <script src="../assets/js/auth.js"></script>
 <script src="../assets/js/notes.js"></script>
+<script>
+/* 视频卡片播放切换 */
+(function(){
+  const grids = document.querySelectorAll('.vid-grid');
+  grids.forEach(function(grid){
+    const cards = grid.querySelectorAll('.vid-card');
+    if(cards.length < 2) return;
+    const playerWrap = document.createElement('div');
+    playerWrap.className = 'vid-player-main';
+    playerWrap.innerHTML = `
+      <div class="vid-frame"><iframe id="mainPlayer" scrolling="no" border="0" frameborder="0" framespacing="0" allowfullscreen="true" sandbox="allow-scripts allow-same-origin allow-popups"></iframe></div>
+      <div class="vid-body"><div class="vid-info"><div class="vid-title">选择视频开始播放</div><div class="vid-author"></div></div><button class="playlist-btn" type="button">☰ 播放列表</button></div>
+      <div class="vid-list-panel"><div class="vid-list-inner"></div></div>`;
+    const videos = [];
+    cards.forEach(card => {
+      const iframe = card.querySelector('iframe');
+      const title = card.querySelector('.vid-title');
+      const author = card.querySelector('.vid-author');
+      if(!iframe || !title) return;
+      videos.push({src: iframe.getAttribute('src'), title: title.textContent.trim(), author: author ? author.textContent.trim() : ''});
+    });
+    const listInner = playerWrap.querySelector('.vid-list-inner');
+    videos.forEach((v, idx) => {
+      const item = document.createElement('div');
+      item.className = 'vid-list-item';
+      item.innerHTML = `<div class="thumb">▶</div><div class="meta"><div class="t"></div><div class="s"></div></div><div class="playing-badge" style="display:none">● 正在播放</div>`;
+      item.querySelector('.t').textContent = v.title;
+      item.querySelector('.s').textContent = v.author;
+      item.addEventListener('click', () => playVideo(idx));
+      listInner.appendChild(item);
+    });
+    grid.parentNode.insertBefore(playerWrap, grid);
+    cards.forEach(c => c.style.display = 'none');
+    const mainPlayer = playerWrap.querySelector('#mainPlayer');
+    const infoTitle = playerWrap.querySelector('.vid-title');
+    const infoAuthor = playerWrap.querySelector('.vid-author');
+    const listPanel = playerWrap.querySelector('.vid-list-panel');
+    const listBtn = playerWrap.querySelector('.playlist-btn');
+    let currentIdx = -1;
+    function playVideo(idx){
+      currentIdx = idx;
+      mainPlayer.src = videos[idx].src;
+      infoTitle.textContent = videos[idx].title;
+      infoAuthor.textContent = videos[idx].author;
+      listInner.querySelectorAll('.vid-list-item').forEach((it, i) => {
+        it.classList.toggle('playing', i===idx);
+        it.querySelector('.playing-badge').style.display = i===idx?'block':'none';
+      });
+      listPanel.classList.remove('open');
+    }
+    listBtn.addEventListener('click', () => listPanel.classList.toggle('open'));
+    if(videos.length > 0) playVideo(0);
+  });
+})();
+</script>
 </body>
 </html>
