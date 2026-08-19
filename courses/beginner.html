@@ -5,6 +5,26 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>入门篇 · 博途学习站</title>
 <link rel="stylesheet" href="../assets/css/style.css">
+<style>
+/* 配套视频卡片样式 */
+.vid-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.vid-card{background:var(--panel-2);border:1px solid var(--line);border-radius:10px;overflow:hidden;display:flex;flex-direction:column;transition:.18s}
+.vid-card:hover{border-color:var(--brand);transform:translateY(-2px)}
+.vid-frame{position:relative;padding-top:56.25%;background:#000}
+.vid-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.vid-body{padding:10px 12px;display:flex;flex-direction:column;gap:5px;flex:1}
+.vid-title{font-size:13px;font-weight:600;color:var(--text);line-height:1.5}
+.vid-author{font-size:11px;color:var(--muted)}
+.vid-author b{color:var(--brand)}
+.vid-desc{font-size:11.5px;color:var(--muted);line-height:1.6}
+.vid-official{background:linear-gradient(135deg,#22d3ee12,#7c5cff12);border:1px dashed #22d3ee55;border-radius:10px;padding:12px 14px;margin-top:12px}
+.vid-official h4{font-size:12.5px;color:var(--cyan);margin-bottom:6px}
+.vid-official ul{list-style:none;display:flex;flex-direction:column;gap:5px}
+.vid-official li{font-size:12px;color:var(--muted);padding-left:16px;position:relative;line-height:1.6}
+.vid-official li::before{content:"▶";position:absolute;left:0;color:var(--cyan);font-size:9px}
+.vid-official a{color:var(--text)}
+@media(max-width:768px){.vid-grid{grid-template-columns:1fr}}
+</style>
 </head>
 <body>
 <nav class="nav">
@@ -17,6 +37,7 @@
     <a href="advanced.html" class="t3"><span class="dot"></span>精通篇</a>
     <a href="../engineering/index.html" class="eng"><span class="dot"></span>工程化</a>
     <a href="../lab/index.html">仿真实验室</a>
+    <a href="../videos/index.html">视频学习</a>
     <a href="../resources/index.html">资源下载</a>
     <a href="../projects/index.html">项目库</a>
   </div>
@@ -209,6 +230,45 @@
       <li>快捷键尽早用起来，Ctrl+K 搜索、Ctrl+L 在线、F11 编译是三大件。</li>
       <li>入门完成后务必接 <a href="intermediate.html" style="color:var(--brand)">进阶篇 · 结构化编程</a>，否则 OB1 会越来越乱。</li>
     </ul>
+  </section>
+
+  <!-- 配套视频教学 -->
+  <section class="card" style="margin-top:18px">
+    <h2>🎬 配套视频教学 · 入门基础</h2>
+    <p class="hint" style="margin-bottom:12px">对应 <a href="../videos/index.html#p1" style="color:var(--cyan)">视频板块 ① 入门基础</a>：B 站精选 + 西门子官方 1847，站内直接播放，边看边练。</p>
+    <div class="vid-grid">
+
+      <div class="vid-card">
+        <div class="vid-frame">
+          <iframe src="https://player.bilibili.com/player.html?bvid=BV1qJ41187dJ&page=1&high_quality=1&danmaku=0" scrolling="no" border="0" frameborder="0" framespacing="0" allowfullscreen="true" sandbox="allow-scripts allow-same-origin allow-popups"></iframe>
+        </div>
+        <div class="vid-body">
+          <div class="vid-title">TIA 博途七天入门 · 工控自学网</div>
+          <div class="vid-author">UP：<b>工控自学网</b> · 含 HMI 配置 + PLC 通信实操</div>
+          <div class="vid-desc">覆盖软件安装、项目创建、硬件组态、LAD 编程、PLCSIM 仿真、HMI 联动，新手首选。</div>
+        </div>
+      </div>
+
+      <div class="vid-card">
+        <div class="vid-frame">
+          <iframe src="https://player.bilibili.com/player.html?bvid=BV1W4411P7zK&page=1&high_quality=1&danmaku=0" scrolling="no" border="0" frameborder="0" framespacing="0" allowfullscreen="true" sandbox="allow-scripts allow-same-origin allow-popups"></iframe>
+        </div>
+        <div class="vid-body">
+          <div class="vid-title">S7-200 SMART 零基础教程 · 工控老梁</div>
+          <div class="vid-author">UP：<b>工控老梁</b> · 从接线到梯形图编程</div>
+          <div class="vid-desc">电气接线原理 → 继电器逻辑 → PLC 梯形图过渡讲解，培养扫描周期与位逻辑思维。</div>
+        </div>
+      </div>
+
+    </div>
+    <div class="vid-official">
+      <h4>🏛 西门子官方 1847 入门系列</h4>
+      <ul>
+        <li><a href="https://1847.siemens.com.cn/course/detail/1/1811232/3367" target="_blank" rel="noopener">博途编程和软件应用</a> — S7-1200 工作原理、TIA Portal 使用方法、组态编程、编程实例</li>
+        <li><a href="https://1847.siemens.com.cn/course/detail/1/1810852/6247" target="_blank" rel="noopener">基于 1200 TIA 博途 7 天入门</a> — 硬件系统、编程基础、基本指令、调试、以太网通信、PID、诊断</li>
+        <li><a href="https://1847.siemens.com.cn/course/detail/1/1811008/6731" target="_blank" rel="noopener">编程基础知识</a> — 进制 / 数据类型 / 数字量模拟量接线 / 仪表传感器适配</li>
+      </ul>
+    </div>
   </section>
 
 </main>

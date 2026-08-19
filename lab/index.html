@@ -5,6 +5,25 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>仿真实验室 · 博途学习站</title>
 <link rel="stylesheet" href="../assets/css/style.css">
+<style>
+.vid-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.vid-card{background:var(--panel-2);border:1px solid var(--line);border-radius:10px;overflow:hidden;display:flex;flex-direction:column;transition:.18s}
+.vid-card:hover{border-color:var(--brand);transform:translateY(-2px)}
+.vid-frame{position:relative;padding-top:56.25%;background:#000}
+.vid-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.vid-body{padding:10px 12px;display:flex;flex-direction:column;gap:5px;flex:1}
+.vid-title{font-size:13px;font-weight:600;color:var(--text);line-height:1.5}
+.vid-author{font-size:11px;color:var(--muted)}
+.vid-author b{color:var(--brand)}
+.vid-desc{font-size:11.5px;color:var(--muted);line-height:1.6}
+.vid-official{background:linear-gradient(135deg,#22d3ee12,#7c5cff12);border:1px dashed #22d3ee55;border-radius:10px;padding:12px 14px;margin-top:12px}
+.vid-official h4{font-size:12.5px;color:var(--cyan);margin-bottom:6px}
+.vid-official ul{list-style:none;display:flex;flex-direction:column;gap:5px}
+.vid-official li{font-size:12px;color:var(--muted);padding-left:16px;position:relative;line-height:1.6}
+.vid-official li::before{content:"▶";position:absolute;left:0;color:var(--cyan);font-size:9px}
+.vid-official a{color:var(--text)}
+@media(max-width:768px){.vid-grid{grid-template-columns:1fr}}
+</style>
 </head>
 <body>
 <nav class="nav">
@@ -17,6 +36,7 @@
     <a href="../courses/advanced.html" class="t3"><span class="dot"></span>精通篇</a>
     <a href="../engineering/index.html" class="eng"><span class="dot"></span>工程化</a>
     <a href="index.html" class="active">仿真实验室</a>
+    <a href="../videos/index.html">视频学习</a>
     <a href="../resources/index.html">资源下载</a>
     <a href="../projects/index.html">项目库</a>
   </div>
@@ -107,6 +127,44 @@
         <tr><td>LAD 点灯仿真</td><td>入门篇 04</td><td>⏳ 建设中</td><td>—</td></tr>
       </tbody>
     </table>
+  </section>
+
+  <!-- 配套视频教学：仿真与调试 -->
+  <section class="card" style="margin-top:18px">
+    <h2>🎬 配套视频教学 · 仿真与联合调试</h2>
+    <p class="hint" style="margin-bottom:12px">无硬件学博途的核心：PLCSIM 仿真 + WinCC 联合调试。对应 <a href="../videos/index.html" style="color:var(--brand)">视频板块</a>。</p>
+    <div class="vid-grid">
+
+      <div class="vid-card">
+        <div class="vid-frame">
+          <iframe src="https://player.bilibili.com/player.html?bvid=BV1Cb411W7Yd&page=1&high_quality=1&danmaku=0" scrolling="no" border="0" frameborder="0" framespacing="0" allowfullscreen="true" sandbox="allow-scripts allow-same-origin allow-popups"></iframe>
+        </div>
+        <div class="vid-body">
+          <div class="vid-title">WinCC 与 PLC 联合仿真 · 技成培训</div>
+          <div class="vid-author">UP：<b>技成培训</b> · 无硬件模拟项目调试</div>
+          <div class="vid-desc">无硬件即可完成 PLC + WinCC SCADA 联合调试：变量绑定、报警、趋势曲线、报表，PLCSIM 仿真环境搭建。</div>
+        </div>
+      </div>
+
+      <div class="vid-card">
+        <div class="vid-frame">
+          <iframe src="https://player.bilibili.com/player.html?bvid=BV1qJ41187dJ&page=1&high_quality=1&danmaku=0" scrolling="no" border="0" frameborder="0" framespacing="0" allowfullscreen="true" sandbox="allow-scripts allow-same-origin allow-popups"></iframe>
+        </div>
+        <div class="vid-body">
+          <div class="vid-title">TIA 博途七天入门 · 工控自学网</div>
+          <div class="vid-author">UP：<b>工控自学网</b> · 含 PLCSIM 仿真实操</div>
+          <div class="vid-desc">覆盖 PLCSIM 启动、SIM 表监控、在线下载、强制变量，与本站仿真实验室入门篇 LAD 点灯仿真配套。</div>
+        </div>
+      </div>
+
+    </div>
+    <div class="vid-official">
+      <h4>🏛 西门子官方 · PLCSIM / 虚拟调试</h4>
+      <ul>
+        <li><a href="https://1847.siemens.com.cn/course/detail/1/1811103/7012" target="_blank" rel="noopener">探秘 TIA 博途库</a> — 全局库 / 项目库 / 模版副本 / 类型 / 多语言库</li>
+        <li><a href="https://1847.siemens.com.cn/" target="_blank" rel="noopener">1847 西门子学习平台</a> — 官方视频课程全集（含 PLCSIM Advanced / SIMIT 虚拟调试）</li>
+      </ul>
+    </div>
   </section>
 </main>
 

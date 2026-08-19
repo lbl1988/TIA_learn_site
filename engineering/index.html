@@ -5,6 +5,25 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>工程化能力 · 博途学习站</title>
 <link rel="stylesheet" href="../assets/css/style.css">
+<style>
+.vid-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.vid-card{background:var(--panel-2);border:1px solid var(--line);border-radius:10px;overflow:hidden;display:flex;flex-direction:column;transition:.18s}
+.vid-card:hover{border-color:var(--brand);transform:translateY(-2px)}
+.vid-frame{position:relative;padding-top:56.25%;background:#000}
+.vid-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.vid-body{padding:10px 12px;display:flex;flex-direction:column;gap:5px;flex:1}
+.vid-title{font-size:13px;font-weight:600;color:var(--text);line-height:1.5}
+.vid-author{font-size:11px;color:var(--muted)}
+.vid-author b{color:var(--brand)}
+.vid-desc{font-size:11.5px;color:var(--muted);line-height:1.6}
+.vid-official{background:linear-gradient(135deg,#22d3ee12,#7c5cff12);border:1px dashed #22d3ee55;border-radius:10px;padding:12px 14px;margin-top:12px}
+.vid-official h4{font-size:12.5px;color:var(--cyan);margin-bottom:6px}
+.vid-official ul{list-style:none;display:flex;flex-direction:column;gap:5px}
+.vid-official li{font-size:12px;color:var(--muted);padding-left:16px;position:relative;line-height:1.6}
+.vid-official li::before{content:"▶";position:absolute;left:0;color:var(--cyan);font-size:9px}
+.vid-official a{color:var(--text)}
+@media(max-width:768px){.vid-grid{grid-template-columns:1fr}}
+</style>
 </head>
 <body>
 <nav class="nav">
@@ -17,6 +36,7 @@
     <a href="../courses/advanced.html" class="t3"><span class="dot"></span>精通篇</a>
     <a href="index.html" class="active eng"><span class="dot"></span>工程化</a>
     <a href="../lab/index.html">仿真实验室</a>
+    <a href="../videos/index.html">视频学习</a>
     <a href="../resources/index.html">资源下载</a>
     <a href="../projects/index.html">项目库</a>
   </div>
@@ -172,6 +192,46 @@ PLC 硬件属性 → 保护
       </div>
     </div>
   </div>
+
+  <!-- 配套视频教学：工程化能力 -->
+  <section class="card" style="margin-top:18px">
+    <h2>🎬 配套视频教学 · 工程化能力</h2>
+    <p class="hint" style="margin-bottom:12px">对应 <a href="../videos/index.html" style="color:var(--brand)">视频板块</a>：项目规范、虚拟调试、版本管理、安全编程。横跨三阶贯穿学习。</p>
+    <div class="vid-grid">
+
+      <div class="vid-card">
+        <div class="vid-frame">
+          <iframe src="https://player.bilibili.com/player.html?bvid=BV1Pf421m7Sq&page=1&high_quality=1&danmaku=0" scrolling="no" border="0" frameborder="0" framespacing="0" allowfullscreen="true" sandbox="allow-scripts allow-same-origin allow-popups"></iframe>
+        </div>
+        <div class="vid-body">
+          <div class="vid-title">SCL 编程全集 · 工控圈</div>
+          <div class="vid-author">UP：<b>工控圈</b> · UDT 多重背景 / 库管理</div>
+          <div class="vid-desc">涵盖 UDT 结构化、FB 多实例、库工程打包，对应本页 UDT / 程序库模块的最佳实战教程。</div>
+        </div>
+      </div>
+
+      <div class="vid-card">
+        <div class="vid-frame">
+          <iframe src="https://player.bilibili.com/player.html?bvid=BV1b4411e77N&page=1&high_quality=1&danmaku=0" scrolling="no" border="0" frameborder="0" framespacing="0" allowfullscreen="true" sandbox="allow-scripts allow-same-origin allow-popups"></iframe>
+        </div>
+        <div class="vid-body">
+          <div class="vid-title">博途 TIA 全集成自动化（高级）· 蔡慧荥</div>
+          <div class="vid-author">UP：<b>蔡慧荥</b> · 行业知名讲师</div>
+          <div class="vid-desc">SCL 高级语言 + PROFINET 通信 + 故障诊断系统，贯穿项目规范、通信组态、诊断体系工程化实践。</div>
+        </div>
+      </div>
+
+    </div>
+    <div class="vid-official">
+      <h4>🏛 西门子官方 · 编程规范 / 虚拟调试</h4>
+      <ul>
+        <li><a href="https://1847.siemens.com.cn/course/detail/1/18045/4437" target="_blank" rel="noopener">编程指南详细解读</a> — 西门子推荐规范编程思路、团队风格统一</li>
+        <li><a href="https://1847.siemens.com.cn/course/detail/1/1811103/7012" target="_blank" rel="noopener">探秘 TIA 博途库</a> — 全局库 / 项目库 / 模版副本 / 类型 / 多语言库</li>
+        <li><a href="https://1847.siemens.com.cn/course/detail/1/1809680/5400" target="_blank" rel="noopener">如何编写高效的可复用程序</a> — 块接口参数使用规则、可复用块设计</li>
+        <li><a href="https://1847.siemens.com.cn/course/detail/1/1811415/3484" target="_blank" rel="noopener">Safety 亮点之快速调试功能</a> — TIA V17/V18 故障安全快速调试扩展</li>
+      </ul>
+    </div>
+  </section>
 
 </main>
 

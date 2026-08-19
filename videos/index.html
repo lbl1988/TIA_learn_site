@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>视频学习板块 · 博途学习站</title>
+<meta name="description" content="全网最权威的西门子博途 TIA Portal 教学视频合集，7 大模块覆盖入门 LAD、SCL 结构化文本、ISA-88 状态机、PID 整定、运动控制 V90、WinCC SCADA、PROFINET/OPC UA 冗余与产线实战。B 站精选 + 西门子官方 1847 课程，站内直接播放。">
+<link rel="stylesheet" href="../assets/css/style.css">
+<style>
+/* 视频页专属样式 */
+.vid-section{margin-bottom:26px;scroll-margin-top:80px}
+.vid-section h2{font-size:17px;margin-bottom:6px;display:flex;align-items:center;gap:10px;font-weight:700}
+.vid-section h2 .ic{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;font-size:18px}
+.vid-meta{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 16px}
+.vid-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.vid-card{
+  background:var(--panel-2);border:1px solid var(--line);border-radius:12px;overflow:hidden;
+  display:flex;flex-direction:column;transition:.18s;
+}
+.vid-card:hover{border-color:var(--brand);transform:translateY(-2px);box-shadow:var(--shadow)}
+.vid-frame{position:relative;padding-top:56.25%;background:#000}
+.vid-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.vid-body{padding:14px 16px;display:flex;flex-direction:column;gap:8px;flex:1}
+.vid-title{font-size:14px;font-weight:600;color:var(--text);line-height:1.5}
+.vid-author{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.vid-author b{color:var(--brand)}
+.vid-desc{font-size:12px;color:var(--muted);line-height:1.7}
+.vid-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:2px}
+.vid-official{
+  background:linear-gradient(135deg,#22d3ee12,#7c5cff12);
+  border:1px dashed #22d3ee55;border-radius:10px;padding:14px 16px;margin-top:14px;
+}
+.vid-official h4{font-size:13px;color:var(--cyan);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.vid-official ul{list-style:none;display:flex;flex-direction:column;gap:6px}
+.vid-official li{font-size:12.5px;color:var(--muted);padding-left:18px;position:relative;line-height:1.7}
+.vid-official li::before{content:"▶";position:absolute;left:0;color:var(--cyan);font-size:10px}
+.vid-official a{color:var(--text)}
+.vid-official a:hover{color:var(--brand)}
+.vid-nav{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-bottom:22px;position:sticky;top:64px;z-index:20;background:rgba(15,17,21,.92);backdrop-filter:blur(10px);padding:10px;border-radius:10px;border:1px solid var(--line)}
+.vid-nav a{text-align:center;padding:8px 4px;border-radius:7px;font-size:11px;color:var(--muted);background:var(--panel-3);border:1px solid var(--line);transition:.15s;line-height:1.4}
+.vid-nav a:hover{color:var(--text);border-color:var(--brand)}
+.vid-nav a .n{display:block;font-size:14px;font-weight:700;color:var(--brand);font-family:var(--font-mono)}
+@media(max-width:1024px){
+  .vid-grid{grid-template-columns:1fr}
+  .vid-nav{grid-template-columns:repeat(4,1fr)}
+}
+@media(max-width:640px){
+  .vid-nav{grid-template-columns:repeat(3,1fr)}
+}
+</style>
+</head>
+<body>
+<nav class="nav">
+<div class="nav-inner">
+  <a href="../index.html" class="logo"><div class="ic">TIA</div><div>博途学习站<span class="sub">From Zero to Hero</span></div></a>
+  <div class="menu">
+    <a href="../index.html">首页</a>
+    <a href="../courses/beginner.html" class="t1"><span class="dot"></span>入门篇</a>
+    <a href="../courses/intermediate.html" class="t2"><span class="dot"></span>进阶篇</a>
+    <a href="../courses/advanced.html" class="t3"><span class="dot"></span>精通篇</a>
+    <a href="../engineering/index.html" class="eng"><span class="dot"></span>工程化</a>
+    <a href="index.html" class="active">视频学习</a>
+    <a href="../lab/index.html">仿真实验室</a>
+    <a href="../resources/index.html">资源下载</a>
+    <a href="../projects/index.html">项目库</a>
+  </div>
+</div>
+</nav>
+
+<main class="wrap">
+
+  <div class="page-title">
+    <div style="flex:1">
+      <div class="bread"><a href="../index.html">首页</a><span class="sep">/</span>视频学习板块</div>
+      <h1>🎬 视频学习板块 · 全网最权威 7 部分合集</h1>
+      <p class="hint" style="margin-top:6px">B 站精选课程 + 西门子官方 1847 / 工业支持中心系列，全部 <b style="color:var(--ok)">站内直接播放</b>（手机端不跳转 B 站 App）。按学习路线分 7 部分，配合三阶课程与项目库同步学习。</p>
+    </div>
+    <span class="tag new">NEW</span>
+  </div>
+
+  <!-- 快速导航 -->
+  <div class="vid-nav">
+    <a href="#p1"><span class="n">①</span>入门基础</a>
+    <a href="#p2"><span class="n">②</span>结构化编程</a>
+    <a href="#p3"><span class="n">③</span>SCL 高级语言</a>
+    <a href="#p4"><span class="n">④</span>PID / ISA-88</a>
+    <a href="#p5"><span class="n">⑤</span>运动控制 / 安全</a>
+    <a href="#p6"><span class="n">⑥</span>WinCC / 通信</a>
+    <a href="#p7"><span class="n">⑦</span>产线实战</a>
+  </div>
+
+  <!-- ① 入门基础 -->
+  <section id="p1" class="card vid-section">
+    <h2><span class="ic" style="background:#22d3ee22;color:var(--cyan)">①</span>入门基础 · TIA Portal 与 LAD 梯形图</h2>
+    <p class="hint">对应 <a href="../courses/beginner.html" style="color:var(--cyan)">入门篇</a>：PLC 原理、TIA Portal 安装、LAD 指令、PLCSIM 仿真。</p>
+    <div class="vid-meta">
+      <span class="tag cyan">7 天入门</span>
+      <span class="tag">LAD</span>
+      <span class="tag">PLCSIM</span>
+      <span class="tag">S7-1200</span>
+    </div>
+
+    <div class="vid-grid">
+
+      <div class="vid-card">
+        <div class="vid-frame">
+          <iframe src="https://player.bilibili.com/player.html?bvid=BV1qJ41187dJ&page=1&high_quality=1&danmaku=0" scrolling="no" border="0" frameborder="0" framespacing="0" allowfullscreen="true" sandbox="allow-scripts allow-same-origin allow-popups"></iframe>
+        </div>
+        <div class="vid-body">
+          <div class="vid-title">TIA 博途七天入门 · 工控自学网</div>
+          <div class="vid-author">UP：<b>工控自学网</b> · 含 HMI 配置 + PLC 通信实操</div>
+          <div class="vid-desc">零基础 7 天系统入门，覆盖软件安装、项目创建、硬件组态、LAD 编程、PLCSIM 仿真、HMI 联动，配套通信实操，新手首选。</div>
+          <div class="vid-tags"><span class="tag cyan">入门</span><span class="tag">HMI</span><span class="tag">通信</span></div>
+        </div>
+      </div>
+
+      <div class="vid-card">
+        <div class="vid-frame">
+          <iframe src="https://player.bilibili.com/player.html?bvid=BV1W4411P7zK&page=1&high_quality=1&danmaku=0" scrolling="no" border="0" frameborder="0" framespacing="0" allowfullscreen="true" sandbox="allow-scripts allow-same-origin allow-popups"></iframe>
+        </div>
+        <div class="vid-body">
+          <div class="vid-title">S7-200 SMART 零基础教程 · 工控老梁</div>
+          <div class="vid-author">UP：<b>工控老梁</b> · 从接线到梯形图编程</div>
+          <div class="vid-desc">电气接线原理 → 继电器逻辑 → PLC 梯形图过渡讲解，语言通俗，适合电工转行 / 零基础学员打底，培养 PLC 扫描周期与位逻辑思维。</div>
+          <div class="vid-tags"><span class="tag cyan">零基础</span><span class="tag">接线</span><span class="tag">梯形图</span></div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="vid-official">
+      <h4>🏛 西门子官方 1847 系统课程（对应入门篇）</h4>
+      <ul>
+        <li><a href="https://1847.siemens.com.cn/course/detail/1/1811232/3367" target="_blank" rel="noopener">博途编程和软件应用</a> — S7-1200 工作原理、TIA Portal 使用方法、组态编程、编程实例</li>
+        <li><a href="https://1847.siemens.com.cn/course/detail/1/1810852/6247" target="_blank" rel="noopener">基于 1200 TIA 博途 7 天入门</a> — 硬件系统、编程基础、基本指令、调试、以太网通信、PID、诊断</li>
+        <li><a href="https://1847.siemens.com.cn/course/detail/1/1811008/6731" target="_blank" rel="noopener">编程基础知识</a> — 进制 / 数据类型 / 数字量模拟量接线 / 仪表传感器适配</li>
+        <li><a href="https://1847.siemens.com.cn/course/detail/1/1811230/4907" target="_blank" rel="noopener">S7-1200 硬件基本功能</a> — CPU 家族、模块安装、指示灯、选型</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ② 结构化编程 -->
+  <section id="p2" class="card vid-section">
+    <h2><span class="ic" style="background:#7c5cff22;color:var(--brand)">②</span>结构化编程 · OB / FC / FB / DB</h2>
+    <p class="hint">对应 <a href="../courses/intermediate.html" style="color:var(--brand)">进阶篇 01</a>：从 OB1 一堆线圈到结构化编程，掌握块的职责分离。</p>
+    <div class="vid-meta">
+      <span class="tag brand">结构化</span>
+      <span class="tag">FC/FB/DB</span>
+      <span class="tag">多实例</span>
+      <span class="tag">UDT</span>
+    </div>
+
+    <div class="vid-grid">
+
+      <div class="vid-card">
+        <div class="vid-frame">
+          <iframe src="https://player.bilibili.com/player.html?bvid=BV1Pf421m7Sq&page=1&high_quality=1&danmaku=0" scrolling="no" border="0" frameborder="0" framespacing="0" allowfullscreen="true" sandbox="allow-scripts allow-same-origin allow-popups"></iframe>
+        </div>
+        <div class="vid-body">
+          <div class="vid-title">全网最全西门子 SCL 编程语言视频教程 · 工控圈</div>
+          <div class="vid-author">UP：<b>工控圈</b> · A01–I13 系统化全集</div>
+          <div class="vid-desc">从 I01 SCL 基础入门到 H4 实战（配方 / 气缸 / 机器人 / 机器视觉），含 PROFINET、Modbus TCP/RTU、高速计数、轴控制、UDT 多重背景，结构化编程必看。</div>
+          <div class="vid-tags"><span class="tag brand">全集</span><span class="tag">UDT</span><span class="tag">Modbus</span><span class="tag">多实例</span></div>
+        </div>
+      </div>
+
+      <div class="vid-card">
+        <div class="vid-frame">
+          <iframe src="https://player.bilibili.com/player.html?bvid=BV1ru54zwELx&page=1&high_quality=1&danmaku=0" scrolling="no" border="0" frameborder="0" framespacing="0" allowfullscreen="true" sandbox="allow-scripts allow-same-origin allow-popups"></iframe>
+        </div>
+        <div class="vid-body">
+          <div class="vid-title">TIA 博途 SCL 语言编程入门到精通（案例讲解）· 电气知识共享</div>
+          <div class="vid-author">UP：<b>电气知识共享</b> · 13h27m · 7.7 万播放</div>
+          <div class="vid-desc">全套案例驱动讲解 SCL，配合结构化编程思路：FB 封装、多重背景 DB、步进电机、MCGS 通信、仓位偏移算法，是学结构化编程的进阶主力课。</div>
+          <div class="vid-tags"><span class="tag brand">案例</span><span class="tag">FB 封装</span><span class="tag">多重背景</span></div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="vid-official">
+      <h4>🏛 西门子官方 1847 · 结构化与可复用程序</h4>
+      <ul>
+        <li><a href="https://1847.siemens.com.cn/course/detail/1/1809680/5400" target="_blank" rel="noopener">如何编写高效的可复用程序</a> — 块接口参数使用规则、可复用块设计</li>
+        <li><a href="https://1847.siemens.com.cn/course/detail/1/1811103/7012" target="_blank" rel="noopener">探秘 TIA 博途库</a> — 全局库 / 项目库 / 模版副本 / 类型 / 多语言库</li>
+        <li><a href="https://1847.siemens.com.cn/course/detail/1/18045/4437" target="_blank" rel="noopener">编程指南详细解读</a> — 西门子推荐规范编程思路、团队风格统一</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ③ SCL 高级语言 -->
+  <section id="p3" class="card vid-section">
+    <h2><span class="ic" style="background:#7c5cff22;color:var(--brand)">③</span>SCL 高级语言 · IF/CASE/FOR 与算法封装</h2>
+    <p class="hint">对应 <a href="../courses/intermediate.html" style="color:var(--brand)">进阶篇 02</a> SCL 大纲：控制流、数组、间接寻址、沿信号、SCALE_X/NORM_X。</p>
+    <div class="vid-meta">
+      <span class="tag brand">SCL</span>
+      <span class="tag">IF/CASE/FOR</span>
+      <span class="tag">间接寻址</span>
+      <span class="tag">数组</span>
+    </div>
+
+    <div class="vid-grid">
+
+      <div class="vid-card">
+        <div class="vid-frame">
+          <iframe src="https://player.bilibili.com/player.html?bvid=BV1mnSEBsEi8&page=1&high_quality=1&danmaku=0" scrolling="no" border="0" frameborder="0" framespacing="0" allowfullscreen="true" sandbox="allow-scripts allow-same-origin allow-popups"></iframe>
+        </div>
+        <div class="vid-body">
+          <div class="vid-title">西门子 SCL 编程语言从入门到精通 · 电气知识共享</div>
+          <div class="vid-author">UP：<b>电气知识共享</b> · 8h23m · 7.0 万播放</div>
+          <div class="vid-desc">从基础语法到工程算法：IF/CASE/FOR/WHILE/REPEAT、AT 指令、PEEK/POKE、模拟量温度滤波、源文件使用、代码折叠综合案例。</div>
+          <div class="vid-tags"><span class="tag brand">语法全集</span><span class="tag">PEEK/POKE</span><span class="tag">滤波</span></div>
+        </div>
+      </div>
+
+      <div class="vid-card">
+        <div class="vid-frame">
+          <iframe src="https://player.bilibili.com/player.html?bvid=BV1NrWNzPEFw&page=1&high_quality=1&danmaku=0" scrolling="no" border="0" frameborder="0" framespacing="0" allowfullscreen="true" sandbox="allow-scripts allow-same-origin allow-popups"></iframe>
+        </div>
+        <div class="vid-body">
+          <div class="vid-title">西门子博途 SCL 语言入门视频教程 · 盛工电气自动化</div>
+          <div class="vid-author">UP：<b>盛工电气自动化</b> · 5 讲</div>
+          <div class="vid-desc">第一讲：位逻辑 + IF 语句；第二讲：上升 / 下降沿；第三讲：定时器；第四讲：计数器。短小精悍，适合 LAD 工程师向 SCL 过渡。</div>
+          <div class="vid-tags"><span class="tag brand">入门</span><span class="tag">沿信号</span><span class="tag">定时器</span><span class="tag">计数器</span></div>
+        </div>
+      </div>
+
+      <div class="vid-card">
+        <div class="vid-frame">
+          <iframe src="https://player.bilibili.com/player.html?bvid=BV1SZhYz6ELk&page=1&high_quality=1&danmaku=0" scrolling="no" border="0" frameborder="0" framespacing="0" allowfullscreen="true" sandbox="allow-scripts allow-same-origin allow-popups"></iframe>
+        </div>
+        <div class="vid-body">
+          <div class="vid-title">SCL 书籍配套视频 78 集 · 北岛李工</div>
+          <div class="vid-author">UP：<b>北岛李工</b> · 81 集 · 14.0 万播放</div>
+          <div class="vid-desc">《西门子 S7-1200/1500 PLC SCL 语言编程——从入门到精通》配套视频：CPU 介绍、组织块 / FC / FB / DB、沿检测、定时器、电机启停、配方、IO 设备、Modbus-TCP 全覆盖。</div>
+          <div class="vid-tags"><span class="tag brand">书籍配套</span><span class="tag">配方</span><span class="tag">Modbus-TCP</span></div>
+        </div>
+      </div>
+
+      <div class="vid-card">
+        <div class="vid-frame">
+          <iframe src="https://player.bilibili.com/player.html?bvid=BV1u691YQEnw&page=1&high_quality=1&danmaku=0" scrolling="no" border="0" frameborder="0" framespacing="0" allowfullscreen="true" sandbox="allow-scripts allow-same-origin allow-popups"></iframe>
+        </div>
+        <div class="vid-body">
+          <div class="vid-title">西门子 SCL 高级语言编程 · 工控圈</div>
+          <div class="vid-author">UP：<b>工控圈</b> · 50h47m 超长全集</div>
+          <div class="vid-desc">超长系统课，涵盖 SCL 全部语法 + 高级算法 + 项目实战，适合作为案头工具长期参考。</div>
+          <div class="vid-tags"><span class="tag brand">超长全集</span><span class="tag">项目实战</span></div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="vid-official">
+      <h4>🏛 西门子官方 1847 · TIA 博途 7 天 SCL 编程（6 节）</h4>
+      <ul>
+        <li><a href="https://1847.siemens.com.cn/course/detail/1/1810939/6453" target="_blank" rel="noopener">① SCL 概述与编程基础</a></li>
+        <li><a href="https://1847.siemens.com.cn/course/detail/1/1810939/6455" target="_blank" rel="noopener">② SCL 运算符、表达式与块调用</a></li>
+        <li><a href="https://1847.siemens.com.cn/course/detail/1/1810939/6456" target="_blank" rel="noopener">③ SCL 程序控制语句</a></li>
+        <li><a href="https://1847.siemens.com.cn/course/detail/1/1810939/6457" target="_blank" rel="noopener">④ SCL 间接寻址概述</a></li>
+        <li><a href="https://1847.siemens.com.cn/course/detail/1/1810939/6458" target="_blank" rel="noopener">⑤ 数组指针及限值可变数组</a></li>
+        <li><a href="https://1847.siemens.com.cn/course/detail/1/1810939/6459" target="_blank" rel="noopener">⑥ 模拟量的批量处理</a></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ④ PID / ISA-88 -->
+  <section id="p4" class="card vid-section">
+    <h2><span class="ic" style="background:#7c5cff22;color:var(--brand)">④</span>PID 整定 / ISA-88 状态机</h2>
+    <p class="hint">对应 <a href="../courses/intermediate.html" style="color:var(--brand)">进阶篇 04 / 06</a>：PID_Compact 自整定、ISA-88 批次 Phase 状态机。本站已配套 <a href="../lab/pid-hmi.html" style="color:var(--ok)">PID HMI 仿真</a> 与 <a href="../lab/isa88-hmi.html" style="color:var(--ok)">ISA-88 HMI 仿真</a>。</p>
+    <div class="vid-meta">
+      <span class="tag brand">PID_Compact</span>
+      <span class="tag">自整定</span>
+      <span class="tag">ISA-88</span>
+      <span class="tag">状态机</span>
+    </div>
+
+    <div class="vid-grid">
+
+      <div class="vid-card">
+        <div class="vid-frame">
+          <iframe src="https://player.bilibili.com/player.html?bvid=BV1Pf421m7Sq&page=1&high_quality=1&danmaku=0" scrolling="no" border="0" frameborder="0" framespacing="0" allowfullscreen="true" sandbox="allow-scripts allow-same-origin allow-popups"></iframe>
+        </div>
+        <div class="vid-body">
+          <div class="vid-title">SCL 实现 PID 与配方 / 气缸控制实战 · 工控圈</div>
+          <div class="vid-author">UP：<b>工控圈</b> · H4.1 实战系列</div>
+          <div class="vid-desc">H4.1 用 SCL 编程实现配方功能和气缸元器件控制；I12 节 Modbus RTU 通讯、I13 节轴控制 + UDT 多重背景，对应 PID 算法封装与 ISA-88 Phase 落地。</div>
+          <div class="vid-tags"><span class="tag brand">PID 封装</span><span class="tag">配方</span><span class="tag">气缸</span></div>
+        </div>
+      </div>
+
+      <div class="vid-card">
+        <div class="vid-frame">
+          <iframe src="https://player.bilibili.com/player.html?bvid=BV1BFWMzZEFa&page=1&high_quality=1&danmaku=0" scrolling="no" border="0" frameborder="0" framespacing="0" allowfullscreen="true" sandbox="allow-scripts allow-same-origin allow-popups"></iframe>
+        </div>
+        <div class="vid-body">
+          <div class="vid-title">西门子博途 S7-1500 GRAPH 视频教程 · 盛工电气自动化</div>
+          <div class="vid-author">UP：<b>盛工电气自动化</b> · 3.0 万播放</div>
+          <div class="vid-desc">S7-GRAPH 步-转换-动作顺控图形编程，专为灌装 / 装配顺序工艺，是 ISA-88 Phase 状态机的图形化实现方式，配合本站 CASE OF 状态机对照学习。</div>
+          <div class="vid-tags"><span class="tag brand">S7-GRAPH</span><span class="tag">顺控</span><span class="tag">ISA-88</span></div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="vid-official">
+      <h4>🏛 西门子官方 · PID 与故障安全</h4>
+      <ul>
+        <li><a href="https://www.ad.siemens.com.cn/productportal/Prods/S7-1200_PLC_EASY_PLUS/10-Technology/02-PID/02-PID_Compact/03-PID_V2/03-Tuning.htm" target="_blank" rel="noopener">S7-1200 PID Compact V2 自整定功能</a> — 预调节 / 精确调节 / 调试面板</li>
+        <li><a href="https://1847.siemens.com.cn/course/detail/1/1811415/3484" target="_blank" rel="noopener">Safety 亮点之快速调试功能</a> — TIA V17/V18 故障安全快速调试扩展</li>
+        <li><a href="https://support.industry.siemens.com/cs/cn/zh/view/109750255" target="_blank" rel="noopener">故障安全编程指南</a> — F-CPU / F-I/O / F 程序结构</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ⑤ 运动控制 / 安全 -->
+  <section id="p5" class="card vid-section">
+    <h2><span class="ic" style="background:#22c55e22;color:var(--ok)">⑤</span>运动控制 V90 / 安全 PLC / 冗余</h2>
+    <p class="hint">对应 <a href="../courses/advanced.html" style="color:var(--ok)">精通篇 01/02/04</a>：V90 PN 伺服、S7-1200F/1500F 功能安全、S7-1500 R/H 冗余。</p>
+    <div class="vid-meta">
+      <span class="tag ok">V90 PN</span>
+      <span class="tag ok">PROFIdrive</span>
+      <span class="tag ok">F-CPU</span>
+      <span class="tag ok">S7-1500R/H</span>
+      <span class="tag">MRP</span>
+    </div>
+
+    <div class="vid-grid">
+
+      <div class="vid-card">
+        <div class="vid-frame">
+          <iframe src="https://player.bilibili.com/player.html?bvid=BV1Uv41187Qg&page=1&high_quality=1&danmaku=0" scrolling="no" border="0" frameborder="0" framespacing="0" allowfullscreen="true" sandbox="allow-scripts allow-same-origin allow-popups"></iframe>
+        </div>
+        <div class="vid-body">
+          <div class="vid-title">S7-1200 运动控制精讲 · 自动化工程师</div>
+          <div class="vid-author">UP：<b>自动化工程师</b> · 伺服 / 编码器应用</div>
+          <div class="vid-desc">运动控制基础到实战：轴工艺对象、PROFIdrive 报文、编码器应用、回原点、绝对 / 相对定位，配合 V90 PN 伺服调试。</div>
+          <div class="vid-tags"><span class="tag ok">TO 工艺对象</span><span class="tag">编码器</span><span class="tag">回原点</span></div>
+        </div>
+      </div>
+
+      <div class="vid-card">
+        <div class="vid-frame">
+          <iframe src="https://player.bilibili.com/player.html?bvid=BV1e6QiBpEq9&page=1&high_quality=1&danmaku=0" scrolling="no" border="0" frameborder="0" framespacing="0" allowfullscreen="true" sandbox="allow-scripts allow-same-origin allow-popups"></iframe>
+        </div>
+        <div class="vid-body">
+          <div class="vid-title">G120 变频器全方位精讲：从入门到精通实战 · PLCBOT 笔记</div>
+          <div class="vid-author">UP：<b>PLCBOT 笔记</b> · 15h · 1.9 万播放</div>
+          <div class="vid-desc">变频器 + 伺服驱动系统讲解，PROFINET 报文组态、V90 PN 与 G120 调试，运动控制与传动配套必备。</div>
+          <div class="vid-tags"><span class="tag ok">G120</span><span class="tag">V90 PN</span><span class="tag">PROFINET</span></div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="vid-official">
+      <h4>🏛 西门子官方 · V90 / 冗余 / OPC UA</h4>
+      <ul>
+        <li><a href="https://www.ad.siemens.com.cn/productportal/prods/V90_Document/04_V90S71500/01_1500Speed/V90S71500Speed.htm" target="_blank" rel="noopener">S7-1500(T) 对 V90 PN 速度控制的三种方法</a> — 工艺对象 / FB285 / 报文字控制</li>
+        <li><a href="https://www.ad.siemens.com.cn/productportal/prods/V90_Document/New_05_TO/00_TO/PositionTO.htm" target="_blank" rel="noopener">位置控制（1200/1500 TO）</a> — 定位轴工艺对象组态</li>
+        <li><a href="https://support.industry.siemens.com/cs/cn/zh/view/109768407" target="_blank" rel="noopener">S7-1500 冗余 PLC 1500R 使用入门</a> — MRP 环网、主备同步、S2 IO 冗余</li>
+        <li><a href="https://support.industry.siemens.com/cs/cn/zh/view/109757712" target="_blank" rel="noopener">SIMATIC S7-1500R/H 入门指南</a> — R 软冗余与 H 硬冗余</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ⑥ WinCC / 通信 -->
+  <section id="p6" class="card vid-section">
+    <h2><span class="ic" style="background:#22c55e22;color:var(--ok)">⑥</span>WinCC SCADA / PROFINET / OPC UA</h2>
+    <p class="hint">对应 <a href="../courses/advanced.html" style="color:var(--ok)">精通篇 03/05</a> 与 <a href="../courses/intermediate.html" style="color:var(--brand)">进阶篇 05</a>：WinCC 变量记录 / 报表、PROFINET 通信、OPC UA 对接 IT。</p>
+    <div class="vid-meta">
+      <span class="tag ok">WinCC</span>
+      <span class="tag ok">变量记录</span>
+      <span class="tag">PROFINET</span>
+      <span class="tag warn">OPC UA</span>
+      <span class="tag">GSDML</span>
+    </div>
+
+    <div class="vid-grid">
+
+      <div class="vid-card">
+        <div class="vid-frame">
+          <iframe src="https://player.bilibili.com/player.html?bvid=BV1Cb411W7Yd&page=1&high_quality=1&danmaku=0" scrolling="no" border="0" frameborder="0" framespacing="0" allowfullscreen="true" sandbox="allow-scripts allow-same-origin allow-popups"></iframe>
+        </div>
+        <div class="vid-body">
+          <div class="vid-title">WinCC 与 PLC 联合仿真 · 技成培训</div>
+          <div class="vid-author">UP：<b>技成培训</b> · 无硬件模拟项目调试</div>
+          <div class="vid-desc">无硬件即可完成 PLC + WinCC SCADA 联合调试：变量绑定、报警、趋势曲线、报表，PLCSIM 仿真环境搭建。</div>
+          <div class="vid-tags"><span class="tag ok">WinCC</span><span class="tag">联合仿真</span><span class="tag">趋势曲线</span></div>
+        </div>
+      </div>
+
+      <div class="vid-card">
+        <div class="vid-frame">
+          <iframe src="https://player.bilibili.com/player.html?bvid=BV1b4411e77N&page=1&high_quality=1&danmaku=0" scrolling="no" border="0" frameborder="0" framespacing="0" allowfullscreen="true" sandbox="allow-scripts allow-same-origin allow-popups"></iframe>
+        </div>
+        <div class="vid-body">
+          <div class="vid-title">博途 TIA 全集成自动化（高级）· 蔡慧荥</div>
+          <div class="vid-author">UP：<b>蔡慧荥</b> · 行业知名讲师</div>
+          <div class="vid-desc">SCL 高级语言、PROFINET 通信、故障诊断系统讲解，是 SCADA + 通信进阶的高质量综合课。</div>
+          <div class="vid-tags"><span class="tag ok">SCL</span><span class="tag">PROFINET</span><span class="tag">故障诊断</span></div>
+        </div>
+      </div>
+
+      <div class="vid-card">
+        <div class="vid-frame">
+          <iframe src="https://player.bilibili.com/player.html?bvid=BV1shwJzDEyu&page=1&high_quality=1&danmaku=0" scrolling="no" border="0" frameborder="0" framespacing="0" allowfullscreen="true" sandbox="allow-scripts allow-same-origin allow-popups"></iframe>
+        </div>
+        <div class="vid-body">
+          <div class="vid-title">MODBUS RTU 通信入门 · 夏日风情一</div>
+          <div class="vid-author">UP：<b>夏日风情一</b> · 第 85 节 · 2.8 万播放</div>
+          <div class="vid-desc">Modbus RTU 通信从入门到实战：MB_CLIENT / MB_SERVER 指令、寄存器读写、与变频器 / 仪表通信。</div>
+          <div class="vid-tags"><span class="tag">Modbus RTU</span><span class="tag">MB_CLIENT</span></div>
+        </div>
+      </div>
+
+      <div class="vid-card">
+        <div class="vid-frame">
+          <iframe src="https://player.bilibili.com/player.html?bvid=BV1gLBABWEkD&page=1&high_quality=1&danmaku=0" scrolling="no" border="0" frameborder="0" framespacing="0" allowfullscreen="true" sandbox="allow-scripts allow-same-origin allow-popups"></iframe>
+        </div>
+        <div class="vid-body">
+          <div class="vid-title">自动轮询 Modbus TCP · 工控孙老师</div>
+          <div class="vid-author">UP：<b>工控孙老师</b> · 第 31 节 · 3.3 万播放</div>
+          <div class="vid-desc">多从站 Modbus TCP 自动轮询编程，对应产线多设备数据采集场景。</div>
+          <div class="vid-tags"><span class="tag">Modbus TCP</span><span class="tag">轮询</span></div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="vid-official">
+      <h4>🏛 西门子官方 · WinCC / OPC UA / 通信</h4>
+      <ul>
+        <li><a href="https://www.ad.siemens.com.cn/productportal/prods/wincc/WinCC_functiondepth.aspx" target="_blank" rel="noopener">WinCC 功能深入</a> — 系统结构 / 变量记录 / 报警记录 / 报表 / 脚本</li>
+        <li><a href="https://1847.siemens.com.cn/course/detail/1/17994/4143" target="_blank" rel="noopener">S7-1200 通信编程</a> — TCP / MODBUS RTU / PROFIBUS DP 全流程</li>
+        <li><a href="https://1847.siemens.com.cn/course/detail/1/18033/4398" target="_blank" rel="noopener">三步学会 S7-1200 OPC UA 通信</a> — 组态参数 / 安全设置 / 方法编程</li>
+        <li><a href="https://www.ad.siemens.com.cn/productportal/prods/1500published/Comm/Comm_12.1/Comm_12.1.html" target="_blank" rel="noopener">OPC UA 概述（S7-1500 客户端）</a> — 客户端接口 / 读访问 / 安全通道</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ⑦ 产线实战 -->
+  <section id="p7" class="card vid-section">
+    <h2><span class="ic" style="background:#22c55e22;color:var(--ok)">⑦</span>产线实战项目库</h2>
+    <p class="hint">对应 <a href="../projects/index.html" style="color:var(--ok)">实战项目库</a>：传送带、分拣码垛、装配线、自动售货机、电梯等综合案例，附 HMI 仿真。</p>
+    <div class="vid-meta">
+      <span class="tag ok">综合项目</span>
+      <span class="tag">传送带</span>
+      <span class="tag">分拣码垛</span>
+      <span class="tag">装配线</span>
+      <span class="tag">课程设计</span>
+    </div>
+
+    <div class="vid-grid">
+
+      <div class="vid-card">
+        <div class="vid-frame">
+          <iframe src="https://player.bilibili.com/player.html?bvid=BV1U6HbzPEmW&page=1&high_quality=1&danmaku=0" scrolling="no" border="0" frameborder="0" framespacing="0" allowfullscreen="true" sandbox="allow-scripts allow-same-origin allow-popups"></iframe>
+        </div>
+        <div class="vid-body">
+          <div class="vid-title">四节传送带控制系统仿真 · 小哥哥5858</div>
+          <div class="vid-author">UP：<b>小哥哥5858</b> · 含 IO 表 / 接线图 / 设计报告</div>
+          <div class="vid-desc">S7-1200 + HMI + 主电路图 + 外部接线图 + IO 分配表 + 设计报告全套，四级传送带顺序启停 + 故障停车逻辑，对应项目库 E1 / E3。</div>
+          <div class="vid-tags"><span class="tag ok">S7-1200</span><span class="tag">HMI</span><span class="tag">顺序启停</span></div>
+        </div>
+      </div>
+
+      <div class="vid-card">
+        <div class="vid-frame">
+          <iframe src="https://player.bilibili.com/player.html?bvid=BV1hMJ1zVE7L&page=1&high_quality=1&danmaku=0" scrolling="no" border="0" frameborder="0" framespacing="0" allowfullscreen="true" sandbox="allow-scripts allow-same-origin allow-popups"></iframe>
+        </div>
+        <div class="vid-body">
+          <div class="vid-title">从零开始做 PLC 项目 · 自动锁螺丝机编程讲解 · 盛工电气自动化</div>
+          <div class="vid-author">UP：<b>盛工电气自动化</b> · 2h20m</div>
+          <div class="vid-desc">完整项目从零搭建：需求拆解 → 硬件选型 → 程序架构 → 调试，是综合项目实战范本。</div>
+          <div class="vid-tags"><span class="tag ok">完整项目</span><span class="tag">架构</span><span class="tag">调试</span></div>
+        </div>
+      </div>
+
+      <div class="vid-card">
+        <div class="vid-frame">
+          <iframe src="https://player.bilibili.com/player.html?bvid=BV1Pf421m7Sq&page=1&high_quality=1&danmaku=0" scrolling="no" border="0" frameborder="0" framespacing="0" allowfullscreen="true" sandbox="allow-scripts allow-same-origin allow-popups"></iframe>
+        </div>
+        <div class="vid-body">
+          <div class="vid-title">SCL 实战：自动配料工艺案例 · 自黑大王</div>
+          <div class="vid-author">UP：<b>自黑大王</b> · 博途 SCL 实例 14</div>
+          <div class="vid-desc">用 SCL 实现自动配料工艺，对应项目库 M1 多工位产线（加料→PID 加热→出料计量），与本站 ISA-88 HMI 仿真逻辑对照。</div>
+          <div class="vid-tags"><span class="tag ok">SCL 实战</span><span class="tag">配料</span><span class="tag">ISA-88</span></div>
+        </div>
+      </div>
+
+      <div class="vid-card">
+        <div class="vid-frame">
+          <iframe src="https://player.bilibili.com/player.html?bvid=BV1jyDiBdEBh&page=1&high_quality=1&danmaku=0" scrolling="no" border="0" frameborder="0" framespacing="0" allowfullscreen="true" sandbox="allow-scripts allow-same-origin allow-popups"></iframe>
+        </div>
+        <div class="vid-body">
+          <div class="vid-title">西门子 PLC 高级语言 SCL 教程（21 讲）· 电气知识共享</div>
+          <div class="vid-author">UP：<b>电气知识共享</b> · 10h · 1.9 万播放</div>
+          <div class="vid-desc">21 讲 SCL 进阶，配合产线算法（排序 / 查找 / 配方 / 仓位偏移），是项目库 M2 配方管理 / M1 多工位逻辑的算法基础。</div>
+          <div class="vid-tags"><span class="tag ok">21 讲</span><span class="tag">算法</span><span class="tag">配方</span></div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="vid-official">
+      <h4>🏛 西门子官方 · 主题门户与学习路径</h4>
+      <ul>
+        <li><a href="https://www.ad.siemens.com.cn/topicportal/index_46.html" target="_blank" rel="noopener">S7-1200 学习路径主题页</a> — 硬件认知 / 编程 / 通信 / 高级功能 / 资料</li>
+        <li><a href="https://wap.siemens.com.cn/topicportal/index_44.html" target="_blank" rel="noopener">S7-1200 编程主题页</a> — 基础入门 / 进阶指令 / 程序库 / 应用实例</li>
+        <li><a href="https://1847.siemens.com.cn/" target="_blank" rel="noopener">1847 西门子学习平台</a> — 官方视频课程全集</li>
+        <li><a href="https://support.industry.siemens.com/cs/cn/zh/" target="_blank" rel="noopener">工业支持中心</a> — 手册下载 / 操作指南 / 找答案</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 观看建议 -->
+  <section class="card" style="margin-top:18px">
+    <h2>观看与学习建议</h2>
+    <ul style="color:var(--muted);line-height:2;margin-left:18px">
+      <li><b style="color:var(--cyan)">先看入门 → 再学结构化 → 进 SCL → 攻 PID/ISA-88 → 运动控制/SCADA → 产线实战</b>，按 7 部分顺序推进。</li>
+      <li>B 站嵌入播放器已配置 <code>danmaku=0</code>（关弹幕）+ <code>high_quality=1</code>（高清），手机端站内播放不跳转 App。</li>
+      <li>每节课务必配合 <a href="../lab/index.html" style="color:var(--ok)">仿真实验室</a> 与 <a href="../resources/index.html" style="color:var(--brand)">SCL 源文件</a> 实操，看完即练。</li>
+      <li>官方 1847 课程需登录西门子账号（免费注册），适合作为权威查漏补缺；B 站课程偏实战，适合积累项目手感。</li>
+      <li>遇到不懂的指令，回到 <a href="../resources/index.html" style="color:var(--brand)">资源下载 · 指令速查表</a>，按 Ctrl+F 查。</li>
+    </ul>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <div>© 博途学习站 · 视频版权归原作者所有（B 站 UP 主 / 西门子官方）· 本站仅作学习导航</div>
+  <div><a href="../index.html">首页</a> · <a href="../courses/beginner.html">入门篇 →</a></div>
+</footer>
+<script src="../assets/js/auth.js"></script>
+<script src="../assets/js/notes.js"></script>
+</body>
+</html>

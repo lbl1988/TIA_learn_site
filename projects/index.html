@@ -5,6 +5,25 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>实战项目库 · 博途学习站</title>
 <link rel="stylesheet" href="../assets/css/style.css">
+<style>
+.vid-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.vid-card{background:var(--panel-2);border:1px solid var(--line);border-radius:10px;overflow:hidden;display:flex;flex-direction:column;transition:.18s}
+.vid-card:hover{border-color:var(--brand);transform:translateY(-2px)}
+.vid-frame{position:relative;padding-top:56.25%;background:#000}
+.vid-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.vid-body{padding:10px 12px;display:flex;flex-direction:column;gap:5px;flex:1}
+.vid-title{font-size:13px;font-weight:600;color:var(--text);line-height:1.5}
+.vid-author{font-size:11px;color:var(--muted)}
+.vid-author b{color:var(--brand)}
+.vid-desc{font-size:11.5px;color:var(--muted);line-height:1.6}
+.vid-official{background:linear-gradient(135deg,#22d3ee12,#7c5cff12);border:1px dashed #22d3ee55;border-radius:10px;padding:12px 14px;margin-top:12px}
+.vid-official h4{font-size:12.5px;color:var(--cyan);margin-bottom:6px}
+.vid-official ul{list-style:none;display:flex;flex-direction:column;gap:5px}
+.vid-official li{font-size:12px;color:var(--muted);padding-left:16px;position:relative;line-height:1.6}
+.vid-official li::before{content:"▶";position:absolute;left:0;color:var(--cyan);font-size:9px}
+.vid-official a{color:var(--text)}
+@media(max-width:768px){.vid-grid{grid-template-columns:1fr}}
+</style>
 </head>
 <body>
 <nav class="nav">
@@ -17,6 +36,7 @@
     <a href="../courses/advanced.html" class="t3"><span class="dot"></span>精通篇</a>
     <a href="../engineering/index.html" class="eng"><span class="dot"></span>工程化</a>
     <a href="../lab/index.html">仿真实验室</a>
+    <a href="../videos/index.html">视频学习</a>
     <a href="../resources/index.html">资源下载</a>
     <a href="index.html" class="active">项目库</a>
   </div>
@@ -142,6 +162,67 @@
       </div>
     </div>
   </div>
+
+  <!-- 配套视频教学：产线实战 -->
+  <section class="card" style="margin-top:18px">
+    <h2>🎬 配套视频教学 · 产线实战</h2>
+    <p class="hint" style="margin-bottom:12px">对应 <a href="../videos/index.html#p7" style="color:var(--ok)">视频板块 ⑦ 产线实战</a>：完整项目从零搭建，附 IO 表 / 接线图 / 设计报告。</p>
+    <div class="vid-grid">
+
+      <div class="vid-card">
+        <div class="vid-frame">
+          <iframe src="https://player.bilibili.com/player.html?bvid=BV1U6HbzPEmW&page=1&high_quality=1&danmaku=0" scrolling="no" border="0" frameborder="0" framespacing="0" allowfullscreen="true" sandbox="allow-scripts allow-same-origin allow-popups"></iframe>
+        </div>
+        <div class="vid-body">
+          <div class="vid-title">四节传送带控制系统仿真 · 小哥哥5858</div>
+          <div class="vid-author">UP：<b>小哥哥5858</b> · 含 IO 表 / 接线图 / 设计报告</div>
+          <div class="vid-desc">S7-1200 + HMI + 主电路图 + 外部接线图 + IO 分配表 + 设计报告全套，对应项目库 E1 / E3。</div>
+        </div>
+      </div>
+
+      <div class="vid-card">
+        <div class="vid-frame">
+          <iframe src="https://player.bilibili.com/player.html?bvid=BV1hMJ1zVE7L&page=1&high_quality=1&danmaku=0" scrolling="no" border="0" frameborder="0" framespacing="0" allowfullscreen="true" sandbox="allow-scripts allow-same-origin allow-popups"></iframe>
+        </div>
+        <div class="vid-body">
+          <div class="vid-title">从零开始做 PLC 项目 · 自动锁螺丝机 · 盛工电气自动化</div>
+          <div class="vid-author">UP：<b>盛工电气自动化</b> · 2h20m</div>
+          <div class="vid-desc">完整项目从零搭建：需求拆解 → 硬件选型 → 程序架构 → 调试，是综合项目实战范本。</div>
+        </div>
+      </div>
+
+      <div class="vid-card">
+        <div class="vid-frame">
+          <iframe src="https://player.bilibili.com/player.html?bvid=BV1Pf421m7Sq&page=1&high_quality=1&danmaku=0" scrolling="no" border="0" frameborder="0" framespacing="0" allowfullscreen="true" sandbox="allow-scripts allow-same-origin allow-popups"></iframe>
+        </div>
+        <div class="vid-body">
+          <div class="vid-title">SCL 实战：自动配料工艺案例 · 自黑大王</div>
+          <div class="vid-author">UP：<b>自黑大王</b> · 博途 SCL 实例 14</div>
+          <div class="vid-desc">用 SCL 实现自动配料工艺，对应项目库 M1 多工位产线（加料→PID 加热→出料计量）。</div>
+        </div>
+      </div>
+
+      <div class="vid-card">
+        <div class="vid-frame">
+          <iframe src="https://player.bilibili.com/player.html?bvid=BV1jyDiBdEBh&page=1&high_quality=1&danmaku=0" scrolling="no" border="0" frameborder="0" framespacing="0" allowfullscreen="true" sandbox="allow-scripts allow-same-origin allow-popups"></iframe>
+        </div>
+        <div class="vid-body">
+          <div class="vid-title">西门子 PLC 高级语言 SCL 教程（21 讲）· 电气知识共享</div>
+          <div class="vid-author">UP：<b>电气知识共享</b> · 10h · 1.9 万播放</div>
+          <div class="vid-desc">21 讲 SCL 进阶，配合产线算法（排序 / 查找 / 配方 / 仓位偏移），是项目库 M2 配方管理算法基础。</div>
+        </div>
+      </div>
+
+    </div>
+    <div class="vid-official">
+      <h4>🏛 西门子官方 · 主题门户与学习路径</h4>
+      <ul>
+        <li><a href="https://www.ad.siemens.com.cn/topicportal/index_46.html" target="_blank" rel="noopener">S7-1200 学习路径主题页</a> — 硬件认知 / 编程 / 通信 / 高级功能 / 资料</li>
+        <li><a href="https://1847.siemens.com.cn/" target="_blank" rel="noopener">1847 西门子学习平台</a> — 官方视频课程全集</li>
+        <li><a href="https://support.industry.siemens.com/cs/cn/zh/" target="_blank" rel="noopener">工业支持中心</a> — 手册下载 / 操作指南 / 找答案</li>
+      </ul>
+    </div>
+  </section>
 
 </main>
 

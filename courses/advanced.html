@@ -5,6 +5,25 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>精通篇 · 博途学习站</title>
 <link rel="stylesheet" href="../assets/css/style.css">
+<style>
+.vid-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.vid-card{background:var(--panel-2);border:1px solid var(--line);border-radius:10px;overflow:hidden;display:flex;flex-direction:column;transition:.18s}
+.vid-card:hover{border-color:var(--brand);transform:translateY(-2px)}
+.vid-frame{position:relative;padding-top:56.25%;background:#000}
+.vid-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.vid-body{padding:10px 12px;display:flex;flex-direction:column;gap:5px;flex:1}
+.vid-title{font-size:13px;font-weight:600;color:var(--text);line-height:1.5}
+.vid-author{font-size:11px;color:var(--muted)}
+.vid-author b{color:var(--brand)}
+.vid-desc{font-size:11.5px;color:var(--muted);line-height:1.6}
+.vid-official{background:linear-gradient(135deg,#22d3ee12,#7c5cff12);border:1px dashed #22d3ee55;border-radius:10px;padding:12px 14px;margin-top:12px}
+.vid-official h4{font-size:12.5px;color:var(--cyan);margin-bottom:6px}
+.vid-official ul{list-style:none;display:flex;flex-direction:column;gap:5px}
+.vid-official li{font-size:12px;color:var(--muted);padding-left:16px;position:relative;line-height:1.6}
+.vid-official li::before{content:"▶";position:absolute;left:0;color:var(--cyan);font-size:9px}
+.vid-official a{color:var(--text)}
+@media(max-width:768px){.vid-grid{grid-template-columns:1fr}}
+</style>
 </head>
 <body>
 <nav class="nav">
@@ -17,6 +36,7 @@
     <a href="advanced.html" class="active t3"><span class="dot"></span>精通篇</a>
     <a href="../engineering/index.html" class="eng"><span class="dot"></span>工程化</a>
     <a href="../lab/index.html">仿真实验室</a>
+    <a href="../videos/index.html">视频学习</a>
     <a href="../resources/index.html">资源下载</a>
     <a href="../projects/index.html">项目库</a>
   </div>
@@ -145,6 +165,84 @@
       <div style="padding:16px;background:var(--panel-2);border-radius:10px;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--muted);font-style:italic">
         更多项目持续补充中…
       </div>
+    </div>
+  </section>
+
+  <!-- 配套视频教学：运动控制 / 安全 -->
+  <section class="card" style="margin-top:18px">
+    <h2>🎬 配套视频教学 · 运动控制 / 安全 / 冗余</h2>
+    <p class="hint" style="margin-bottom:12px">对应 <a href="../videos/index.html#p5" style="color:var(--ok)">视频板块 ⑤ 运动控制 / 安全</a>：V90 PN 伺服、功能安全、冗余网络。</p>
+    <div class="vid-grid">
+
+      <div class="vid-card">
+        <div class="vid-frame">
+          <iframe src="https://player.bilibili.com/player.html?bvid=BV1Uv41187Qg&page=1&high_quality=1&danmaku=0" scrolling="no" border="0" frameborder="0" framespacing="0" allowfullscreen="true" sandbox="allow-scripts allow-same-origin allow-popups"></iframe>
+        </div>
+        <div class="vid-body">
+          <div class="vid-title">S7-1200 运动控制精讲 · 自动化工程师</div>
+          <div class="vid-author">UP：<b>自动化工程师</b> · 伺服 / 编码器应用</div>
+          <div class="vid-desc">轴工艺对象、PROFIdrive 报文、编码器应用、回原点、绝对 / 相对定位，配合 V90 PN 伺服调试。</div>
+        </div>
+      </div>
+
+      <div class="vid-card">
+        <div class="vid-frame">
+          <iframe src="https://player.bilibili.com/player.html?bvid=BV1e6QiBpEq9&page=1&high_quality=1&danmaku=0" scrolling="no" border="0" frameborder="0" framespacing="0" allowfullscreen="true" sandbox="allow-scripts allow-same-origin allow-popups"></iframe>
+        </div>
+        <div class="vid-body">
+          <div class="vid-title">G120 变频器全方位精讲 · PLCBOT 笔记</div>
+          <div class="vid-author">UP：<b>PLCBOT 笔记</b> · 15h · 1.9 万播放</div>
+          <div class="vid-desc">变频器 + 伺服驱动系统讲解，PROFINET 报文组态、V90 PN 与 G120 调试，运动控制与传动配套必备。</div>
+        </div>
+      </div>
+
+    </div>
+    <div class="vid-official">
+      <h4>🏛 西门子官方 · V90 / 冗余</h4>
+      <ul>
+        <li><a href="https://www.ad.siemens.com.cn/productportal/prods/V90_Document/04_V90S71500/01_1500Speed/V90S71500Speed.htm" target="_blank" rel="noopener">S7-1500(T) 对 V90 PN 速度控制的三种方法</a> — 工艺对象 / FB285 / 报文字控制</li>
+        <li><a href="https://support.industry.siemens.com/cs/cn/zh/view/109768407" target="_blank" rel="noopener">S7-1500 冗余 PLC 1500R 使用入门</a> — MRP 环网、主备同步、S2 IO 冗余</li>
+        <li><a href="https://support.industry.siemens.com/cs/cn/zh/view/109757712" target="_blank" rel="noopener">SIMATIC S7-1500R/H 入门指南</a> — R 软冗余与 H 硬冗余</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 配套视频教学：WinCC / 通信 -->
+  <section class="card" style="margin-top:18px">
+    <h2>🎬 配套视频教学 · WinCC SCADA / OPC UA</h2>
+    <p class="hint" style="margin-bottom:12px">对应 <a href="../videos/index.html#p6" style="color:var(--ok)">视频板块 ⑥ WinCC / 通信</a>：WinCC 变量记录 / 报表、PROFINET 通信、OPC UA 对接 IT。</p>
+    <div class="vid-grid">
+
+      <div class="vid-card">
+        <div class="vid-frame">
+          <iframe src="https://player.bilibili.com/player.html?bvid=BV1Cb411W7Yd&page=1&high_quality=1&danmaku=0" scrolling="no" border="0" frameborder="0" framespacing="0" allowfullscreen="true" sandbox="allow-scripts allow-same-origin allow-popups"></iframe>
+        </div>
+        <div class="vid-body">
+          <div class="vid-title">WinCC 与 PLC 联合仿真 · 技成培训</div>
+          <div class="vid-author">UP：<b>技成培训</b> · 无硬件模拟项目调试</div>
+          <div class="vid-desc">无硬件即可完成 PLC + WinCC SCADA 联合调试：变量绑定、报警、趋势曲线、报表，PLCSIM 仿真环境搭建。</div>
+        </div>
+      </div>
+
+      <div class="vid-card">
+        <div class="vid-frame">
+          <iframe src="https://player.bilibili.com/player.html?bvid=BV1b4411e77N&page=1&high_quality=1&danmaku=0" scrolling="no" border="0" frameborder="0" framespacing="0" allowfullscreen="true" sandbox="allow-scripts allow-same-origin allow-popups"></iframe>
+        </div>
+        <div class="vid-body">
+          <div class="vid-title">博途 TIA 全集成自动化（高级）· 蔡慧荥</div>
+          <div class="vid-author">UP：<b>蔡慧荥</b> · 行业知名讲师</div>
+          <div class="vid-desc">SCL 高级语言、PROFINET 通信、故障诊断系统讲解，是 SCADA + 通信进阶的高质量综合课。</div>
+        </div>
+      </div>
+
+    </div>
+    <div class="vid-official">
+      <h4>🏛 西门子官方 · WinCC / OPC UA</h4>
+      <ul>
+        <li><a href="https://www.ad.siemens.com.cn/productportal/prods/wincc/WinCC_functiondepth.aspx" target="_blank" rel="noopener">WinCC 功能深入</a> — 系统结构 / 变量记录 / 报警记录 / 报表 / 脚本</li>
+        <li><a href="https://1847.siemens.com.cn/course/detail/1/18033/4398" target="_blank" rel="noopener">三步学会 S7-1200 OPC UA 通信</a> — 组态参数 / 安全设置 / 方法编程</li>
+        <li><a href="https://www.ad.siemens.com.cn/productportal/prods/1500published/Comm/Comm_12.1/Comm_12.1.html" target="_blank" rel="noopener">OPC UA 概述（S7-1500 客户端）</a> — 客户端接口 / 读访问 / 安全通道</li>
+      </ul>
     </div>
   </section>
 

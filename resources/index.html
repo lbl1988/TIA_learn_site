@@ -5,6 +5,25 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>资源下载 · 博途学习站</title>
 <link rel="stylesheet" href="../assets/css/style.css">
+<style>
+.vid-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.vid-card{background:var(--panel-2);border:1px solid var(--line);border-radius:10px;overflow:hidden;display:flex;flex-direction:column;transition:.18s}
+.vid-card:hover{border-color:var(--brand);transform:translateY(-2px)}
+.vid-frame{position:relative;padding-top:56.25%;background:#000}
+.vid-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.vid-body{padding:10px 12px;display:flex;flex-direction:column;gap:5px;flex:1}
+.vid-title{font-size:13px;font-weight:600;color:var(--text);line-height:1.5}
+.vid-author{font-size:11px;color:var(--muted)}
+.vid-author b{color:var(--brand)}
+.vid-desc{font-size:11.5px;color:var(--muted);line-height:1.6}
+.vid-official{background:linear-gradient(135deg,#22d3ee12,#7c5cff12);border:1px dashed #22d3ee55;border-radius:10px;padding:12px 14px;margin-top:12px}
+.vid-official h4{font-size:12.5px;color:var(--cyan);margin-bottom:6px}
+.vid-official ul{list-style:none;display:flex;flex-direction:column;gap:5px}
+.vid-official li{font-size:12px;color:var(--muted);padding-left:16px;position:relative;line-height:1.6}
+.vid-official li::before{content:"▶";position:absolute;left:0;color:var(--cyan);font-size:9px}
+.vid-official a{color:var(--text)}
+@media(max-width:768px){.vid-grid{grid-template-columns:1fr}}
+</style>
 </head>
 <body>
 <nav class="nav">
@@ -17,6 +36,7 @@
     <a href="../courses/advanced.html" class="t3"><span class="dot"></span>精通篇</a>
     <a href="../engineering/index.html" class="eng"><span class="dot"></span>工程化</a>
     <a href="../lab/index.html">仿真实验室</a>
+    <a href="../videos/index.html">视频学习</a>
     <a href="index.html" class="active">资源下载</a>
     <a href="../projects/index.html">项目库</a>
   </div>
@@ -129,6 +149,45 @@
 2. 选择 .scl 文件 → 自动生成 FB / FC
 3. 在 OB1 或 OB35 中调用，生成背景 DB。
    —— 若编译失败：确认固件版本 ≥ V15，优化块访问默认开启。</pre>
+  </section>
+
+  <!-- 配套视频教学：源文件导入与指令 -->
+  <section class="card" style="margin-top:18px">
+    <h2>🎬 配套视频教学 · 源文件导入与指令</h2>
+    <p class="hint" style="margin-bottom:12px">SCL 源文件导入博途、指令速查、PID/ISA-88 算法落地。对应 <a href="../videos/index.html" style="color:var(--brand)">视频板块</a>。</p>
+    <div class="vid-grid">
+
+      <div class="vid-card">
+        <div class="vid-frame">
+          <iframe src="https://player.bilibili.com/player.html?bvid=BV1mnSEBsEi8&page=1&high_quality=1&danmaku=0" scrolling="no" border="0" frameborder="0" framespacing="0" allowfullscreen="true" sandbox="allow-scripts allow-same-origin allow-popups"></iframe>
+        </div>
+        <div class="vid-body">
+          <div class="vid-title">西门子 SCL 编程语言从入门到精通 · 电气知识共享</div>
+          <div class="vid-author">UP：<b>电气知识共享</b> · 8h23m · 7.0 万播放</div>
+          <div class="vid-desc">含源文件使用、代码折叠综合案例，对应本页 SCL 源文件导入与 FB_PID/FB_BatchPhase 算法理解。</div>
+        </div>
+      </div>
+
+      <div class="vid-card">
+        <div class="vid-frame">
+          <iframe src="https://player.bilibili.com/player.html?bvid=BV1Pf421m7Sq&page=1&high_quality=1&danmaku=0" scrolling="no" border="0" frameborder="0" framespacing="0" allowfullscreen="true" sandbox="allow-scripts allow-same-origin allow-popups"></iframe>
+        </div>
+        <div class="vid-body">
+          <div class="vid-title">全网最全西门子 SCL 编程语言视频教程 · 工控圈</div>
+          <div class="vid-author">UP：<b>工控圈</b> · A01–I13 系统化全集</div>
+          <div class="vid-desc">含 UDT 多重背景、配方、气缸、机器人、机器视觉，是本页指令速查表与 SCL 源文件的进阶参考。</div>
+        </div>
+      </div>
+
+    </div>
+    <div class="vid-official">
+      <h4>🏛 西门子官方 · SCL 与可复用程序</h4>
+      <ul>
+        <li><a href="https://1847.siemens.com.cn/course/detail/1/1810939/6453" target="_blank" rel="noopener">SCL 概述与编程基础</a> — 官方 SCL 系统课第 1 节</li>
+        <li><a href="https://1847.siemens.com.cn/course/detail/1/1809680/5400" target="_blank" rel="noopener">如何编写高效的可复用程序</a> — 块接口参数使用规则、可复用块设计</li>
+        <li><a href="https://1847.siemens.com.cn/course/detail/1/1811103/7012" target="_blank" rel="noopener">探秘 TIA 博途库</a> — 全局库 / 项目库 / 模版副本 / 类型</li>
+      </ul>
+    </div>
   </section>
 
 </main>
