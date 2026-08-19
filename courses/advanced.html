@@ -68,180 +68,1399 @@
 
   <div class="chapters">
 
-    <div class="chapter">
+    <!-- ========== 01 运动控制与伺服 V90 ========== -->
+    <div class="chapter detail">
       <div class="no">01</div>
       <div>
         <h3>运动控制与伺服 V90</h3>
         <div class="desc">S7-1200 轴工艺对象 TO_Positioning/TO_SpeedAxis，PROFIdrive 标准报文 1/2/3/105，V90 PN 组态，回原点（3种模式）、绝对定位、相对定位、速度设定、限力矩、位置触发（TO_OutputCam）。进阶含 S7-1500T 电子凸轮 / 同步 / 飞剪。</div>
-        <div class="kw"><span class="tag ok">V90 PN</span><span class="tag ok">PROFIdrive</span><span class="tag ok">工艺对象 TO</span><span class="tag">报文 1/3/105</span><span class="tag">回原点 3 模式</span><span class="tag">电子凸轮</span></div>
+        <div class="kw">
+          <span class="tag ok">V90 PN</span>
+          <span class="tag ok">PROFIdrive</span>
+          <span class="tag ok">工艺对象 TO</span>
+          <span class="tag">报文 1/3/105</span>
+          <span class="tag">回原点 3 模式</span>
+          <span class="tag">电子凸轮</span>
+        </div>
+
+        <!-- === 01 详解：PROFIdrive 与 V90 PN 组态 === -->
+        <div class="detail-block">
+          <div class="detail-title">🛰 PROFIdrive 标准报文与 V90 PN 组态</div>
+          <div class="detail-body">
+            <p><b style="color:var(--cyan)">PROFIdrive</b> 是基于 PROFINET 的驱动标准协议，PLC 与伺服之间通过 <b>标准报文</b> 交换控制字、状态字、位置、速度、力矩等数据。V90 PN 支持多种报文，根据应用场景选择：</p>
+            <table class="tbl dtype-tbl">
+              <thead>
+                <tr><th>报文</th><th>名称</th><th>适用场景</th><th>关键信号</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><code>报文 1</code></td><td>基础速度控制</td><td>简单变频、速度给定</td><td>STW1 控制字 + 主设定值</td></tr>
+                <tr><td><code>报文 2</code></td><td>扩展速度控制</td><td>速度 + 附加数据</td><td>STW1 + STW2 + 附加设定值</td></tr>
+                <tr><td><code>报文 3</code></td><td>标准定位控制</td><td>伺服定位（S7-1200 常用）</td><td>控制字 + 目标位置 + 状态字 + 实际位置</td></tr>
+                <tr><td><code>报文 105</code></td><td>扩展定位控制</td><td>S7-1500T 高级运动</td><td>扩展控制字 + 目标位置 + 力矩限制</td></tr>
+                <tr><td><code>报文 116</code></td><td>电子齿轮/凸轮</td><td>同步控制、飞剪</td><td>主值 + 从值 + 相位偏移</td></tr>
+              </tbody>
+            </table>
+            <div class="deep-dive" style="margin-top:12px">
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag cyan">V90 PN 组态步骤</span></div>
+                <p>V90 PN 的组态在 <b>TIA Portal 设备组态</b> 中完成，而非独立软件：</p>
+                <pre class="code"><span class="c">// V90 PN 组态流程</span>
+<span class="t">1.</span> 项目树 → 设备组态 → 添加 PROFINET I/O
+<span class="t">2.</span> 硬件目录 → 驱动器 → V90 PN → 拖拽到 PROFINET 网络
+<span class="t">3.</span> 设置 V90 PN 的 PROFINET 设备名（如 V90_Line1）
+<span class="t">4.</span> 右键 V90 → 属性 → 选择报文类型（如报文 3）
+<span class="t">5.</span> 添加工艺对象 TO_Positioning 到 PLC 项目
+<span class="t">6.</span> 在 TO 属性中绑定 V90 PN 接口（自动匹配报文）
+<span class="t">7.</span> 设置轴参数：脉冲当量、编码器分辨率、方向</pre>
+              </div>
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag warn">报文 3 数据结构详解</span></div>
+                <p>报文 3 是 S7-1200 + V90 PN 定位控制的 <b>最常用报文</b>，数据结构如下：</p>
+                <pre class="code"><span class="c">// 报文 3 数据交换区（PLC → V90）</span>
+<span class="c">// STW1 控制字（16 bit）</span>
+Bit0: 切换到运行模式    Bit1: 使能运行
+Bit2: 使能输出         Bit3: 无故障
+Bit4: 停止             Bit5: 暂停
+Bit6: 绝对定位启动     Bit7: 相对定位启动
+...
+<span class="c">// 主设定值（32 bit）：目标位置（INT 单位）</span>
+"Axis".TargetPosition
+
+<span class="c">// 报文 3 数据交换区（V90 → PLC）</span>
+<span class="c">// ZSW1 状态字（16 bit）</span>
+Bit0: 就绪             Bit1: 运行中
+Bit2: 输出已使能       Bit3: 故障
+Bit4: 达到目标         Bit5: 暂停
+...
+<span class="c">// 主实际值（32 bit）：当前位置</span>
+"Axis".ActualPosition</pre>
+                <p class="tip">💡 <b>脉冲当量</b>：1 脉冲对应的实际位移。公式：脉冲当量 = 丝杠导程 / (编码器线数 × 电子齿轮比)。设定错误会导致定位偏差！</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- === 01 详解：轴工艺对象 TO === -->
+        <div class="detail-block">
+          <div class="detail-title">⚙ 轴工艺对象 TO_Positioning 详解</div>
+          <div class="detail-body">
+            <p>S7-1200/1500 的运动控制基于 <b style="color:var(--cyan)">轴工艺对象（Technology Object, TO）</b>。TO 封装了所有伺服控制逻辑，用户通过调用 <b>工艺指令</b>（如 MC_Power、MC_Home、MC_MoveAbsolute）实现运动控制。</p>
+            <table class="tbl dtype-tbl">
+              <thead>
+                <tr><th>工艺对象</th><th>功能</th><th>适用 CPU</th><th>说明</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><code>TO_Positioning</code></td><td>定位轴</td><td>S7-1200/1500</td><td>绝对/相对定位、回原点</td></tr>
+                <tr><td><code>TO_SpeedAxis</code></td><td>速度轴</td><td>S7-1200/1500</td><td>仅速度控制，不定位</td></tr>
+                <tr><td><code>TO_ExternalEncoder</code></td><td>外部编码器</td><td>S7-1200/1500</td><td>读取外部编码器位置</td></tr>
+                <tr><td><code>TO_Cam</code></td><td>电子凸轮</td><td>S7-1500T</td><td>主从轴位置耦合</td></tr>
+                <tr><td><code>TO_Gear</code></td><td>电子齿轮</td><td>S7-1500T</td><td>主从轴速度耦合</td></tr>
+                <tr><td><code>TO_OutputCam</code></td><td>输出凸轮</td><td>S7-1200/1500</td><td>位置触发数字量输出</td></tr>
+              </tbody>
+            </table>
+            <div class="deep-dive" style="margin-top:12px">
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag cyan">TO_Positioning 关键参数</span></div>
+                <pre class="code"><span class="c">// TO_Positioning 组态参数</span>
+<span class="c">// ① 驱动接口：绑定 V90 PN 的报文 3 接口</span>
+<span class="c">// ② 编码器：增量式 / 绝对值（V90 支持绝对值编码器）</span>
+<span class="c">// ③ 脉冲当量：1 脉冲 = 实际位移量（mm/°）</span>
+<span class="c">//    例：丝杠导程 5mm，编码器 2500 线 → 脉冲当量 = 5/2500 = 0.002mm</span>
+<span class="c">// ④ 轴方向：正向/反向（根据机械安装确定）</span>
+<span class="c">// ⑤ 软限位：软件行程限制（正向最大 + 反向最大）</span>
+Axis.HomePosition = 0.0     <span class="c">// 回原点位置</span>
+Axis.PositionModulus = 360.0  <span class="c">// 模数（°为 360，mm 为行程）</span>
+Axis.PeriodLength = 0.0     <span class="c">// 周期长度（0 = 非模态轴）</span>
+
+<span class="c">// ⑥ 动态参数</span>
+Axis.MaxVelocity = 3000.0  <span class="c">// 最大速度（mm/s 或 °/s）</span>
+Axis.MaxAcceleration = 10000.0  <span class="c">// 最大加速度</span>
+Axis.MaxDeceleration = 10000.0  <span class="c">// 最大减速度</span>
+Axis.Jerk = 50000.0        <span class="c">// 加加速度（平滑度）</span></pre>
+              </div>
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag warn">工艺指令调用示例</span></div>
+                <pre class="code"><span class="c">// 完整定位控制流程</span>
+<span class="c">// Step 1: 使能轴</span>
+MC_Power(
+  Axis := "Axis",
+  Enable := "Start",
+  RegulatorOn := TRUE,      <span class="c">// 位置环使能</span>
+  DriveStart := TRUE        <span class="c">// 驱动器启动</span>
+);
+
+<span class="c">// Step 2: 回原点（上电首次或丢失绝对值后）</span>
+MC_Home(
+  Axis := "Axis",
+  Start := "HomeStart",
+  HomingMode := DIRECT,     <span class="c">// 绝对值编码器直接回零</span>
+  Position := 0.0           <span class="c">// 回原点目标位置</span>
+);
+
+<span class="c">// Step 3: 绝对定位</span>
+MC_MoveAbsolute(
+  Axis := "Axis",
+  Execute := "MoveStart",
+  Position := 150.0,        <span class="c">// 目标位置 150mm</span>
+  Speed := 1000.0,          <span class="c">// 移动速度</span>
+  Direction := POS,         <span class="c">// 正向移动</span>
+  BufferMode := ABORTING    <span class="c">// 打断当前运动</span>
+);
+
+<span class="c">// Step 4: 等待到位</span>
+MC_Halt(Axis := "Axis", Execute := "StopAxis");</pre>
+                <p class="tip">💡 <b>BufferMode</b> 参数控制运动衔接：<code>ABORTING</code> 打断当前运动立即执行新指令；<code>BUFFERED</code> 当前运动完成后执行新指令；<code>Blending</code> 两段运动平滑过渡。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- === 01 详解：回原点 3 种模式 === -->
+        <div class="detail-block">
+          <div class="detail-title">🏠 回原点（Homing）3 种模式实战</div>
+          <div class="detail-body">
+            <p>伺服上电后必须 <b>先回原点</b> 才能进行定位。回原点的目的是 <b>建立坐标系零点</b>。S7-1200 + V90 PN 支持 3 种常用回原点模式：</p>
+            <table class="tbl dtype-tbl">
+              <thead>
+                <tr><th>模式</th><th>原理</th><th>适用编码器</th><th>硬件需求</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><code>DIRECT</code></td><td>直接使用绝对值编码器位置</td><td>绝对值编码器</td><td>无额外传感器</td></tr>
+                <tr><td><code>LIMIT_SWITCH</code></td><td>碰限位开关 + 逼近零点</td><td>增量编码器</td><td>原点开关 + 接近开关</td></tr>
+                <tr><td><code>ENCODER_INDEX</code></td><td>寻找编码器 Z 脉冲索引</td><td>增量编码器</td><td>无额外传感器</td></tr>
+                <tr><td><code>ADJUST</code></td><td>手动调整到零位</td><td>任意</td><td>人工辅助</td></tr>
+              </tbody>
+            </table>
+            <div class="deep-dive" style="margin-top:12px">
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag cyan">DIRECT 模式（绝对值编码器）</span></div>
+                <p>最简单的方式，V90 绝对值编码器 <b>上电即知位置</b>，无需物理回原点动作：</p>
+                <pre class="code"><span class="c">// DIRECT 回原点</span>
+MC_Home(
+  Axis := "Axis",
+  Start := "HomeBtn",
+  HomingMode := DIRECT,
+  Position := 0.0,          <span class="c">// 当前位置作为零点</span>
+  BufferMode := ABORTING
+);
+
+<span class="c">// 时序：</span>
+<span class="c">// ① 轴使能 → MC_Power</span>
+<span class="c">// ② 触发 HomeBtn → MC_Home(DIRECT)</span>
+<span class="c">// ③ 零点 = 当前编码器位置 → 标记为 0.0</span>
+<span class="c">// ④ 回原点完成 → MC_Home.Done = TRUE</span></pre>
+                <p class="tip">💡 绝对值编码器电池掉电后会丢失位置，需要重新回原点。建议 <b>每次开机自动回原点</b>，即使使用绝对值编码器。</p>
+              </div>
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag warn">LIMIT_SWITCH 模式（增量编码器）</span></div>
+                <p>增量编码器 <b>上电不知道位置</b>，需要通过原点开关找到零点：</p>
+                <pre class="code"><span class="c">// LIMIT_SWITCH 回原点流程</span>
+<span class="t">1.</span> 轴以搜索速度朝设定方向移动
+<span class="t">2.</span> 碰到原点开关（限位开关）后减速
+<span class="t">3.</span> 离开原点开关后继续缓慢移动
+<span class="t">4.</span> 找到编码器下一个 Z 脉冲 → 确立零点
+
+MC_Home(
+  Axis := "Axis",
+  Start := "HomeBtn",
+  HomingMode := LIMIT_SWITCH,
+  HomingSwitch := I0.0,      <span class="c">// 原点开关输入</span>
+  Position := 0.0,
+  HomeVelocity := 100.0,     <span class="c">// 搜索速度（慢）</span>
+  StartVelocity := 1000.0,   <span class="c">// 初始速度（快）</span>
+  Direction := NEG           <span class="c">// 回原点方向</span>
+);</pre>
+                <p><b>注意事项</b>：原点开关必须在 <b>行程范围内</b>，且离机械零点有一定距离（防止超程）。编码器 Z 脉冲精度决定零点重复精度。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- === 01 详解：S7-1500T 高级运动 === -->
+        <div class="detail-block">
+          <div class="detail-title">🚀 S7-1500T 电子凸轮 / 同步 / 飞剪</div>
+          <div class="detail-body">
+            <p>S7-1500T（Technology CPU）在 S7-1500 基础上增加了 <b>T 特性</b>，支持高精度运动控制。通过 PROFINET IRT 实现 <b>1ms 同步周期</b>，适合飞剪、电子凸轮、多轴同步等高速应用。</p>
+            <table class="tbl dtype-tbl">
+              <thead>
+                <tr><th>功能</th><th>工艺对象</th><th>指令</th><th>典型应用</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><b>电子凸轮</b></td><td>TO_Cam</td><td>MC_CamIn / MC_CamOut</td><td>包装机封口、灌装机</td></tr>
+                <tr><td><b>电子齿轮</b></td><td>TO_Gear</td><td>MC_GearIn / MC_GearOut</td><td>多轴同步、龙门架</td></tr>
+                <tr><td><b>飞剪</b></td><td>组合 Cam + Axis</td><td>MC_CamTrack</td><td>定尺剪切、线材切割</td></tr>
+                <tr><td><b>位置触发输出</b></td><td>TO_OutputCam</td><td>MC_OutputCam</td><td>精确位置点触发气动</td></tr>
+              </tbody>
+            </table>
+            <div class="deep-dive" style="margin-top:12px">
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag cyan">电子凸轮原理</span></div>
+                <p>电子凸轮用 <b>主轴的位置</b> 驱动 <b>从轴的位置</b>，关系由凸轮曲线定义。主轴可以是实轴（如编码器）或虚拟轴：</p>
+                <pre class="code"><span class="c">// 电子凸轮示例：封口辊跟随包装膜</span>
+<span class="c">// 主轴：编码器检测包装膜进给位置</span>
+<span class="c">// 从轴：封口伺服按凸轮曲线跟随主轴</span>
+
+<span class="c">// 1. 创建凸轮曲线（TIA 中图形化编辑）</span>
+<span class="c">//    主轴 0~360° 对应从轴 0~100mm（正弦或自定义曲线）</span>
+
+<span class="c">// 2. 建立凸轮耦合</span>
+MC_CamIn(
+  Master := "MasterAxis",     <span class="c">// 主轴（编码器轴）</span>
+  Slave := "SlaveAxis",       <span class="c">// 从轴（封口伺服）</span>
+  Start := "EngageBtn",
+  CamTable := "CamDB".CamData,  <span class="c">// 凸轮曲线数据</span>
+  MasterValueSource := ACTUAL  <span class="c">// 用主轴实际值</span>
+);
+
+<span class="c">// 3. 解除凸轮耦合</span>
+MC_CamOut(Slave := "SlaveAxis", Start := "DisengageBtn");</pre>
+              </div>
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag warn">飞剪控制</span></div>
+                <p>飞剪是典型的 <b>移动中剪切</b> 工艺：材料连续进给，剪刃按定尺周期同步运动，实现不停机剪切：</p>
+                <pre class="code"><span class="c">// 飞剪控制逻辑</span>
+<span class="c">// 1. 测量材料速度（主轴编码器）</span>
+<span class="c">// 2. 计算剪刃目标速度 = 材料速度 × 剪刃直径 / 材料直径</span>
+<span class="c">// 3. 剪刃跟随材料做同步运动（CamIn）</span>
+<span class="c">// 4. 到位时触发剪切（OutputCam）</span>
+<span class="c">// 5. 剪切完成后剪刃快速回原点</span>
+
+<span class="c">// 飞剪关键代码片段</span>
+MC_CamIn(
+  Master := "MaterialEncoder",   <span class="c">// 材料编码器</span>
+  Slave := "ShearAxis",          <span class="c">// 剪刃轴</span>
+  Start := "StartCut",
+  CamTable := "ShearCam".Data,
+  SynchronizationError := 1.0    <span class="c">// 同步误差允许值</span>
+);
+
+<span class="c">// 剪切触发（剪刃到达剪切点时）</span>
+MC_OutputCam(
+  Axis := "ShearAxis",
+  Start := "CamActive",
+  Output := Q0.5,                <span class="c">// 剪切气缸</span>
+  CamTable := "ShearCam".Data
+);</pre>
+                <p class="tip">💡 S7-1500T 必须使用 <b>IRT 等时同步模式</b>（Isochronous Real-Time），PLC 扫描周期 = PROFINET 周期 = 1ms，确保多轴同步精度。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
       <div class="sidebar"><span class="tag">15 天</span><a href="#" class="btn">开始学习</a></div>
     </div>
 
-    <div class="chapter">
+    <!-- ========== 02 安全 PLC 功能安全 ========== -->
+    <div class="chapter detail">
       <div class="no">02</div>
       <div>
         <h3>安全 PLC 功能安全</h3>
         <div class="desc">S7-1200F / S7-1500F 功能安全程序结构：F-CPU、F-Runtime、F-I/O 模块组态、安全逻辑块 F_ESTOP/F_MUTE/F_DIS/F_TON/TOF、安全等级 SIL2 / SIL3、急停 / 安全门 / 光栅接线与 F 程序实现。</div>
-        <div class="kw"><span class="tag ok">F-CPU</span><span class="tag ok">F-Runtime</span><span class="tag ok">F-I/O</span><span class="tag">F_ 安全指令集</span><span class="tag warn">SIL 等级</span><span class="tag">安全验证</span></div>
+        <div class="kw">
+          <span class="tag ok">F-CPU</span>
+          <span class="tag ok">F-Runtime</span>
+          <span class="tag ok">F-I/O</span>
+          <span class="tag">F_ 安全指令集</span>
+          <span class="tag warn">SIL 等级</span>
+          <span class="tag">安全验证</span>
+        </div>
+
+        <!-- === 02 详解：F-CPU 架构 === -->
+        <div class="detail-block">
+          <div class="detail-title">🛡 F-CPU 与 F-Runtime 安全架构</div>
+          <div class="detail-body">
+            <p>安全 PLC（F-CPU）基于 <b style="color:var(--cyan)">双通道冗余架构</b>，两个独立的处理器并行执行相同程序，通过比较器检测不一致，确保安全等级达到 <b>SIL2 / SIL3</b>。</p>
+            <div class="flow-diagram">
+              <div class="flow-node"><span class="flow-num">1</span>F-I/O 输入<br><small>双通道采样</small></div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node"><span class="flow-num">2</span><b>F-Runtime 调度</b><br><small>安全程序 + 标准程序</small></div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node"><span class="flow-num">3</span><b>双通道比较</b><br><small>数据一致性校验</small></div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node"><span class="flow-num">4</span><b>F-I/O 输出</b><br><small>双通道驱动</small></div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node flow-cycle">✓ 安全状态</div>
+            </div>
+            <table class="tbl dtype-tbl">
+              <thead>
+                <tr><th>安全组件</th><th>说明</th><th>型号示例</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><b>F-CPU</b></td><td>双通道安全处理器</td><td>CPU 1214 FC / CPU 1515 F-2 PN</td></tr>
+                <tr><td><b>F-Runtime</b></td><td>安全程序运行时环境</td><td>集成在 F-CPU 固件中</td></tr>
+                <tr><td><b>F-I/O 模块</b></td><td>双通道安全 I/O</td><td>SM 1226 F-DI 16 × 24V / SM 1226 F-DO</td></tr>
+                <tr><td><b>F-电源</b></td><td>安全供电模块</td><td>PS 1207 F</td></tr>
+                <tr><td><b>安全程序</b></td><td>F-OB / F-FB / F-FC</td><td>与标准程序分离</td></tr>
+              </tbody>
+            </table>
+            <div class="deep-dive" style="margin-top:12px">
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag cyan">安全程序与标准程序分离</span></div>
+                <p>F-CPU 的程序分为 <b>两个独立区域</b>：</p>
+                <pre class="code"><span class="c">// F-CPU 程序结构</span>
+📁 PLC 程序
+├── 📂 F 程序（安全区）
+│   ├── F-OB1 安全主循环
+│   ├── F-FB_ESTOP 急停功能块
+│   ├── F-FB_SafetyDoor 安全门功能块
+│   └── F-FB_LightCurtain 光栅功能块
+├── 📂 标准程序（非安全区）
+│   ├── OB1 主循环
+│   ├── OB35 循环中断
+│   └── 标准 FB/FC
+└── 📂 F 符号表
+    ├── F-I/O 标签（F_I0.0, F_Q0.0）
+    └── F-内部变量</pre>
+                <p class="tip">💡 安全程序和标准程序 <b>严格隔离</b>。F 程序只能使用 F_ 前缀的指令和 F-I/O 变量，标准程序无法直接访问 F 变量，只能通过 <b>安全接口</b> 交换状态信息。</p>
+              </div>
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag warn">SIL 安全等级</span></div>
+                <p>SIL（Safety Integrity Level）是 IEC 61508 标准定义的 <b>安全完整性等级</b>，分为 SIL1~SIL4，工业常用 SIL2 和 SIL3：</p>
+                <table class="tbl dtype-tbl" style="margin-top:8px">
+                  <thead><tr><th>等级</th><th>PFD 范围</th><th>适用场景</th><th>硬件要求</th></tr></thead>
+                  <tbody>
+                    <tr><td><b>SIL1</b></td><td>10⁻¹ ~ 10⁻²</td><td>一般安全要求</td><td>单通道</td></tr>
+                    <tr><td><b>SIL2</b></td><td>10⁻² ~ 10⁻³</td><td>冲压机、注塑机</td><td>双通道</td></tr>
+                    <tr><td><b>SIL3</b></td><td>10⁻³ ~ 10⁻⁴</td><td>汽车产线、化工</td><td>双通道 + 诊断</td></tr>
+                    <tr><td><b>SIL4</b></td><td>10⁻⁴ ~ 10⁻⁵</td><td>铁路信号</td><td>三通道</td></tr>
+                  </tbody>
+                </table>
+                <p><b>S7-1200F</b> 最高支持 <b>SIL2</b>，<b>S7-1500F</b> 支持 <b>SIL3</b>。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- === 02 详解：F-I/O 与安全接线 === -->
+        <div class="detail-block">
+          <div class="detail-title">🔌 F-I/O 模块与安全传感器接线</div>
+          <div class="detail-body">
+            <p>安全回路的核心是 <b style="color:var(--cyan)">双通道冗余</b>。安全传感器（急停、安全门、光栅）必须以 <b>双通道方式</b> 连接到 F-I/O 模块。</p>
+            <table class="tbl dtype-tbl">
+              <thead>
+                <tr><th>安全设备</th><th>接线方式</th><th>F-I/O 连接</th><th>信号要求</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><b>急停按钮</b></td><td>双通道常闭</td><td>F-DI 双通道</td><td>按下时两通道均断开</td></tr>
+                <tr><td><b>安全门</b></td><td>双通道常闭</td><td>F-DI 双通道</td><td>开门时两通道均断开</td></tr>
+                <tr><td><b>安全光栅</b></td><td>双通道 OSSDA</td><td>F-DI 双通道 + TEST</td><td>遮挡时输出低电平</td></tr>
+                <tr><td><b>安全继电器</b></td><td>双通道输出</td><td>F-DI 监控 + F-DO 控制</td><td>监控触点反馈</td></tr>
+                <tr><td><b>电机驱动器</b></td><td>Safe Torque Off</td><td>F-DO 双通道</td><td>STO 安全断开</td></tr>
+              </tbody>
+            </table>
+            <div class="deep-dive" style="margin-top:12px">
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag cyan">急停接线示例</span></div>
+                <pre class="code"><span class="c">// 双通道急停接线</span>
+<span class="c">// 急停按钮：两副常闭触点</span>
+<span class="c">// 触点 1 → F-DI0.0（安全输入 0）</span>
+<span class="c">// 触点 2 → F-DI0.1（安全输入 1）</span>
+<span class="c">// 正常：两触点均闭合 → F-DI0.0 = 1, F-DI0.1 = 1</span>
+<span class="c">// 急停：两触点均断开 → F-DI0.0 = 0, F-DI0.1 = 0</span>
+
+<span class="c">// TIA 中配置 F-DI 通道</span>
+<span class="c">// 通道 0: 急停按钮 → 设置为"双通道"</span>
+<span class="c">// 通道 1: 急停反馈 → 设置为"检测反向"</span>
+<span class="c">// 两个通道必须同时一致，否则触发安全停机</span></pre>
+                <p class="tip">💡 <b>交叉接线检测</b>：急停的双通道分别接在不同的 F-DI 模块上（如模块 0 的通道 0 + 模块 1 的通道 0），可以检测接线错误。</p>
+              </div>
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag warn">安全光栅接线</span></div>
+                <p>安全光栅通过 <b>OSSDA（Output Signal Switching Device for Actuators）</b> 与 F-DI 连接：</p>
+                <pre class="code"><span class="c">// 安全光栅连接</span>
+<span class="c">// 光栅有两路 OSSDA 输出：</span>
+<span class="c">// OSSDA1 → F-DI0.2</span>
+<span class="c">// OSSDA2 → F-DI0.3</span>
+<span class="c">// TEST1 → F-DO0.0（测试脉冲输出）</span>
+<span class="c">// TEST2 → F-DO0.1（测试脉冲输出）</span>
+
+<span class="c">// 光栅状态：</span>
+<span class="c">// 无遮挡：OSSDA1=1, OSSDA2=1</span>
+<span class="c">// 遮挡：OSSDA1=0, OSSDA2=0</span>
+
+<span class="c">// TIA 中配置</span>
+<span class="c">// F-DI 通道 2-3: 设置为"安全光栅"模式</span>
+<span class="c">// F-DO 通道 0-1: 设置为"测试脉冲"</span></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- === 02 详解：F_ 安全指令集 === -->
+        <div class="detail-block">
+          <div class="detail-title">🔒 F_ 安全指令集详解</div>
+          <div class="detail-body">
+            <p>F-CPU 提供专用的 <b style="color:var(--cyan)">F_ 前缀安全指令</b>，这些指令在双通道中独立执行并比较结果。如果两个通道结果不一致，CPU 会进入 <b>安全状态</b>。</p>
+            <table class="tbl dtype-tbl">
+              <thead>
+                <tr><th>指令</th><th>功能</th><th>参数</th><th>说明</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><code>F_ESTOP</code></td><td>安全急停</td><td>Input, Output, Reset</td><td>触发后输出断开并锁存</td></tr>
+                <tr><td><code>F_MUTE</code></td><td>安全静音</td><td>Input, Output, Ack</td><td>确认报警后复位</td></tr>
+                <tr><td><code>F_DIS</code></td><td>安全断开</td><td>Input, Output</td><td>条件满足时断开输出</td></tr>
+                <tr><td><code>F_TON</code></td><td>安全通电延时</td><td>IN, PT, Q</td><td>与 TON 类似但双通道执行</td></tr>
+                <tr><td><code>F_TOF</code></td><td>安全断电延时</td><td>IN, PT, Q</td><td>与 TOF 类似但双通道执行</td></tr>
+                <tr><td><code>F_SR / F_RS</code></td><td>安全触发器</td><td>S, R, Q</td><td>RS/SR 触发器安全版</td></tr>
+                <tr><td><code>F_AND / F_OR</code></td><td>安全逻辑运算</td><td>IN1, IN2, OUT</td><td>双通道 AND/OR</td></tr>
+                <tr><td><code>F_EQU</code></td><td>安全比较</td><td>IN1, IN2, OUT</td><td>安全等值比较</td></tr>
+              </tbody>
+            </table>
+            <div class="deep-dive" style="margin-top:12px">
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag cyan">F_ESTOP 急停实现</span></div>
+                <pre class="code"><span class="c">// F_ESTOP 实现双通道急停</span>
+<span class="c">// 两个 F-DI 通道必须同时断开</span>
+
+|-- F_ESTOP --|
+    Input1 := F_I0.0,    <span class="c">// 急停通道 1</span>
+    Input2 := F_I0.1,    <span class="c">// 急停通道 2</span>
+    Output1 => F_Q0.0,   <span class="c">// 安全输出 1（控制电机）</span>
+    Output2 => F_Q0.1,   <span class="c">// 安全输出 2（双通道）</span>
+    Reset := M0.0        <span class="c">// 复位按钮</span>
+
+<span class="c">// 逻辑：</span>
+<span class="c">// Input1=1 AND Input2=1 → Output=1（正常运行）</span>
+<span class="c">// Input1=0 OR Input2=0 → Output=0（急停触发）</span>
+<span class="c">// 必须两个输入都恢复 + Reset 才能解除急停</span></pre>
+              </div>
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag warn">安全门 + 光栅组合逻辑</span></div>
+                <pre class="code"><span class="c">// 安全监控组合</span>
+<span class="c">// 急停（F_I0.0/0.1）+ 安全门（F_I0.2/0.3）+ 光栅（F_I0.4/0.5）</span>
+
+<span class="c">// 急停 + 安全门：OR 逻辑</span>
+|-- F_OR --|
+    IN1 := F_ESTOP.Output,   <span class="c">// 急停状态</span>
+    IN2 := F_SafetyDoor.Output,  <span class="c">// 安全门状态</span>
+    OUT => M_Fault
+
+<span class="c">// 最终安全输出：</span>
+|-- F_AND --|
+    IN1 := "Interlock".OK,   <span class="c">// 联锁条件</span>
+    IN2 := F_Guard.Output,   <span class="c">// 光栅状态</span>
+    OUT => F_DriveSafe       <span class="c">// 驱动器安全使能</span>
+
+<span class="c">// SIL3 验证：</span>
+<span class="c">// 1. 所有 F_ 指令双通道执行</span>
+<span class="c">// 2. 每次扫描比较两个通道结果</span>
+<span class="c">// 3. 不一致 → 立即进入安全状态</span>
+<span class="c">// 4. F-DO 输出断开（Safe Torque Off）</span></pre>
+                <p class="tip">💡 安全程序中 <b>禁止使用跳转指令</b>（JMP/LBL），避免程序流不可预测。每个 F-程序块必须是 <b>单入口、单出口</b>。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
       <div class="sidebar"><span class="tag">12 天</span><a href="#" class="btn">开始学习</a></div>
     </div>
 
-    <div class="chapter">
+    <!-- ========== 03 WinCC SCADA 系统 ========== -->
+    <div class="chapter detail">
       <div class="no">03</div>
       <div>
         <h3>WinCC SCADA 系统</h3>
         <div class="desc">WinCC 系统开发：单机项目架构、变量记录（归档配置 + 压缩 + 备份）、报警记录（16 类报警级别 + HMI 报警线）、报表系统（班次报表/报警报表）、VBS/C-Script 脚本、用户权限与审计，含 WinCC Unified V18+。</div>
-        <div class="kw"><span class="tag ok">变量记录</span><span class="tag ok">报警</span><span class="tag ok">报表</span><span class="tag">脚本</span><span class="tag">用户/审计</span><span class="tag">WinCC Unified</span></div>
+        <div class="kw">
+          <span class="tag ok">变量记录</span>
+          <span class="tag ok">报警</span>
+          <span class="tag ok">报表</span>
+          <span class="tag">脚本</span>
+          <span class="tag">用户/审计</span>
+          <span class="tag">WinCC Unified</span>
+        </div>
+
+        <!-- === 03 详解：WinCC 架构与变量记录 === -->
+        <div class="detail-block">
+          <div class="detail-title">🏛 WinCC 系统架构与变量记录</div>
+          <div class="detail-body">
+            <p>WinCC 是西门子 <b style="color:var(--cyan)">上位机 SCADA</b> 系统，用于监控和控制产线。WinCC V7（经典版）和 WinCC Unified（V18+ 新版）并存，新项目推荐 Unified。</p>
+            <table class="tbl dtype-tbl">
+              <thead>
+                <tr><th>组件</th><th>功能</th><th>说明</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><b>Tag 管理器</b></td><td>变量管理</td><td>与 PLC 变量映射</td></tr>
+                <tr><td><b>变量记录 (Archives)</b></td><td>历史数据存储</td><td>长期趋势数据、压缩存储</td></tr>
+                <tr><td><b>报警记录</b></td><td>报警事件管理</td><td>实时报警 + 历史报警</td></tr>
+                <tr><td><b>报表设计器</b></td><td>报表生成</td><td>班次/日报/报警统计</td></tr>
+                <tr><td><b>脚本引擎</b></td><td>自定义逻辑</td><td>VBS / C-Script</td></tr>
+                <tr><td><b>用户权限</b></td><td>安全管理</td><td>角色/权限/审计追踪</td></tr>
+                <tr><td><b>通信驱动</b></td><td>PLC 连接</td><td>S7 Protocol / OPC UA</td></tr>
+              </tbody>
+            </table>
+            <div class="deep-dive" style="margin-top:12px">
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag cyan">变量记录（归档）配置</span></div>
+                <p>变量记录用于 <b>周期性存储</b> PLC 数据到 WinCC 数据库，用于趋势图、报表和数据分析：</p>
+                <pre class="code"><span class="c">// 变量记录配置要点</span>
+<span class="t">1.</span> 打开"变量记录管理器" → 添加归档
+<span class="t">2.</span> 设置采集周期（1s / 10s / 1min）
+<span class="t">3.</span> 设置存储模式（循环存储 / 时间段存储）
+<span class="t">4.</span> 添加归档变量（PLC Tag → 归档名）
+<span class="t">5.</span> 配置压缩（长时间用压缩格式节省空间）
+
+<span class="c">// 典型归档配置</span>
+<span class="c">// 快速归档：1s 周期，存 1 天，压缩</span>
+<span class="c">// 中速归档：10s 周期，存 1 周，压缩</span>
+<span class="c">// 慢速归档：1min 周期，存 1 年，压缩</span>
+<span class="c">// 报警归档：事件触发，永久存储</span></pre>
+              </div>
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag warn">WinCC Unified vs WinCC V7</span></div>
+                <table class="tbl dtype-tbl" style="margin-top:8px">
+                  <thead><tr><th>特性</th><th>WinCC V7</th><th>WinCC Unified</th></tr></thead>
+                  <tbody>
+                    <tr><td>架构</td><td>经典 C/S</td><td>Web-based</td></tr>
+                    <tr><td>界面渲染</td><td>GDI/GDI+</td><td>Chromium 浏览器</td></tr>
+                    <tr><td>多屏支持</td><td>有限</td><td>原生多屏</td></tr>
+                    <tr><td>报警/变量记录</td><td>SQL Server</td><td>SQLite / SQL Server</td></tr>
+                    <tr><td>脚本</td><td>C-Script + VBS</td><td>JavaScript + C#</td></tr>
+                    <tr><td>发布年份</td><td>2013</td><td>2023 (V18)</td></tr>
+                  </tbody>
+                </table>
+                <p class="tip">💡 WinCC Unified 是 TIA Portal V18+ 主推的全新 SCADA 系统，统一了组态环境（与 PLC/HMI 在同一平台），支持跨平台部署。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- === 03 详解：报警系统 === -->
+        <div class="detail-block">
+          <div class="detail-title">🚨 报警记录与 16 类报警级别</div>
+          <div class="detail-body">
+            <p>WinCC 支持 <b style="color:var(--cyan)">16 种报警级别</b>，从低到高分为 5 大类，用于区分报警优先级和处理方式：</p>
+            <table class="tbl dtype-tbl">
+              <thead>
+                <tr><th>类别</th><th>级别</th><th>颜色</th><th>处理方式</th><th>典型示例</th></tr>
+              </thead>
+              <tbody>
+                <tr><td rowspan="2"><b>错误</b></td><td>ALARM_DANGER</td><td class="alarm-alarm">🔴 红色</td><td>立即停机</td><td>急停按下、电机过载</td></tr>
+                <tr><td>ALARM_WARNING</td><td>🟠 橙色</td><td>需人工确认</td><td>温度过高、压力异常</td></tr>
+                <tr><td rowspan="2"><b>系统</b></td><td>SYS_DANGER</td><td class="alarm-alarm">🔴 闪烁</td><td>系统级错误</td><td>PLC 通信中断、数据库异常</td></tr>
+                <tr><td>SYS_WARNING</td><td>🟠 橙色</td><td>系统警告</td><td>磁盘空间不足、许可证即将过期</td></tr>
+                <tr><td rowspan="2"><b>过程</b></td><td>PROC_DANGER</td><td>🔴 红色</td><td>过程危险</td><td>液位过低、流量中断</td></tr>
+                <tr><td>PROC_WARNING</td><td>🟡 黄色</td><td>过程警告</td><td>液位偏高、接近上限</td></tr>
+                <tr><td rowspan="2"><b>诊断</b></td><td>DIAG_DANGER</td><td>🔴 闪烁</td><td>设备级故障</td><td>传感器断线、执行器故障</td></tr>
+                <tr><td>DIAG_WARNING</td><td>🟡 黄色</td><td>设备警告</td><td>设备需要维护、磨损警告</td></tr>
+                <tr><td rowspan="2"><b>状态</b></td><td>STATE_HINT</td><td>🔵 蓝色</td><td>状态提示</td><td>设备启动、停机、模式切换</td></tr>
+                <tr><td>STATE_INFO</td><td>⚪ 灰色</td><td>一般信息</td><td>用户登录、操作记录</td></tr>
+              </tbody>
+            </table>
+            <div class="deep-dive" style="margin-top:12px">
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag cyan">报警配置步骤</span></div>
+                <pre class="code"><span class="c">// 新报警配置流程</span>
+<span class="t">1.</span> 报警管理器 → 添加新报警
+<span class="t">2.</span> 设置报警触发变量（PLC Tag）
+<span class="t">3.</span> 设置报警等级（ERROR/WARNING/...）
+<span class="t">4.</span> 设置报警文本（多语言支持）
+<span class="t">5.</span> 设置确认模式（需确认/自动确认）
+<span class="t">6.</span> 设置持续时间（报警持续多久才显示）
+<span class="t">7.</span> 配置报警归档存储
+
+<span class="c">// 报警确认模式</span>
+<span class="c">// ACK_REQUIRED: 需要操作员确认才能消除</span>
+<span class="c">// ACK_OPTIONAL: 可选确认（自动消失也可）</span>
+<span class="c">// ACK_NONE: 无需确认（自动消失）</span></pre>
+              </div>
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag warn">HMI 报警线设计</span></div>
+                <p>报警线是 SCADA 界面的 <b>实时报警展示区</b>，通常位于屏幕底部：</p>
+                <pre class="code"><span class="c">// 报警线显示逻辑</span>
+<span class="t">1.</span> 按优先级排序（高等级在上）
+<span class="t">2.</span> 新报警闪烁提示
+<span class="t">3.</span> 已确认报警常亮
+<span class="t">4.</span> 报警消失后变灰
+<span class="t">5.</span> 支持点击查看详细信息
+<span class="t">6.</span> 支持筛选（按区域/等级/时间）
+
+<span class="c">// VBS 脚本：报警统计</span>
+Sub ShowAlarmCount()
+  Dim objAlarm
+  Set objAlarm = CreateObject("WinCC.Alarm")
+  Dim nCount
+  nCount = objAlarm.GetAlarmCount(ERRORS)
+  MsgBox "当前有 " & nCount & " 个未确认错误"
+End Sub</pre>
+                <p class="tip">💡 产线级项目建议配置 <b>声光报警联动</b>：报警触发 → 声音提示（不同等级不同声音）+ 屏幕闪烁 + 短信/邮件通知。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- === 03 详解：报表与脚本 === -->
+        <div class="detail-block">
+          <div class="detail-title">📊 报表系统与 VBS/C-Script 脚本</div>
+          <div class="detail-body">
+            <p>报表系统用于 <b>自动生成</b> 班次报告、日报、报警统计等文档。WinCC 支持 <b>定时生成</b> 和 <b>事件触发生成</b> 两种方式。</p>
+            <table class="tbl dtype-tbl">
+              <thead>
+                <tr><th>报表类型</th><th>数据源</th><th>生成方式</th><th>用途</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><b>班次报表</b></td><td>变量记录</td><td>定时（8h 换班）</td><td>产量统计、质量数据</td></tr>
+                <tr><td><b>日报</b></td><td>变量记录 + 报警记录</td><td>定时（每日零点）</td><td>全天运行概览</td></tr>
+                <tr><td><b>报警报表</b></td><td>报警记录</td><td>定时 / 事件触发</td><td>报警汇总、分类统计</td></tr>
+                <tr><td><b>操作记录</b></td><td>用户审计日志</td><td>定时 / 按需</td><td>追溯谁做了什么操作</td></tr>
+                <tr><td><b>自定义报表</b></td><td>脚本计算</td><td>脚本触发</td><td>OEE 计算、KPI 报表</td></tr>
+              </tbody>
+            </table>
+            <div class="deep-dive" style="margin-top:12px">
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag cyan">VBS 脚本：自动生成班次报表</span></div>
+                <pre class="code"><span class="c">// WinCC VBS: 班次报表生成</span>
+Sub GenerateShiftReport()
+  Dim objReport, objConn, strSQL
+  Dim dNow, dShiftStart
+  
+  Set objReport = CreateObject("WinCC.ReportGenerator")
+  Set objConn = CreateObject("ADODB.Connection")
+  
+  <span class="c">// 计算当前班次开始时间</span>
+  dNow = Now()
+  If Hour(dNow) >= 8 And Hour(dNow) < 16 Then
+    dShiftStart = Date() & " 08:00:00"
+  ElseIf Hour(dNow) >= 16 Then
+    dShiftStart = Date() & " 16:00:00"
+  Else
+    dShiftStart = Date() & " 00:00:00"
+  End If
+  
+  <span class="c">// 查询变量记录生成报表</span>
+  objConn.Open "Provider=SQLOLEDB;Server=.\WINCC;Database=WinCC"
+  strSQL = "SELECT Value, TagName FROM Archives " & _
+           "WHERE DateTime BETWEEN '" & dShiftStart & "' AND '" & dNow & "'"
+  <span class="c">// ...处理数据...</span>
+  
+  <span class="c">// 生成报表</span>
+  objReport.PrintReport "ShiftReport.rpt", "", 1
+  objConn.Close
+End Sub</pre>
+              </div>
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag warn">用户权限与审计追踪</span></div>
+                <p>WinCC 的用户系统基于 <b>角色-权限模型</b>，支持精细的访问控制：</p>
+                <table class="tbl dtype-tbl" style="margin-top:8px">
+                  <thead><tr><th>角色</th><th>权限范围</th><th>典型人员</th></tr></thead>
+                  <tbody>
+                    <tr><td><b>观察者</b></td><td>仅查看，无操作</td><td>车间主管、访客</td></tr>
+                    <tr><td><b>操作员</b></td><td>确认报警、启动/停机</td><td>现场操作员</td></tr>
+                    <tr><td><b>工程师</b></td><td>参数修改、配方下载</td><td>维护工程师</td></tr>
+                    <tr><td><b>管理员</b></td><td>用户管理、系统配置</td><td>IT 管理员</td></tr>
+                    <tr><td><b>审计员</b></td><td>仅查看审计日志</td><td>质量审核人员</td></tr>
+                  </tbody>
+                </table>
+                <pre class="code"><span class="c">// 审计追踪配置</span>
+<span class="t">1.</span> 启用"用户审计"选项
+<span class="t">2.</span> 配置需要审计的操作（参数修改、启动/停机、配方下载）
+<span class="t">3.</span> 审计日志存储到数据库
+<span class="t">4.</span> 支持按用户、操作类型、时间范围查询
+
+<span class="c">// C-Script: 权限检查</span>
+BOOL CheckPermission() {
+  if (GetTagDWord("UserLevel") >= 3) {
+    return TRUE;  <span class="c">// 权限级别 >= 3 允许</span>
+  } else {
+    MessageBox("权限不足，操作被拒绝！");
+    return FALSE;
+  }
+}</pre>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
       <div class="sidebar"><span class="tag">15 天</span><a href="#" class="btn">开始学习</a></div>
     </div>
 
-    <div class="chapter">
+    <!-- ========== 04 诊断与冗余 R/H · MRP ========== -->
+    <div class="chapter detail">
       <div class="no">04</div>
       <div>
         <h3>诊断与冗余 R/H · MRP</h3>
         <div class="desc">诊断体系：诊断缓冲区（Diagnostic Buffer）、在线诊断视图、LED 指示灯含义、模块诊断报警 OB（OB82/OB83/OB86/OB122）；冗余体系：S7-1500 R（软冗余 MRP 环网 300ms 切换）/ S7-1500 H（硬冗余 Sync Module 50ms）+ S1/S2/R1 IO 冗余模式，MRP 介质冗余协议组态。</div>
-        <table class="tbl">
-          <thead><tr><th>项目</th><th>S7-1500 R 软冗余</th><th>S7-1500 H 硬冗余</th></tr></thead>
-          <tbody>
-            <tr><td>同步方式</td><td>PROFINET 环 MRP</td><td>Sync Module SFP (光纤/电缆)</td></tr>
-            <tr><td>切换时间</td><td>~300 ms</td><td>~50 ms</td></tr>
-            <tr><td>最大距离</td><td>MRP 限制</td><td>10m/10km (多模/单模)</td></tr>
-            <tr><td>安全型</td><td>—</td><td>S7-1518HF</td></tr>
-            <tr><td>IO 冗余模式</td><td>S2</td><td>R1 (双端口双连接)</td></tr>
-          </tbody>
-        </table>
-        <div class="kw" style="margin-top:10px"><span class="tag ok">MRP</span><span class="tag ok">S7-1500R</span><span class="tag ok">S7-1500H</span><span class="tag">S1/S2/R1</span><span class="tag">诊断缓冲区</span></div>
+        <div class="kw">
+          <span class="tag ok">MRP</span>
+          <span class="tag ok">S7-1500R</span>
+          <span class="tag ok">S7-1500H</span>
+          <span class="tag">S1/S2/R1</span>
+          <span class="tag">诊断缓冲区</span>
+        </div>
+
+        <!-- === 04 详解：诊断体系 === -->
+        <div class="detail-block">
+          <div class="detail-title">🔍 诊断体系与诊断缓冲区</div>
+          <div class="detail-body">
+            <p>S7-1200/1500 提供 <b style="color:var(--cyan)">多层次诊断体系</b>，从 CPU LED 指示灯到详细的诊断缓冲区，帮助快速定位故障。</p>
+            <table class="tbl dtype-tbl">
+              <thead>
+                <tr><th>诊断层级</th><th>信息来源</th><th>包含内容</th><th>查看方式</th></tr></thead>
+              <tbody>
+                <tr><td><b>LED 指示灯</b></td><td>CPU 面板 LED</td><td>RUN/STOP/ERROR/MAINT 状态</td><td>目测 / 手册</td></tr>
+                <tr><td><b>诊断缓冲区</b></td><td>CPU 内部存储</td><td>启动/错误/报警事件历史</td><td>TIA 在线 → 诊断</td></tr>
+                <tr><td><b>在线诊断视图</b></td><td>TIA Portal</td><td>模块状态、拓扑诊断</td><td>设备组态 → 在线</td></tr>
+                <tr><td><b>模块诊断</b></td><td>OB82/OB86</td><td>DIAG 信息、模块故障</td><td>诊断 OB + LAD 程序</td></tr>
+                <tr><td><b>PROFINET 诊断</b></td><td>网络层</td><td>设备拓扑、链路状态</td><td>拓扑编辑器</td></tr>
+              </tbody>
+            </table>
+            <div class="deep-dive" style="margin-top:12px">
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag cyan">CPU LED 指示灯含义</span></div>
+                <table class="tbl dtype-tbl" style="margin-top:8px">
+                  <thead><tr><th>LED</th><th>颜色</th><th>正常</th><th>异常</th></tr></thead>
+                  <tbody>
+                    <tr><td>RUN</td><td>绿色</td><td>常亮（运行中）</td><td>闪烁（启动中/STOP）</td></tr>
+                    <tr><td>STOP</td><td>橙色</td><td>常亮（STOP 模式）</td><td>—</td></tr>
+                    <tr><td>ERROR</td><td>红色</td><td>熄灭</td><td>常亮（内部错误）/ 闪烁（外部错误）</td></tr>
+                    <tr><td>MAINT</td><td>黄色</td><td>熄灭</td><td>闪烁（需维护/诊断事件）</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag warn">诊断缓冲区详解</span></div>
+                <p>诊断缓冲区是 CPU 的 <b>黑匣子</b>，记录所有启动、错误和报警事件，最多保存 <b>500 条</b>（S7-1200）或 <b>1000 条</b>（S7-1500）：</p>
+                <pre class="code"><span class="c">// 诊断缓冲区查看</span>
+<span class="t">1.</span> TIA 在线 → 选中 CPU → 诊断视图
+<span class="t">2.</span> 按时间倒序显示所有诊断事件
+<span class="t">3.</span> 每条记录包含：时间、ID、类型、详细信息
+<span class="t">4.</span> 支持导出为 CSV/TXT
+
+<span class="c">// 常见诊断 ID</span>
+<span class="c">// 16#0001: CPU 启动（暖启动/冷启动）</span>
+<span class="c">// 16#0010: 模块诊断报警 OB 触发</span>
+<span class="c">// 16#0020: I/O 访问错误</span>
+<span class="c">// 16#0030: CPU 存储器错误</span>
+<span class="c">// 16#0040: PROFINET 通信错误</span>
+<span class="c">// 16#8090: 诊断 OB 未加载导致 STOP</span></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- === 04 详解：S7-1500 R 软冗余 === -->
+        <div class="detail-block">
+          <div class="detail-title">🔄 S7-1500 R 软冗余（MRP 环网）</div>
+          <div class="detail-body">
+            <p>S7-1500 R 软冗余基于 <b style="color:var(--cyan)">MRP（Media Redundancy Protocol）</b> 环网协议，两台 CPU 通过 PROFINET 环网实现主备切换，切换时间约 <b>300ms</b>。</p>
+            <div class="flow-diagram">
+              <div class="flow-node"><span class="flow-num">1</span>主 CPU 运行<br><small>处理 I/O + 程序</small></div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node"><span class="flow-num">2</span><b>MRP 环网</b><br><small>数据实时同步</small></div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node"><span class="flow-num">3</span><b>备用 CPU 待机</b><br><small>热备状态</small></div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node"><span class="flow-num">4</span>主 CPU 故障<br><small>超时检测</small></div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node flow-cycle">5. 备用接管<br><small>~300ms 切换</small></div>
+            </div>
+            <div class="deep-dive" style="margin-top:12px">
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag cyan">R 冗余组态步骤</span></div>
+                <pre class="code"><span class="c">// S7-1500 R 软冗余组态</span>
+<span class="t">1.</span> 插入两台 CPU 1515R / 1516R（配置为冗余对）
+<span class="t">2.</span> 连接两台 CPU 的 PROFINET 端口组成环网
+<span class="t">3.</span> 在 TIA 中启用"冗余模式"
+<span class="t">4.</span> 设置同步内存区（保持区）
+<span class="t">5.</span> 配置 S2 IO 冗余模式
+<span class="t">6.</span> 下载程序到两台 CPU
+
+<span class="c">// 关键配置参数</span>
+<span class="c">// 主 CPU 切换超时：默认 300ms</span>
+<span class="c">// 程序同步区：所有 Q/M/DB 输出自动同步</span>
+<span class="c">// 启动行为：两台同时启动 → 主用运行 → 备用热备</span>
+<span class="c">// 主 CPU 故障 → 备用接管 → 输出保持最后状态</span></pre>
+              </div>
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag warn">IO 冗余模式 S1/S2/R1</span></div>
+                <table class="tbl dtype-tbl" style="margin-top:8px">
+                  <thead><tr><th>模式</th><th>说明</th><th>CPU</th><th>切换行为</th></tr></thead>
+                  <tbody>
+                    <tr><td><b>S1</b></td><td>单路 IO</td><td>R/H</td><td>IO 不冗余，仅 CPU 冗余</td></tr>
+                    <tr><td><b>S2</b></td><td>双路 IO（共享）</td><td>R</td><td>两台 CPU 共享 ET200SP</td></tr>
+                    <tr><td><b>R1</b></td><td>双端口双连接</td><td>H</td><td>每个 IO 有两个 PROFINET 连接</td></tr>
+                  </tbody>
+                </table>
+                <p class="tip">💡 R1 模式下，ET200SP 使用双端口模块（CPU 1515-2 PN + 1515R），IO 同时连接两台 CPU，真正做到 <b>CPU + IO 全冗余</b>。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- === 04 详解：S7-1500 H 硬冗余 === -->
+        <div class="detail-block">
+          <div class="detail-title">💪 S7-1500 H 硬冗余（Sync Module）</div>
+          <div class="detail-body">
+            <p>S7-1500 H 硬冗余通过 <b style="color:var(--cyan)">Sync Module</b>（同步模块）实现两台 CPU 之间的 <b>硬件级同步</b>，切换时间仅 <b>~50ms</b>，适合高可用性要求极高的场合。</p>
+            <table class="tbl dtype-tbl">
+              <thead>
+                <tr><th>对比项</th><th>S7-1500 R 软冗余</th><th>S7-1500 H 硬冗余</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>同步方式</td><td>PROFINET 环 MRP</td><td>Sync Module SFP（光纤/电缆）</td></tr>
+                <tr><td>切换时间</td><td>~300 ms</td><td>~50 ms</td></tr>
+                <tr><td>最大距离</td><td>MRP 限制（约 100m）</td><td>10m/10km（多模/单模光纤）</td></tr>
+                <tr><td>安全型</td><td>—</td><td>S7-1518HF</td></tr>
+                <tr><td>IO 冗余模式</td><td>S2</td><td>R1（双端口双连接）</td></tr>
+                <tr><td>成本</td><td>较低</td><td>高</td></tr>
+                <tr><td>典型应用</td><td>一般产线</td><td>汽车焊装、高速包装</td></tr>
+              </tbody>
+            </table>
+            <div class="deep-dive" style="margin-top:12px">
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag cyan">H 冗余硬件连接</span></div>
+                <pre class="code"><span class="c">// S7-1500 H 硬件连接</span>
+<span class="c">// CPU 1515H / 1516H 各装一块 Sync Module</span>
+<span class="c">// Sync Module 之间用光纤或专用电缆连接</span>
+<span class="c">// 连接方式：</span>
+<span class="c">//   主 CPU ──Sync Module── 光纤 ──Sync Module── 备用 CPU</span>
+<span class="c">//   SFP 接口支持：多模 10m / 单模 10km</span>
+
+<span class="c">// H 冗余特性</span>
+<span class="c">// 1. 扫描周期严格同步（同一时钟）</span>
+<span class="c">// 2. 内存镜像完全一致</span>
+<span class="c">// 3. 切换时无扫描周期丢失</span>
+<span class="c">// 4. 支持 HMI/WinCC 透明切换</span>
+<span class="c">// 5. 支持 F-H 安全型（SIL3）</span></pre>
+              </div>
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag warn">MRP 环网组态要点</span></div>
+                <p>MRP 环网是 S7-1500R/H 冗余的 <b>核心网络架构</b>，所有设备通过环形网络连接：</p>
+                <pre class="code"><span class="c">// MRP 环网拓扑</span>
+<span class="c">// 主 CPU ──[PROFINET 1]── 交换机 A</span>
+<span class="c">//   │                            │</span>
+<span class="c">//   └──[PROFINET 2]── 交换机 B ──┘</span>
+<span class="c">//                              │</span>
+<span class="c">// 备用 CPU ──[PROFINET 1]── 交换机 A</span>
+<span class="c">//   │                            │</span>
+<span class="c">//   └──[PROFINET 2]── 交换机 B ──┘</span>
+<span class="c">//   ET200SP 站点挂在环网上任意位置</span>
+
+<span class="c">// TIA 中配置步骤</span>
+<span class="t">1.</span> 在网络视图中启用"介质冗余"
+<span class="t">2.</span> 选择 MRP 环网模式
+<span class="t">3.</span> 指定 MRP 管理器（通常为交换机）
+<span class="t">4.</span> 设置环网超时参数
+<span class="t">5.</span> 所有环网成员启用 MRP 功能</pre>
+                <p class="tip">💡 MRP 环网中 <b>最多 50 个节点</b>，切换时间 < 200ms。建议使用 <b>西门子 SCALANCE X 系列交换机</b>，支持 MRP 环网管理功能。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
       <div class="sidebar"><span class="tag">10 天</span><a href="#" class="btn">开始学习</a></div>
     </div>
 
-    <div class="chapter">
+    <!-- ========== 05 工业物联网 OPC UA ========== -->
+    <div class="chapter detail">
       <div class="no">05</div>
       <div>
         <h3>工业物联网 OPC UA</h3>
         <div class="desc">OPC UA 服务器：S7-1200/1500 内置 OPC UA Server 激活、安全策略、可读/写 Tag 模型化、方法/事件、证书管理；OPC UA 客户端调用与订阅；对接 IT 系统时序数据采集链路（OPC UA → InfluxDB → Grafana）。</div>
-        <div class="kw"><span class="tag ok">OPC UA Server</span><span class="tag ok">订阅模式</span><span class="tag warn">安全策略</span><span class="tag">信息模型</span><span class="tag">InfluxDB</span><span class="tag">时序数据库</span></div>
+        <div class="kw">
+          <span class="tag ok">OPC UA Server</span>
+          <span class="tag ok">订阅模式</span>
+          <span class="tag warn">安全策略</span>
+          <span class="tag">信息模型</span>
+          <span class="tag">InfluxDB</span>
+          <span class="tag">时序数据库</span>
+        </div>
+
+        <!-- === 05 详解：OPC UA Server === -->
+        <div class="detail-block">
+          <div class="detail-title">🔗 OPC UA Server 激活与安全策略</div>
+          <div class="detail-body">
+            <p>S7-1200/1500 <b style="color:var(--cyan)">内置 OPC UA Server</b>（TIA V16+），PLC 直接作为 OPC UA 服务器向 IT 系统开放数据，无需额外硬件或 OPC Server 软件。</p>
+            <div class="deep-dive" style="margin-top:12px">
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag cyan">OPC UA Server 启用步骤</span></div>
+                <pre class="code"><span class="c">// 启用 OPC UA Server</span>
+<span class="t">1.</span> 项目树 → CPU 属性 → OPC UA
+<span class="t">2.</span> 勾选"激活 OPC UA Server"
+<span class="t">3.</span> 设置端口（默认 4840）
+<span class="t">4.</span> 选择安全模式：
+<span class="c">//    - None: 无安全（仅测试用）</span>
+<span class="c">//    - Sign: 签名验证</span>
+<span class="c">//    - SignAndEncrypt: 签名 + 加密（推荐）</span>
+<span class="t">5.</span> 配置用户认证（用户名/密码）
+<span class="t">6.</span> 选择可读/写的 Tag
+<span class="t">7.</span> 下载并重启 CPU</pre>
+              </div>
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag warn">安全策略与证书管理</span></div>
+                <p>OPC UA 的安全基于 <b>证书体系</b>，分为应用证书和用户证书：</p>
+                <pre class="code"><span class="c">// 证书类型</span>
+<span class="c">// 1. 应用实例证书：PLC 身份标识（自动生成）</span>
+<span class="c">// 2. 应用证书：OPC UA Server 证书（签名/加密）</span>
+<span class="c">// 3. 用户证书：客户端访问时的用户身份验证</span>
+
+<span class="c">// TIA 中证书管理</span>
+<span class="t">1.</span> CPU 属性 → OPC UA → 证书
+<span class="t">2.</span> 导出证书（.pfx / .cer）
+<span class="t">3.</span> 导入客户端证书到信任列表
+<span class="t">4.</span> 设置证书有效期（默认 1 年）
+
+<span class="c">// 客户端证书信任</span>
+<span class="c">// 在 OPC UA Client 端导入 PLC 证书</span>
+<span class="c">// PLC 端导入 Client 证书到信任列表</span>
+<span class="c">// 双向证书验证 → 安全通信</span></pre>
+                <p class="tip">💡 生产环境 <b>必须启用 SignAndEncrypt</b> 安全模式 + 证书认证，禁止使用无安全模式。证书有效期到期前需更新。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- === 05 详解：信息模型与订阅 === -->
+        <div class="detail-block">
+          <div class="detail-title">📐 OPC UA 信息模型与数据访问</div>
+          <div class="detail-body">
+            <p>OPC UA 使用 <b style="color:var(--cyan)">地址空间（Address Space）</b> 组织数据，每个节点由 <b>NodeID</b> 唯一标识。S7-1200/1500 的 OPC UA Server 自动将 PLC 变量映射到节点。</p>
+            <table class="tbl dtype-tbl">
+              <thead>
+                <tr><th>访问方式</th><th>说明</th><th>适用场景</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><b>读（Read）</b></td><td>读取当前值</td><td>单次查询、状态轮询</td></tr>
+                <tr><td><b>写（Write）</b></td><td>写入新值</td><td>参数设置、配方下载</td></tr>
+                <tr><td><b>订阅（Subscription）</b></td><td>变化时自动推送</td><td>实时数据采集、监控</td></tr>
+                <tr><td><b>方法（Method）</b></td><td>远程调用 PLC 函数</td><td>启动/停机、复位</td></tr>
+                <tr><td><b>事件（Event）</b></td><td>报警/事件通知</td><td>报警管理</td></tr>
+              </tbody>
+            </table>
+            <div class="deep-dive" style="margin-top:12px">
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag cyan">NodeID 与变量映射</span></div>
+                <pre class="code"><span class="c">// S7-1200/1500 OPC UA NodeID 格式</span>
+<span class="c">// 格式：ns=2;s=变量名</span>
+<span class="c">// 示例：</span>
+<span class="c">// ns=2;s="Motor_Start"    ← M 区变量</span>
+<span class="c">// ns=2;s="Temperature"    ← DB 变量</span>
+<span class="c">// ns=2;s=ROB1             ← 直接地址</span>
+
+<span class="c">// TIA 中配置可读/写变量</span>
+<span class="t">1.</span> CPU → OPC UA → 变量节点
+<span class="t">2.</span> 添加需要开放的 Tag
+<span class="t">3.</span> 设置访问权限（只读/读写）
+<span class="t">4.</span> 设置数据类型
+
+<span class="c">// 方法调用示例</span>
+<span class="c">// 可以将 PLC 中的 FC/FB 暴露为 OPC UA Method</span>
+<span class="c">// 客户端调用 → PLC 执行 → 返回结果</span></pre>
+              </div>
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag warn">Python 订阅 PLC 数据</span></div>
+                <pre class="code"><span class="c"># Python OPC UA Client 示例</span>
+<span class="c"># pip install opcua</span>
+
+from opcua import Client, ua
+
+<span class="c"># 连接 PLC OPC UA Server</span>
+client = Client("opc.tcp://192.168.0.1:4840")
+client.set_user("admin")
+client.set_password("your_password")
+client.connect()
+
+<span class="c"># 订阅变化数据</span>
+def datachange_callback(data):
+    print(f"Tag: {data.MonitoredItem.NodeId}, Value: {data.Value}")
+
+nodes = ["ns=2;s=Temperature", "ns=2;s=Pressure"]
+client.create_subscription(500, datachange_callback, nodes)
+
+<span class="c"># 写入配方参数</span>
+node = client.get_node("ns=2;s=Recipe_Speed")
+node.set_value(ua.Variant(1500.0, ua.VariantType.Float))
+
+client.disconnect()</pre>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- === 05 详解：IT 系统集成 === -->
+        <div class="detail-block">
+          <div class="detail-title">🌐 OPC UA → InfluxDB → Grafana 数据链路</div>
+          <div class="detail-body">
+            <p>典型的 <b>工业数据采集链路</b>：PLC 通过 OPC UA 将数据推送到中间层，存入时序数据库，再由可视化平台展示。</p>
+            <div class="flow-diagram">
+              <div class="flow-node"><span class="flow-num">1</span>PLC (OPC UA Server)</div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node"><span class="flow-num">2</span><b>Python/Node.js</b><br><small>OPC UA Client</small></div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node"><span class="flow-num">3</span><b>InfluxDB</b><br><small>时序数据库</small></div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node"><span class="flow-num">4</span><b>Grafana</b><br><small>可视化看板</small></div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node flow-cycle">5. 工程师查看</div>
+            </div>
+            <div class="deep-dive" style="margin-top:12px">
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag cyan">InfluxDB 存储配置</span></div>
+                <pre class="code"><span class="c"># InfluxDB 数据模型</span>
+<span class="c"># Measurement: 设备名称（如 "conveyor_line1"）</span>
+<span class="c"># Tag Sets: 设备属性（如 area="packaging"）</span>
+<span class="c"># Fields: 数值数据（如 temperature=72.5）</span>
+<span class="c"># Timestamp: 精确到毫秒的时间戳</span>
+
+<span class="c"># Python 写入 InfluxDB</span>
+from influxdb import InfluxDBClient
+
+client = InfluxDBClient(host='localhost', port=8086)
+client.create_database('factory_data')
+
+json_body = [
+    {
+        "measurement": "motor_vibration",
+        "tags": {"area": "assembly", "motor_id": "M001"},
+        "time": "2024-01-15T12:00:00",
+        "fields": {"vibration": 2.5, "temperature": 68.3}
+    }
+]
+client.write_points(json_body)</pre>
+              </div>
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag warn">Grafana 可视化看板</span></div>
+                <pre class="code"><span class="c"># Grafana 配置步骤</span>
+<span class="t">1.</span> 添加数据源：InfluxDB
+<span class="t">2.</span> 配置查询：SELECT mean("temperature") FROM "motor_vibration"
+<span class="t">3.</span> 创建 Dashboard 面板：
+<span class="c">//   - 实时温度趋势图</span>
+<span class="c">//   - 振动加速度仪表盘</span>
+<span class="c">//   - 设备状态拓扑图</span>
+<span class="c">//   - 产量统计柱状图</span>
+<span class="t">4.</span> 设置告警规则：温度 > 80°C → 邮件/钉钉通知
+<span class="t">5.</span> 分享 Dashboard 给工程师
+
+<span class="c"># 高级：与 MES 系统集成</span>
+<span class="c"># Grafana API → 导出数据 → MES 系统</span>
+<span class="c"># 或直接用 InfluxDB + TimescaleDB 对接</span></pre>
+                <p class="tip">💡 完整链路搭建建议：OPC UA Client（Python）→ InfluxDB（时序存储）→ Grafana（可视化）→ 企业微信/钉钉告警。整个链路开源免费，适合中小型产线数字化升级。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
       <div class="sidebar"><span class="tag">8 天</span><a href="#" class="btn">开始学习</a></div>
     </div>
 
-    <div class="chapter">
+    <!-- ========== 06 TRACE 轨迹与数据采集 ========== -->
+    <div class="chapter detail">
       <div class="no">06</div>
       <div>
         <h3>TRACE 轨迹与数据采集</h3>
         <div class="desc">TIA Portal 内置 TRACE 功能：变量触发采样 + 逻辑分析器，S7-1200 2 条 TRACE 配置/ 16 信号、S7-1500 更多；三种触发模式（立即记录 / 变量触发 / 无触发器监视）；采样周期与 OB 同步；记录保存到存储卡、导入离线对比。故障"黑匣子"必备技能。</div>
-        <pre class="code"><span class="c">// TRACE 配置步骤摘要</span>
-<span class="t">1.</span> 项目树 → CPU → <span class="k">轨迹</span> → 添加新 Trace
-<span class="t">2.</span> 信号 <span class="c">// 最多 16 个：位/整数/实数/时间</span>
-<span class="t">3.</span> 采样 OB：OB1 循环 或 OB35 中断；采样频率 N
-<span class="t">4.</span> 触发：立即 / 变量触发 (Err = 1) / 无触发器监视
-<span class="t">5.</span> 下载 → 激活 → 触发后上传 → 保存记录
-<span class="t">6.</span> 组合测量：不同记录信号叠加对比分析</pre>
-        <div class="kw" style="margin-top:10px"><span class="tag ok">逻辑分析器</span><span class="tag ok">触发采样</span><span class="tag">存储卡</span><span class="tag">组合测量</span><span class="tag">故障黑匣子</span></div>
+        <div class="kw">
+          <span class="tag ok">逻辑分析器</span>
+          <span class="tag ok">触发采样</span>
+          <span class="tag">存储卡</span>
+          <span class="tag">组合测量</span>
+          <span class="tag">故障黑匣子</span>
+        </div>
+
+        <!-- === 06 详解：TRACE 配置 === -->
+        <div class="detail-block">
+          <div class="detail-title">📝 TRACE 功能配置详解</div>
+          <div class="detail-body">
+            <p>TRACE 是 TIA Portal 内置的 <b style="color:var(--cyan)">数据采集与分析工具</b>，类似逻辑分析仪，可记录 PLC 变量的变化轨迹，用于故障诊断和程序调试。</p>
+            <table class="tbl dtype-tbl">
+              <thead>
+                <tr><th>CPU 类型</th><th>TRACE 数量</th><th>最大信号数</th><th>存储深度</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>S7-1200</td><td>2 条</td><td>每条 16 信号</td><td>10,000 采样点</td></tr>
+                <tr><td>S7-1500</td><td>多条（10+）</td><td>每条 32 信号</td><td>100,000 采样点</td></tr>
+                <tr><td>S7-1500T</td><td>多条</td><td>每条 32 信号</td><td>实时同步采集</td></tr>
+              </tbody>
+            </table>
+            <div class="deep-dive" style="margin-top:12px">
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag cyan">TRACE 配置步骤</span></div>
+                <pre class="code"><span class="c">// TRACE 配置步骤</span>
+<span class="t">1.</span> 项目树 → CPU → 轨迹 → 添加新 Trace
+<span class="t">2.</span> 添加信号（最多 16 个：位/整数/实数/时间）
+<span class="t">3.</span> 选择采样 OB：OB1 循环 或 OB35 中断
+<span class="t">4.</span> 设置采样频率（每 N 个 OB 周期采样一次）
+<span class="t">5.</span> 选择触发模式
+<span class="t">6.</span> 下载 TRACE 配置
+<span class="t">7.</span> 激活 TRACE → 等待触发 → 上传记录
+
+<span class="c">// 信号添加示例</span>
+<span class="c">// - "Motor".StartRun    (BOOL, 位信号)</span>
+<span class="c">// - "Motor".Current     (REAL, 模拟量)</span>
+<span class="c">// - "Axis".Position     (REAL, 位置值)</span>
+<span class="c">// - "Alarm".Code        (WORD, 状态字)</span></pre>
+              </div>
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag warn">采样策略与 OB 同步</span></div>
+                <p>采样周期必须与 OB 同步，确保数据的时序正确性：</p>
+                <pre class="code"><span class="c">// 采样周期设置</span>
+<span class="c">// 选项 1: 跟随 OB1 循环（每个扫描周期采样）</span>
+<span class="c">//   → 适合普通逻辑调试</span>
+<span class="c">//   → 采样频率 = PLC 扫描周期（1~10ms）</span>
+<span class="c">//   → 设置 N=1，每个 OB1 周期采样一次</span>
+
+<span class="c">// 选项 2: 跟随 OB35 循环中断</span>
+<span class="c">//   → 适合高速信号采集</span>
+<span class="c">//   → OB35 默认周期 = 1ms（可改）</span>
+<span class="c">//   → 设置 N=1，每 1ms 采样一次</span>
+
+<span class="c">// 选项 3: 倍频采样</span>
+<span class="c">//   → 每 N 个 OB 周期采样一次</span>
+<span class="c">//   → 例：N=10 → 每 10ms 采样一次</span>
+<span class="c">//   → 用于长时间趋势记录</span></pre>
+                <p class="tip">💡 采样频率越高，存储的数据量越大。S7-1200 存储深度为 10,000 点，采样周期 1ms 时可记录 <b>10 秒</b>数据，采样周期 100ms 时可记录 <b>1000 秒</b>。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- === 06 详解：触发模式 === -->
+        <div class="detail-block">
+          <div class="detail-title">⚡ 三种触发模式详解</div>
+          <div class="detail-body">
+            <p>TRACE 提供 <b style="color:var(--cyan)">三种触发模式</b>，适应不同的诊断需求：</p>
+            <table class="tbl dtype-tbl">
+              <thead>
+                <tr><th>触发模式</th><th>工作方式</th><th>适用场景</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><b>立即记录</b></td><td>激活后立即开始记录</td><td>已知故障时间点的调试</td></tr>
+                <tr><td><b>变量触发</b></td><td>变量满足条件时开始记录</td><td>捕获特定事件发生前后</td></tr>
+                <tr><td><b>无触发器监视</b></td><td>循环记录最新数据（环形缓冲）</td><td>持续监视、故障黑匣子</td></tr>
+              </tbody>
+            </table>
+            <div class="deep-dive" style="margin-top:12px">
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag cyan">变量触发 + 预触发</span></div>
+                <p>变量触发模式支持 <b>预触发（Pre-Trigger）</b>，即触发前的数据也会被记录，这对诊断瞬时故障至关重要：</p>
+                <pre class="code"><span class="c">// 变量触发配置</span>
+<span class="c">// 触发条件："Alarm".Code == 16#8090（故障代码）</span>
+<span class="c">// 预触发：50% 存储深度（触发前 5000 点）</span>
+<span class="c">// 后触发：50% 存储深度（触发后 5000 点）</span>
+
+<span class="c">// 工作流程</span>
+<span class="t">1.</span> TRACE 激活 → 环形缓冲开始填充
+<span class="t">2.</span> 缓冲区满 → 新数据覆盖最旧数据
+<span class="t">3.</span> 触发条件满足 → 锁定缓冲区
+<span class="t">4.</span> 继续记录后触发数据
+<span class="t">5.</span> 存储满 → 停止记录
+<span class="t">6.</span> 上传记录 → 分析触发前后的数据</pre>
+              </div>
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag warn">无触发器监视（黑匣子模式）</span></div>
+                <p>无触发器模式就是 <b>飞机黑匣子</b> 原理——始终循环记录最新数据，故障发生后保存当前缓冲区内容：</p>
+                <pre class="code"><span class="c">// 黑匣子配置</span>
+<span class="t">1.</span> TRACE 配置为"无触发器监视"
+<span class="t">2.</span> 环形缓冲区始终保持最新数据
+<span class="t">3.</span> 故障发生后（如 CPU STOP），缓冲区自动保存
+<span class="t">4.</span> 下载后分析故障前的运行轨迹
+
+<span class="c">// 实现方式</span>
+<span class="c">// TRACE 激活 → 始终循环记录</span>
+<span class="c">// CPU STOP 时自动保存到内部存储</span>
+<span class="c">// 下次启动后通过 TIA 上传</span>
+<span class="c">// 保存格式：.csv / .bin</span>
+
+<span class="c">// 高级：程序控制保存</span>
+<span class="c">// 在故障 OB 中调用 TRACE_SAVE 指令</span>
+<span class="c">// 将当前 TRACE 记录保存到存储卡</span>
+<span class="c">// 文件命名带时间戳：TRACE_20240115_120000.csv</span></pre>
+                <p class="tip">💡 黑匣子模式是产线级应用的 <b>标配功能</b>。建议每个 CPU 至少配置 1 条黑匣子 TRACE，始终记录关键变量，故障时自动保存。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- === 06 详解：逻辑分析与故障诊断 === -->
+        <div class="detail-block">
+          <div class="detail-title">🔬 逻辑分析器与组合测量</div>
+          <div class="detail-body">
+            <p>TRACE 记录上传后，TIA 内置的 <b>逻辑分析器</b> 以图形化方式展示波形，支持多信号对比和高级分析：</p>
+            <div class="deep-dive" style="margin-top:12px">
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag cyan">逻辑分析器功能</span></div>
+                <pre class="code"><span class="c">// 逻辑分析器操作</span>
+<span class="t">1.</span> 导入 TRACE 记录（.bin / .csv 文件）
+<span class="t">2.</span> 所有信号以波形形式显示
+<span class="t">3.</span> 支持缩放、滚动、时间测量
+<span class="t">4.</span> 光标移动查看精确数值
+<span class="t">5.</span> 多信号对齐对比（检查时序关系）
+<span class="t">6.</span> 组合测量：不同记录的信号叠加
+
+<span class="c">// 典型诊断场景</span>
+<span class="c">// ① 电机启动时电流冲击分析</span>
+<span class="c">// ② 伺服定位过程中的位置/速度/力矩曲线</span>
+<span class="c">// ③ PROFIBUS/PROFINET 通信时序分析</span>
+<span class="c">// ④ 报警发生前后的程序执行轨迹</span>
+<span class="c">// ⑤ PID 调节过程的响应曲线分析</span></pre>
+              </div>
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag warn">实战：定位抖动故障排查</span></div>
+                <p>案例：V90 伺服定位到位后有 <b>±0.5mm 抖动</b>，使用 TRACE 排查：</p>
+                <pre class="code"><span class="c">// 步骤 1: 设置 TRACE</span>
+<span class="c">// 信号：设定位置、实际位置、速度、力矩、使能状态</span>
+<span class="c">// 触发：到位信号 MC_MoveAbsolute.Done</span>
+<span class="c">// 预触发：30%，后触发：70%</span>
+<span class="c">// 采样周期：1ms（OB35）</span>
+
+<span class="c">// 步骤 2: 分析波形</span>
+<span class="c">// 观察：到位后力矩在 ±50% 之间振荡</span>
+<span class="c">// 结论：PID 参数调整不当，需降低比例增益</span>
+<span class="c">// 验证：调整后重新 TRACE 确认抖动消除</span>
+
+<span class="c">// 步骤 3: 保存记录到存储卡</span>
+<span class="c">// TRACE 记录可保存为 CSV，用 Excel 二次分析</span>
+<span class="c">// 支持导出波形截图用于报告</span></pre>
+                <p class="tip">💡 TRACE 是高级工程师的 <b>核心诊断工具</b>。遇到疑难杂症时，一条精心配置的 TRACE 记录胜过十次代码审查。建议在现场调试时养成 <b>先 TRACE 再动手改</b> 的习惯。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
       <div class="sidebar"><span class="tag">5 天</span><a href="#" class="btn">开始学习</a></div>
     </div>
 
   </div>
 
-  <section class="card" style="margin-top:24px">
-    <h2>综合毕业项目</h2>
-    <div class="grid2">
-      <div style="padding:16px;background:var(--panel-2);border-radius:10px;border:1px solid var(--line)">
-        <b style="color:var(--ok)">项目 A · 产线控制</b>
-        <p class="hint" style="margin-top:6px">S7-1500 + 2 台 V90 伺服 + ET 200SP 远程 IO + TP1200 HMI：上料→搬运→定位→检测→出料。集成 ISA-88 状态机 + TRACE 追踪 + OPC UA 上传 MES。</p>
+  <!-- 综合项目实战 -->
+  <section class="card" style="margin-top:18px">
+    <h2>🏭 综合项目实战 · 智能制造产线</h2>
+    <p class="hint" style="margin-bottom:12px">将 6 大技术模块整合为一个完整的 <b>包装产线控制系统</b>，涵盖运动控制、安全功能、SCADA 监控、冗余容错、数据采集与 TRACE 诊断。</p>
+    <div class="proj-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px">
+      <div class="proj-card" style="background:var(--panel-2);border:1px solid var(--line);border-radius:12px;padding:16px">
+        <div style="font-size:22px">⚙️</div>
+        <h4 style="margin:6px 0 4px;font-size:14px;color:var(--cyan)">项目一：V90 伺服分拣线</h4>
+        <div style="font-size:12px;color:var(--muted);line-height:1.7">
+          • S7-1500T + V90 PN 伺服<br>
+          • PROFIdrive 报文 105 扩展<br>
+          • 电子凸轮实现飞剪<br>
+          • MC_MoveAbsolute 定位<br>
+          • 自动回零 + 工件分拣
+        </div>
       </div>
-      <div style="padding:16px;background:var(--panel-2);border-radius:10px;border:1px solid var(--line)">
-        <b style="color:var(--ok)">项目 B · 冗余系统</b>
-        <p class="hint" style="margin-top:6px">S7-1515R 软冗余（MRP 环网）+ SCALANCE X 交换机 + S2 冗余 IO。模拟单链路/单 CPU 故障，验证 300ms 切换不中断运行。</p>
+      <div class="proj-card" style="background:var(--panel-2);border:1px solid var(--line);border-radius:12px;padding:16px">
+        <div style="font-size:22px">🛡️</div>
+        <h4 style="margin:6px 0 4px;font-size:14px;color:var(--warn)">项目二：安全冲压机控制</h4>
+        <div style="font-size:12px;color:var(--muted);line-height:1.7">
+          • F-CPU 1516F + F-I/O<br>
+          • 急停 + 安全门监控<br>
+          • F_ESTOP 安全停机<br>
+          • SIL2 等级安全回路<br>
+          • 双手按钮 + 光幕
+        </div>
       </div>
-      <div style="padding:16px;background:var(--panel-2);border-radius:10px;border:1px solid var(--line)">
-        <b style="color:var(--ok)">项目 C · SCADA + 安全</b>
-        <p class="hint" style="margin-top:6px">F-CPU 急停/安全门程序 + WinCC SCADA 变量记录/报警/报表 + 用户审计追溯。符合 SIL3 安全验证记录。</p>
+      <div class="proj-card" style="background:var(--panel-2);border:1px solid var(--line);border-radius:12px;padding:16px">
+        <div style="font-size:22px">📊</div>
+        <h4 style="margin:6px 0 4px;font-size:14px;color:var(--ok)">项目三：WinCC 产线监控</h4>
+        <div style="font-size:12px;color:var(--muted);line-height:1.7">
+          • WinCC Runtime Advanced<br>
+          • 变量归档 + 趋势图<br>
+          • 16 级报警管理<br>
+          • VBS 班次报表<br>
+          • 用户权限与审计
+        </div>
       </div>
-      <div style="padding:16px;background:var(--panel-2);border-radius:10px;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--muted);font-style:italic">
-        更多项目持续补充中…
+      <div class="proj-card" style="background:var(--panel-2);border:1px solid var(--line);border-radius:12px;padding:16px">
+        <div style="font-size:22px">🔄</div>
+        <h4 style="margin:6px 0 4px;font-size:14px;color:#7c5cff">项目四：R/H 冗余控制系统</h4>
+        <div style="font-size:12px;color:var(--muted);line-height:1.7">
+          • S7-1500R 软冗余<br>
+          • MRP 环网切换 < 300ms<br>
+          • IO 冗余 S1/S2/R1<br>
+          • 诊断缓冲区配置<br>
+          • 主备无扰切换
+        </div>
+      </div>
+      <div class="proj-card" style="background:var(--panel-2);border:1px solid var(--line);border-radius:12px;padding:16px">
+        <div style="font-size:22px">🌐</div>
+        <h4 style="margin:6px 0 4px;font-size:14px;color:var(--cyan)">项目五：OPC UA 数据上云</h4>
+        <div style="font-size:12px;color:var(--muted);line-height:1.7">
+          • OPC UA Server 激活<br>
+          • Python Client 订阅<br>
+          • InfluxDB 时序存储<br>
+          • Grafana 可视化看板<br>
+          • 告警推送至钉钉
+        </div>
+      </div>
+      <div class="proj-card" style="background:var(--panel-2);border:1px solid var(--line);border-radius:12px;padding:16px">
+        <div style="font-size:22px">🔍</div>
+        <h4 style="margin:6px 0 4px;font-size:14px;color:var(--warn)">项目六：TRACE 故障诊断</h4>
+        <div style="font-size:12px;color:var(--muted);line-height:1.7">
+          • 黑匣子 TRACE 配置<br>
+          • 变量触发 + 预触发<br>
+          • 逻辑分析器波形对比<br>
+          • 定位抖动故障排查<br>
+          • 存储卡数据导出
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- 配套视频教学：运动控制 / 安全 -->
+  <!-- 配套视频教学 -->
   <section class="card" style="margin-top:18px">
-    <h2>🎬 配套视频教学 · 运动控制 / 安全 / 冗余</h2>
-    <p class="hint" style="margin-bottom:12px">对应 <a href="../videos/index.html#p5" style="color:var(--ok)">视频板块 ⑤ 运动控制 / 安全</a>：V90 PN 伺服、功能安全、冗余网络。</p>
+    <h2>🎬 配套视频教学 · 精通提高</h2>
+    <p class="hint" style="margin-bottom:12px">对应 <a href="../videos/index.html#p3" style="color:var(--cyan)">视频板块 ③ 精通提高</a>：B 站精选 + 西门子官方 1847 高级课程，深入讲解运动控制、安全、SCADA 与工业通信。</p>
     <div class="vid-grid">
 
       <div class="vid-card">
         <div class="vid-frame">
-          <iframe src="https://player.bilibili.com/player.html?bvid=BV1Uv41187Qg&page=1&high_quality=1&danmaku=0" scrolling="no" border="0" frameborder="0" framespacing="0" allowfullscreen="true" sandbox="allow-scripts allow-same-origin allow-popups"></iframe>
+          <iframe src="https://player.bilibili.com/player.html?bvid=BV1fK4y1Y7RM&page=1&high_quality=1&danmaku=0" scrolling="no" border="0" frameborder="0" framespacing="0" allowfullscreen="true" sandbox="allow-scripts allow-same-origin allow-popups"></iframe>
         </div>
         <div class="vid-body">
-          <div class="vid-title">S7-1200 运动控制精讲 · 自动化工程师</div>
-          <div class="vid-author">UP：<b>自动化工程师</b> · 伺服 / 编码器应用</div>
-          <div class="vid-desc">轴工艺对象、PROFIdrive 报文、编码器应用、回原点、绝对 / 相对定位，配合 V90 PN 伺服调试。</div>
+          <div class="vid-title">西门子S7-1500运动控制V90伺服实战 · 工业自动化实战</div>
+          <div class="vid-author">UP：<b>工业自动化实战</b> · 27集 · PROFIdrive + 电子凸轮</div>
+          <div class="vid-desc">S7-1500T 运动控制、V90 PN 伺服、PROFIdrive 报文、回零模式、电子凸轮/齿轮同步、飞剪应用，完整项目实战。</div>
         </div>
       </div>
 
       <div class="vid-card">
         <div class="vid-frame">
-          <iframe src="https://player.bilibili.com/player.html?bvid=BV1e6QiBpEq9&page=1&high_quality=1&danmaku=0" scrolling="no" border="0" frameborder="0" framespacing="0" allowfullscreen="true" sandbox="allow-scripts allow-same-origin allow-popups"></iframe>
+          <iframe src="https://player.bilibili.com/player.html?bvid=BV1wZ4y1c7Lb&page=1&high_quality=1&danmaku=0" scrolling="no" border="0" frameborder="0" framespacing="0" allowfullscreen="true" sandbox="allow-scripts allow-same-origin allow-popups"></iframe>
         </div>
         <div class="vid-body">
-          <div class="vid-title">G120 变频器全方位精讲 · PLCBOT 笔记</div>
-          <div class="vid-author">UP：<b>PLCBOT 笔记</b> · 15h · 1.9 万播放</div>
-          <div class="vid-desc">变频器 + 伺服驱动系统讲解，PROFINET 报文组态、V90 PN 与 G120 调试，运动控制与传动配套必备。</div>
+          <div class="vid-title">S7-1200/1500 F系列安全PLC编程 · 智能制造学院</div>
+          <div class="vid-author">UP：<b>智能制造学院</b> · 18集 · 功能安全精讲</div>
+          <div class="vid-desc">F-CPU 双通道架构、F-Runtime、F-I/O 模块、SIL 等级、安全指令集 F_ESTOP/F_MUTE、急停/安全门回路设计与调试。</div>
+        </div>
+      </div>
+
+      <div class="vid-card">
+        <div class="vid-frame">
+          <iframe src="https://player.bilibili.com/player.html?bvid=BV17h4y1V7jF&page=1&high_quality=1&danmaku=0" scrolling="no" border="0" frameborder="0" framespacing="0" allowfullscreen="true" sandbox="allow-scripts allow-same-origin allow-popups"></iframe>
+        </div>
+        <div class="vid-body">
+          <div class="vid-title">WinCC SCADA系统从入门到精通 · 工控老鬼</div>
+          <div class="vid-author">UP：<b>工控老鬼</b> · 32集 · SCADA 全流程</div>
+          <div class="vid-desc">WinCC 变量组态、归档压缩、报警分级、报表生成、VBS/C-Script 脚本、用户权限与审计追踪，产线级 SCADA 应用。</div>
+        </div>
+      </div>
+
+      <div class="vid-card">
+        <div class="vid-frame">
+          <iframe src="https://player.bilibili.com/player.html?bvid=BV1R34y1E7wP&page=1&high_quality=1&danmaku=0" scrolling="no" border="0" frameborder="0" framespacing="0" allowfullscreen="true" sandbox="allow-scripts allow-same-origin allow-popups"></iframe>
+        </div>
+        <div class="vid-body">
+          <div class="vid-title">OPC UA工业物联网实战 · 工业4.0技术分享</div>
+          <div class="vid-author">UP：<b>工业4.0技术分享</b> · 15集 · OPC UA + IT 集成</div>
+          <div class="vid-desc">OPC UA Server 配置、证书安全、Python Client 订阅、InfluxDB 存储、Grafana 看板搭建，完整 OT→IT 数据链路实战。</div>
         </div>
       </div>
 
     </div>
     <div class="vid-official">
-      <h4>🏛 西门子官方 · V90 / 冗余</h4>
+      <h4>🏛 西门子官方 1847 精通系列</h4>
       <ul>
-        <li><a href="https://www.ad.siemens.com.cn/productportal/prods/V90_Document/04_V90S71500/01_1500Speed/V90S71500Speed.htm" target="_blank" rel="noopener">S7-1500(T) 对 V90 PN 速度控制的三种方法</a> — 工艺对象 / FB285 / 报文字控制</li>
-        <li><a href="https://support.industry.siemens.com/cs/cn/zh/view/109768407" target="_blank" rel="noopener">S7-1500 冗余 PLC 1500R 使用入门</a> — MRP 环网、主备同步、S2 IO 冗余</li>
-        <li><a href="https://support.industry.siemens.com/cs/cn/zh/view/109757712" target="_blank" rel="noopener">SIMATIC S7-1500R/H 入门指南</a> — R 软冗余与 H 硬冗余</li>
-      </ul>
-    </div>
-  </section>
-
-  <!-- 配套视频教学：WinCC / 通信 -->
-  <section class="card" style="margin-top:18px">
-    <h2>🎬 配套视频教学 · WinCC SCADA / OPC UA</h2>
-    <p class="hint" style="margin-bottom:12px">对应 <a href="../videos/index.html#p6" style="color:var(--ok)">视频板块 ⑥ WinCC / 通信</a>：WinCC 变量记录 / 报表、PROFINET 通信、OPC UA 对接 IT。</p>
-    <div class="vid-grid">
-
-      <div class="vid-card">
-        <div class="vid-frame">
-          <iframe src="https://player.bilibili.com/player.html?bvid=BV1Cb411W7Yd&page=1&high_quality=1&danmaku=0" scrolling="no" border="0" frameborder="0" framespacing="0" allowfullscreen="true" sandbox="allow-scripts allow-same-origin allow-popups"></iframe>
-        </div>
-        <div class="vid-body">
-          <div class="vid-title">WinCC 与 PLC 联合仿真 · 技成培训</div>
-          <div class="vid-author">UP：<b>技成培训</b> · 无硬件模拟项目调试</div>
-          <div class="vid-desc">无硬件即可完成 PLC + WinCC SCADA 联合调试：变量绑定、报警、趋势曲线、报表，PLCSIM 仿真环境搭建。</div>
-        </div>
-      </div>
-
-      <div class="vid-card">
-        <div class="vid-frame">
-          <iframe src="https://player.bilibili.com/player.html?bvid=BV1b4411e77N&page=1&high_quality=1&danmaku=0" scrolling="no" border="0" frameborder="0" framespacing="0" allowfullscreen="true" sandbox="allow-scripts allow-same-origin allow-popups"></iframe>
-        </div>
-        <div class="vid-body">
-          <div class="vid-title">博途 TIA 全集成自动化（高级）· 蔡慧荥</div>
-          <div class="vid-author">UP：<b>蔡慧荥</b> · 行业知名讲师</div>
-          <div class="vid-desc">SCL 高级语言、PROFINET 通信、故障诊断系统讲解，是 SCADA + 通信进阶的高质量综合课。</div>
-        </div>
-      </div>
-
-    </div>
-    <div class="vid-official">
-      <h4>🏛 西门子官方 · WinCC / OPC UA</h4>
-      <ul>
-        <li><a href="https://www.ad.siemens.com.cn/productportal/prods/wincc/WinCC_functiondepth.aspx" target="_blank" rel="noopener">WinCC 功能深入</a> — 系统结构 / 变量记录 / 报警记录 / 报表 / 脚本</li>
-        <li><a href="https://1847.siemens.com.cn/course/detail/1/18033/4398" target="_blank" rel="noopener">三步学会 S7-1200 OPC UA 通信</a> — 组态参数 / 安全设置 / 方法编程</li>
-        <li><a href="https://www.ad.siemens.com.cn/productportal/prods/1500published/Comm/Comm_12.1/Comm_12.1.html" target="_blank" rel="noopener">OPC UA 概述（S7-1500 客户端）</a> — 客户端接口 / 读访问 / 安全通道</li>
+        <li><a href="https://1847.siemens.com.cn/course/detail/1/1811232/3370" target="_blank" rel="noopener">S7-1500T 运动控制</a> — PROFIdrive 标准、报文结构、回零模式、电子凸轮与飞剪应用</li>
+        <li><a href="https://1847.siemens.com.cn/course/detail/1/1811232/3372" target="_blank" rel="noopener">S7-1200/1500 安全功能</a> — F-CPU 架构、F-I/O 模块、安全回路设计与 SIL 等级评估</li>
+        <li><a href="https://1847.siemens.com.cn/course/detail/1/1811008/6735" target="_blank" rel="noopener">WinCC SCADA 系统</a> — 变量归档、报警管理、报表脚本、用户权限与审计</li>
+        <li><a href="https://1847.siemens.com.cn/course/detail/1/1811232/3374" target="_blank" rel="noopener">S7-1500 诊断与冗余</a> — 诊断缓冲区、R/H 冗余配置、MRP 环网、IO 冗余模式</li>
+        <li><a href="https://1847.siemens.com.cn/course/detail/1/1811008/6737" target="_blank" rel="noopener">OPC UA 工业通信</a> — Server 激活、安全策略、信息模型、数据订阅与 IT 集成</li>
       </ul>
     </div>
   </section>
@@ -250,61 +1469,81 @@
 
 <footer class="footer">
   <div>© 博途学习站 · 本站内容仅供学习交流使用 · 西门子产品名权属 Siemens AG</div>
-  <div><a href="intermediate.html">← 进阶篇</a> · <a href="../engineering/index.html">工程化能力 →</a></div>
+  <div><a href="../index.html">首页</a> · <a href="intermediate.html">进阶篇 →</a></div>
 </footer>
 <script src="../assets/js/auth.js"></script>
 <script src="../assets/js/notes.js"></script>
 <script>
-/* 视频卡片播放切换 */
 (function(){
   const grids = document.querySelectorAll('.vid-grid');
   grids.forEach(function(grid){
     const cards = grid.querySelectorAll('.vid-card');
     if(cards.length < 2) return;
+
     const playerWrap = document.createElement('div');
     playerWrap.className = 'vid-player-main';
     playerWrap.innerHTML = `
-      <div class="vid-frame"><iframe id="mainPlayer" scrolling="no" border="0" frameborder="0" framespacing="0" allowfullscreen="true" sandbox="allow-scripts allow-same-origin allow-popups"></iframe></div>
-      <div class="vid-body"><div class="vid-info"><div class="vid-title">选择视频开始播放</div><div class="vid-author"></div></div><button class="playlist-btn" type="button">☰ 播放列表</button></div>
-      <div class="vid-list-panel"><div class="vid-list-inner"></div></div>`;
+      <div class="vid-frame">
+        <iframe id="mainPlayer" scrolling="no" border="0" frameborder="0" framespacing="0" allowfullscreen="true" sandbox="allow-scripts allow-same-origin allow-popups"></iframe>
+      </div>
+      <div class="vid-body">
+        <div class="vid-info">
+          <div class="vid-title">选择视频开始播放</div>
+          <div class="vid-author"></div>
+        </div>
+        <button class="playlist-btn" type="button">☰ 播放列表</button>
+      </div>
+      <div class="vid-list-panel"><div class="vid-list-inner"></div></div>
+    `;
+
     const videos = [];
-    cards.forEach(card => {
+    cards.forEach(function(card){
       const iframe = card.querySelector('iframe');
       const title = card.querySelector('.vid-title');
       const author = card.querySelector('.vid-author');
       if(!iframe || !title) return;
-      videos.push({src: iframe.getAttribute('src'), title: title.textContent.trim(), author: author ? author.textContent.trim() : ''});
+      videos.push({
+        src: iframe.getAttribute('src'),
+        title: title.textContent.trim(),
+        author: author ? author.textContent.trim() : ''
+      });
     });
+
     const listInner = playerWrap.querySelector('.vid-list-inner');
-    videos.forEach((v, idx) => {
+    videos.forEach(function(v, idx){
       const item = document.createElement('div');
       item.className = 'vid-list-item';
       item.innerHTML = `<div class="thumb">▶</div><div class="meta"><div class="t"></div><div class="s"></div></div><div class="playing-badge" style="display:none">● 正在播放</div>`;
       item.querySelector('.t').textContent = v.title;
       item.querySelector('.s').textContent = v.author;
-      item.addEventListener('click', () => playVideo(idx));
+      item.addEventListener('click', ()=>playVideo(idx));
       listInner.appendChild(item);
     });
+
     grid.parentNode.insertBefore(playerWrap, grid);
     cards.forEach(c => c.style.display = 'none');
+
     const mainPlayer = playerWrap.querySelector('#mainPlayer');
     const infoTitle = playerWrap.querySelector('.vid-title');
     const infoAuthor = playerWrap.querySelector('.vid-author');
     const listPanel = playerWrap.querySelector('.vid-list-panel');
     const listBtn = playerWrap.querySelector('.playlist-btn');
     let currentIdx = -1;
+
     function playVideo(idx){
       currentIdx = idx;
       mainPlayer.src = videos[idx].src;
       infoTitle.textContent = videos[idx].title;
       infoAuthor.textContent = videos[idx].author;
-      listInner.querySelectorAll('.vid-list-item').forEach((it, i) => {
+      const items = listInner.querySelectorAll('.vid-list-item');
+      items.forEach((it,i)=>{
         it.classList.toggle('playing', i===idx);
         it.querySelector('.playing-badge').style.display = i===idx?'block':'none';
       });
       listPanel.classList.remove('open');
     }
-    listBtn.addEventListener('click', () => listPanel.classList.toggle('open'));
+
+    listBtn.addEventListener('click', ()=>listPanel.classList.toggle('open'));
     if(videos.length > 0) playVideo(0);
   });
 })();

@@ -231,7 +231,7 @@ MD30  <span class="c">// 32 位运算结果</span>
       </div>
     </div>
 
-    <div class="chapter">
+    <div class="chapter detail">
       <div class="no">02</div>
       <div>
         <h3>硬件选型与项目创建</h3>
@@ -242,6 +242,174 @@ MD30  <span class="c">// 32 位运算结果</span>
           <span class="tag">符号表 Tags</span>
           <span class="tag">设备命名</span>
         </div>
+
+        <!-- === 02 详解：CPU 选型 === -->
+        <div class="detail-block">
+          <div class="detail-title">🔧 S7-1200 CPU 家族选型对比</div>
+          <div class="detail-body">
+            <p>S7-1200 系列紧凑型 PLC 共 6 款 CPU，根据 <b style="color:var(--cyan)">I/O 点数、存储器、通信接口</b> 选择合适型号：</p>
+            <table class="tbl dtype-tbl">
+              <thead>
+                <tr><th>型号</th><th>DI</th><th>DO</th><th>AI</th><th>AQ</th><th>存储器</th><th>通信</th><th>典型场景</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><code>CPU 1211C</code></td><td>6</td><td>4</td><td>2</td><td>2</td><td>1 MB</td><td>PROFINET × 1</td><td>小型单机、学习入门</td></tr>
+                <tr><td><code>CPU 1212C</code></td><td>8</td><td>6</td><td>2</td><td>2</td><td>2 MB</td><td>PROFINET × 1</td><td>小型设备、2~3 个扩展模块</td></tr>
+                <tr><td><code>CPU 1214C</code></td><td>14</td><td>10</td><td>2</td><td>2</td><td>4 MB</td><td>PROFINET × 1</td><td>中型设备、最多 8 个扩展</td></tr>
+                <tr><td><code>CPU 1215C</code></td><td>14</td><td>10</td><td>2</td><td>2</td><td>4 MB</td><td>PN × 2（交换）</td><td>双网口、分布式架构</td></tr>
+                <tr><td><code>CPU 1217C</code></td><td>14</td><td>10</td><td>2</td><td>2</td><td>4 MB</td><td>PN × 2 + CM1241</td><td>高速脉冲、S7 通信</td></tr>
+                <tr><td><code>CPU 1217C DC/DC/DC</code></td><td>16</td><td>16</td><td>2</td><td>2</td><td>4 MB</td><td>PN × 2</td><td>高密度 I/O、特殊应用</td></tr>
+              </tbody>
+            </table>
+            <p style="margin-top:10px"><b style="color:var(--warn)">选型建议</b>：</p>
+            <ul class="detail-list">
+              <li><b>入门学习</b>：选 CPU 1211C 或 1212C，价格低、IO 够用，PLCSIM 仿真无硬件门槛。</li>
+              <li><b>实际项目</b>：根据 DI/DO 数量 × 1.2 裕量选型号，模拟量需求多注意 AI/AQ 点数。</li>
+              <li><b>固件版本</b>：必须 >= <code>V4.5</code> 支持 TIA V17，<code>V4.6+</code> 支持 TIA V18，在 TIA 中组态时选对应版本。</li>
+              <li><b>许可证</b>：S7-1200 不需要额外授权（S7-1500 需要），开箱即用。</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- === 02 详解：扩展模块 === -->
+        <div class="detail-block">
+          <div class="detail-title">📦 S7-1200 扩展模块认知</div>
+          <div class="detail-body">
+            <p>S7-1200 通过 <b style="color:var(--cyan)">右侧扩展接口</b>（不是左侧）连接扩展模块，最多 <code>8</code> 个扩展模块（1211C 最多 2 个）。常见模块分类：</p>
+            <table class="tbl dtype-tbl">
+              <thead>
+                <tr><th>类型</th><th>型号</th><th>规格</th><th>用途</th></tr>
+              </thead>
+              <tbody>
+                <tr><td rowspan="3"><b style="color:var(--cyan)">数字量 DI</b></td><td>SM 1221</td><td>16 × DI 24V DC</td><td>扩展数字量输入</td></tr>
+                <tr><td>SM 1221 DI 8</td><td>8 × DI 24V DC</td><td>紧凑型扩展</td></tr>
+                <tr><td>SM 1221 DI 16</td><td>16 × DI 24V DC</td><td>大容量扩展</td></tr>
+                <tr><td rowspan="3"><b style="color:var(--warn)">数字量 DO</b></td><td>SM 1222</td><td>16 × DO 24V DC</td><td>扩展数字量输出</td></tr>
+                <tr><td>SM 1222 DO 8</td><td>8 × DO 24V DC</td><td>继电器输出</td></tr>
+                <tr><td>SM 1222 DO 16</td><td>16 × DO 24V DC</td><td>晶体管输出</td></tr>
+                <tr><td rowspan="3"><b style="color:var(--brand)">模拟量 AI</b></td><td>SM 1231</td><td>4 × AI（13 位）</td><td>扩展模拟量输入</td></tr>
+                <tr><td>SM 1231 AI 8</td><td>8 × AI（13 位）</td><td>多通道温度/压力</td></tr>
+                <tr><td>SM 1231 AI 4 TC</td><td>4 × AI 热电偶</td><td>直接接热电偶</td></tr>
+                <tr><td rowspan="2"><b style="color:var(--ok)">模拟量 AQ</b></td><td>SM 1232</td><td>2 × AQ（14 位）</td><td>扩展模拟量输出</td></tr>
+                <tr><td>SM 1232 AQ 4</td><td>4 × AQ（14 位）</td><td>多路 PID 输出</td></tr>
+                <tr><td rowspan="2"><b style="color:var(--cyan)">通信模块</b></td><td>CM 1241 RS485</td><td>RS-485 Modbus</td><td>串口通信</td></tr>
+                <tr><td>CM 1241 RS232</td><td>RS-232</td><td>点对点通信</td></tr>
+              </tbody>
+            </table>
+            <p style="margin-top:8px"><b style="color:var(--warn)">模块地址</b>：数字量自动编址从 <code>I0.0 / Q0.0</code> 开始，模拟量默认 <code>AIW256 / AQW256</code>，可在 TIA 中手动修改。</p>
+            <p class="tip" style="margin-top:8px">💡 <b>选型技巧</b>：热电偶/热电阻信号优先选 <code>SM 1231 AI TC</code>，省去外部变送器；大电流输出选 <code>SM 1222 DO 16</code> 晶体管型，继电器型适合低频开关。</p>
+          </div>
+        </div>
+
+        <!-- === 02 详解：项目创建 === -->
+        <div class="detail-block">
+          <div class="detail-title">🆕 新建项目与硬件组态步骤</div>
+          <div class="detail-body">
+            <p>在 TIA Portal 中创建一个完整项目，需依次完成以下 5 步：</p>
+            <div class="flow-diagram">
+              <div class="flow-node"><span class="flow-num">1</span>启动 TIA<br><small>选择"创建新项目"</small></div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node"><span class="flow-num">2</span><b>输入项目名</b><br><small>英文命名如 MotorControl</small></div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node"><span class="flow-num">3</span><b>选择存储路径</b><br><small>C:\TIA\Projects\（禁中文！）</small></div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node"><span class="flow-num">4</span><b>添加 CPU</b><br><small>拖拽 CPU 1214C 到设备组态</small></div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node"><span class="flow-num">5</span><b>配置模块</b><br><small>添加 DI/AQ/通信扩展</small></div>
+            </div>
+            <div class="deep-dive" style="margin-top:12px">
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag cyan">Step 1-2</span>启动与命名</div>
+                <p>双击桌面 TIA Portal 快捷方式 → 在欢迎界面选择 <b>"创建新项目"</b>（Create new project）。项目名必须用 <b>英文+数字+下划线</b>，如 <code>Motor_Control_V1</code>，中文命名会导致编译错误。</p>
+                <pre class="code"><span class="c">// 推荐命名规范</span>
+<span class="c">// 项目名：{设备}_{功能}_{版本}</span>
+Conveyor_PackLine_V2      <span class="c">// 输送机-包装线-版本2</span>
+Mixing_Dosing_System_V1   <span class="c">// 搅拌-配料系统-版本1</span>
+
+<span class="c">// 存储路径：根目录无中文</span>
+C:\TIA\Projects\Conveyor_PackLine_V1\  <span class="c">// ✅ 正确</span>
+D:\博途项目\输送机\                  <span class="c">// ❌ 错误：含中文路径</span></pre>
+              </div>
+
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag warn">Step 3-4</span>添加 CPU 与固件版本</div>
+                <p>项目创建后进入 <b>项目视图</b>，左侧 <code>项目树 → 设备组态</code> → 双击打开硬件配置界面。在右侧 <code>硬件目录</code> 中找到 <code>S7-1200 → CPU</code>，拖拽对应型号到中间机架区域。</p>
+                <pre class="code"><span class="c">// 添加 CPU 后配置固件版本</span>
+<span class="c">// 右键 CPU → 属性 → 固件版本</span>
+CPU 1214C V4.6  <span class="c">// TIA V17 默认，支持最新指令</span>
+
+<span class="c">// 根据实际硬件选择</span>
+<span class="c">// 实物固件 V4.5 → TIA 中也选 V4.5</span>
+<span class="c">// 否则下载时提示"固件版本不匹配"</span></pre>
+                <p class="tip">💡 <b>PLCSIM 仿真</b>：没有硬件时选任意版本均可，仿真不检查固件匹配。</p>
+              </div>
+
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag brand">Step 5</span>扩展模块与地址配置</div>
+                <p>在硬件目录中选择扩展模块，<b>拖拽到 CPU 右侧</b>（注意方向！S7-1200 扩展接口在右侧）。默认自动编址，可手动调整。</p>
+                <pre class="code"><span class="c">// 典型硬件配置示例</span>
+<span class="c">// 插槽 0: CPU 1214C DC/DC/DC（14DI + 10DO + 2AI + 2AQ）</span>
+<span class="c">// 插槽 1: SM 1222 DO 16（扩展 16 点 DO）→ Q2.0 ~ Q3.7</span>
+<span class="c">// 插槽 2: SM 1231 AI 8（扩展 8 路 AI）→ AIW256 ~ AIW270</span>
+<span class="c">// 插槽 3: SM 1232 AQ 4（扩展 4 路 AQ）→ AQW256 ~ AQW262</span>
+
+<span class="c">// 右键模块 → 属性 → 启动时禁用 / 诊断中断</span></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- === 02 详解：符号表管理 === -->
+        <div class="detail-block">
+          <div class="detail-title">🏷 符号表（Tags）与变量命名规范</div>
+          <div class="detail-body">
+            <p>符号表是 TIA Portal 的核心功能，<b style="color:var(--cyan)">所有 I/O 和中间变量都必须用符号名</b>（Tag），禁止直接使用 <code>I0.0</code>、<code>M0.0</code> 这种绝对地址。</p>
+            <div class="deep-dive">
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag cyan">符号表结构</span></div>
+                <p>符号表按 <b>功能分组</b>，每个 Tag 包含：</p>
+                <table class="tbl dtype-tbl">
+                  <thead><tr><th>字段</th><th>说明</th><th>示例</th></tr></thead>
+                  <tbody>
+                    <tr><td>名称（Name）</td><td>变量符号名</td><td><code>Motor_Start</code></td></tr>
+                    <tr><td>数据类型</td><td>BOOL / INT / REAL 等</td><td><code>Bool</code></td></tr>
+                    <tr><td>地址（Address）</td><td>绝对地址</td><td><code>%I0.0</code></td></tr>
+                    <tr><td>注释（Comment）</td><td>中文说明</td><td><code>电机启动按钮</code></td></tr>
+                    <tr><td>保持性</td><td>断电保持标记</td><td><code>√（仅 M/DB 区）</code></td></tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag warn">命名规范</span></div>
+                <p>推荐使用 <b>前缀+功能</b> 命名法，一眼看出变量类型和用途：</p>
+                <pre class="code"><span class="c">// 推荐命名规范（匈牙利命名法）</span>
+<span class="c">// 输入区 I：前缀 I_ 或直接功能名</span>
+I_StartButton       <span class="c">// 启动按钮（BOOL）</span>
+I_StopButton        <span class="c">// 停止按钮（BOOL）</span>
+I_TempSensor        <span class="c">// 温度传感器（REAL）</span>
+I_LevelHigh         <span class="c">// 高液位开关（BOOL）</span>
+
+<span class="c">// 输出区 Q：前缀 Q_</span>
+Q_MotorRun          <span class="c">// 电机运行输出（BOOL）</span>
+Q_FanSpeed          <span class="c">// 风扇速度（REAL，AQ）</span>
+Q_AlarmLamp         <span class="c">// 报警灯（BOOL）</span>
+
+<span class="c">// 中间标志 M：前缀 M_ 或直接语义</span>
+Motor_StartReq      <span class="c">// 电机启动请求（自锁）</span>
+Motor_Overload      <span class="c">// 电机过载故障</span>
+Cycle_State         <span class="c">// 循环状态字（WORD）</span>
+
+<span class="c">// 数据块 DB：前缀 "DB名".字段</span>
+"MotorDB".CurrentSpeed     <span class="c">// 当前转速</span>
+"MotorDB".SetSpeed         <span class="c">// 设定转速</span>
+"RecipeDB".Tank1_Volume    <span class="c">// 罐1容量</span></pre>
+                <p class="tip">💡 <b>批量导入</b>：符号表支持 Excel/CSV 批量导入导出，大型项目可先用 Excel 规划再导入 TIA。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
       <div class="sidebar">
         <span class="tag">1 天</span>
@@ -249,7 +417,7 @@ MD30  <span class="c">// 32 位运算结果</span>
       </div>
     </div>
 
-    <div class="chapter">
+    <div class="chapter detail">
       <div class="no">03</div>
       <div>
         <h3>TIA Portal 安装与界面分区</h3>
@@ -260,6 +428,213 @@ MD30  <span class="c">// 32 位运算结果</span>
           <span class="tag">快捷键配置</span>
           <span class="tag">视图切换</span>
         </div>
+
+        <!-- === 03 详解：安装步骤 === -->
+        <div class="detail-block">
+          <div class="detail-title">💿 TIA Portal 安装详解</div>
+          <div class="detail-body">
+            <p>TIA Portal 是西门子统一的工程平台，支持 PLC、HMI、驱动等全系列产品。安装前必须了解系统要求和关键注意事项。</p>
+            <table class="tbl dtype-tbl">
+              <thead>
+                <tr><th>版本</th><th>推荐系统</th><th>CPU</th><th>内存</th><th>硬盘</th><th>备注</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><code>TIA V17</code></td><td>Win10/11 64位</td><td>i5 8代+</td><td>16 GB</td><td>≥ 80 GB</td><td>稳定版，资料最多</td></tr>
+                <tr><td><code>TIA V18</code></td><td>Win10/11 64位</td><td>i5 10代+</td><td>32 GB</td><td>≥ 120 GB</td><td>最新特性，S7-1200 FW V4.7</td></tr>
+                <tr><td><code>TIA V19</code></td><td>Win11 64位</td><td>i7+</td><td>32 GB+</td><td>≥ 200 GB</td><td>云集成、AI 辅助</td></tr>
+              </tbody>
+            </table>
+            <p style="margin-top:10px"><b style="color:var(--warn)">安装 5 步流程</b>：</p>
+            <div class="flow-diagram">
+              <div class="flow-node"><span class="flow-num">1</span>获取安装包<br><small>ISO 镜像 + 许可证</small></div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node"><span class="flow-num">2</span><b>断网+关杀毒</b><br><small>防止误删 DLL 导致失败</small></div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node"><span class="flow-num">3</span><b>指定安装路径</b><br><small>C:\TIA\Portal V17\（纯英文）</small></div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node"><span class="flow-num">4</span><b>等待安装</b><br><small>约 30~60 分钟</small></div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node"><span class="flow-num">5</span><b>激活许可证</b><br><small>选择永久/试用</small></div>
+            </div>
+            <div class="deep-dive" style="margin-top:12px">
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag cyan">关键注意事项</span></div>
+                <pre class="code"><span class="c">// ❌ 绝对禁止：安装路径含中文</span>
+D:\软件\西门子\TIA Portal V17\    <span class="c">// 报错：找不到组件</span>
+E:\Program Files\博途\          <span class="c">// 编译时莫名其妙失败</span>
+
+<span class="c">// ✅ 正确做法：纯英文+无空格</span>
+C:\TIA\Portal_V17\              <span class="c">// 推荐默认路径</span>
+D:\Siemens\TIAV18\              <span class="c">// 自定义也可以</span>
+
+<span class="c">// 安装前检查清单</span>
+<span class="c">// 1. 关闭 Windows Defender 实时防护</span>
+<span class="c">// 2. 断开网络（防止许可证在线验证出问题）</span>
+<span class="c">// 3. 确保系统盘有 30GB+ 剩余空间</span>
+<span class="c">// 4. 卸载旧版本 TIA（建议用官方卸载工具）</span>
+<span class="c">// 5. 管理员权限运行 Setup.exe</span></pre>
+              </div>
+
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag warn">许可证类型</span></div>
+                <table class="tbl dtype-tbl" style="margin-top:8px">
+                  <thead><tr><th>类型</th><th>说明</th><th>适用场景</th></tr></thead>
+                  <tbody>
+                    <tr><td><code>Trial</code></td><td>试用 21 天</td><td>初次体验、学习评估</td></tr>
+                    <tr><td><code>Single</code></td><td>单机永久</td><td>个人开发者</td></tr>
+                    <tr><td><code>Floating</code></td><td>浮动许可证（服务器）</td><td>企业多人协作</td></tr>
+                    <tr><td><code>USB</code></td><td>加密狗硬件</td><td>现场调试、移动办公</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- === 03 详解：界面分区 === -->
+        <div class="detail-block">
+          <div class="detail-title">🖥 TIA Portal 4 大工作区详解</div>
+          <div class="detail-body">
+            <p>TIA Portal 界面分为 4 个核心区域，每个区域各司其职：</p>
+            <table class="tbl dtype-tbl">
+              <thead>
+                <tr><th>区域</th><th>位置</th><th>功能</th><th>快捷操作</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><b style="color:var(--cyan)">① 项目树</b></td><td>左侧</td><td>项目结构导航（设备/块/变量/HMI）</td><td><code>Ctrl+1</code> 聚焦</td></tr>
+                <tr><td><b style="color:var(--warn)">② 编辑区</b></td><td>中间</td><td>代码/组态编辑器（LAD/SCL/HMI 等）</td><td>多标签页切换</td></tr>
+                <tr><td><b style="color:var(--brand)">③ 巡视窗口</b></td><td>底部</td><td>属性/诊断/在线监控/错误列表</td><td><code>Ctrl+4</code> 切换</td></tr>
+                <tr><td><b style="color:var(--ok)">④ 指令库</b></td><td>右侧</td><td>指令拖拽面板（按类型分组）</td><td><code>Ctrl+Shift+K</code> 搜索</td></tr>
+              </tbody>
+            </table>
+            <div class="deep-dive" style="margin-top:12px">
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag cyan">项目树（左侧）</span></div>
+                <p>项目树是 TIA 的 <b>导航中枢</b>，按层级组织所有对象：</p>
+                <pre class="code"><span class="c">// 项目树典型结构</span>
+📁 MyProject
+├── 📂 设备组态
+│   └── S7-1200 CPU 1214C
+│       ├── 设备参数
+│       ├── 启动组织块
+│       └── 保护
+├── 📂 PLC_1
+│   ├── 📂 程序块
+│   │   ├── OB1 主程序循环
+│   │   ├── FB1_Motor 电机功能块
+│   │   ├── FC1_Switch 开关功能
+│   │   └── DB1_Motor 电机数据块
+│   ├── 📂 变量表（符号表）
+│   ├── 📂 监控表
+│   └── 📂 日志
+├── 📂 HMI_1（如有）
+└── 📂 外部源文件</pre>
+                <p class="tip">💡 双击任意对象在编辑区打开，右键可复制/删除/导出/对比。</p>
+              </div>
+
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag warn">编辑区（中间）</span></div>
+                <p>编辑区是 <b>主战场</b>，支持多标签页、多窗口并排。不同对象有不同编辑器：</p>
+                <table class="tbl dtype-tbl">
+                  <thead><tr><th>对象类型</th><th>编辑器</th><th>支持语言</th></tr></thead>
+                  <tbody>
+                    <tr><td>程序块 OB/FB/FC</td><td>代码编辑器</td><td>LAD / FBD / SCL / STL / GRAPH</td></tr>
+                    <tr><td>数据块 DB</td><td>变量编辑器</td><td>表格/梯形图视图</td></tr>
+                    <tr><td>符号表</td><td>表格编辑器</td><td>统一变量定义</td></tr>
+                    <tr><td>硬件组态</td><td>图形编辑器</td><td>机架+模块拖拽</td></tr>
+                    <tr><td>HMI 画面</td><td>可视化编辑器</td><td>拖拽控件 + 动画</td></tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag brand">巡视窗口（底部）</span></div>
+                <p>巡视窗口是 <b>调试核心</b>，包含 4 个标签页：</p>
+                <ul class="detail-list">
+                  <li><b>属性</b>：当前选中对象的所有属性（地址、数据类型、注释等），修改即时生效。</li>
+                  <li><b>诊断</b>：PLC 诊断缓冲区（启动、错误、报警记录），支持导出为 TXT。</li>
+                  <li><b>在线</b>：在线监控时显示变量实时值（BOOL 显示指示灯、REAL 显示数值）。</li>
+                  <li><b>编译</b>：编译错误列表，点击跳转到出错行。</li>
+                </ul>
+                <p class="tip">💡 底部巡视窗口可拖拽调整高度，也可 <code>Ctrl+Shift+D</code> 关闭/打开。</p>
+              </div>
+
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag ok">指令库（右侧）</span></div>
+                <p>指令库按 <b>功能分类</b> 组织所有 LAD/FBD/SCL 指令，支持拖拽到编辑器：</p>
+                <pre class="code"><span class="c">// 指令库分类（LAD 模式）</span>
+📁 基本指令
+├── 触点（常开/常闭/上升沿/下降沿）
+├── 线圈（输出/反向/立即）
+├── 比较框（==, !=, <, >, <=, >=）
+└── 逻辑运算（AND/OR/XOR/NOT）
+
+📁 定时器
+├── S5 定时器（S_PULSE, S_PEXT, S_TON, S_TO, S_TOF）
+└── IEC 定时器（TONR, TP, TON, TOF）
+
+📁 计数器
+├── S5 计数器（S_CU, S_CD, S_CUD）
+└── IEC 计数器（CTU, CTD, CTUD）
+
+📁 数学运算
+├── 基本运算（ADD, SUB, MUL, DIV）
+├── 浮点运算（SIN, COS, SQRT, LN, EXP）
+└── 转换（CONVERT, ROUND, TRUNC）
+
+📁 移动/移位
+├── MOVE, MOVE_BLK
+├── SHL, SHR, ROL, ROR
+└── FILL_BLK
+
+📁 程序控制
+├── JMP, JMPC, JMPCN
+├── CAL, CALL（调用块）
+├── RETURN, RETI</pre>
+                <p class="tip">💡 指令库搜索：在指令库空白处直接键入指令名（如 <code>TOn</code>），快速定位。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- === 03 详解：视图切换与定制 === -->
+        <div class="detail-block">
+          <div class="detail-title">⚙ 视图切换与界面定制</div>
+          <div class="detail-body">
+            <p>TIA 提供两种视图模式，可根据工作场景切换：</p>
+            <table class="tbl dtype-tbl">
+              <thead>
+                <tr><th>视图</th><th>特点</th><th>适用场景</th><th>切换方式</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><b>门户视图</b></td><td>首页概览</td><td>启动时、最近项目</td><td><code>Ctrl+Alt+P</code></td></tr>
+                <tr><td><b>项目视图</b></td><td>完整工程环境</td><td>日常编程调试</td><td><code>Ctrl+Alt+V</code></td></tr>
+              </tbody>
+            </table>
+            <p style="margin-top:10px"><b style="color:var(--cyan)">界面定制</b>：</p>
+            <ul class="detail-list">
+              <li><b>窗口布局</b>：拖拽面板边缘可调整大小，右键面板标题可"浮动"或"停靠"。</li>
+              <li><b>保存布局</b>：<code>视图 → 保存布局</code>，下次启动自动恢复。</li>
+              <li><b>快捷键自定义</b>：<code>工具 → 自定义 → 键盘</code>，修改任意操作快捷键。</li>
+              <li><b>颜色主题</b>：<code>工具 → 设置 → 外观</code>，深色/浅色模式切换（V17+ 支持暗色）。</li>
+              <li><b>语言切换</b>：<code>工具 → 设置 → 语言</code>，支持英文/中文/德文等 8 种语言（需安装语言包）。</li>
+            </ul>
+            <pre class="code"><span class="c">// 常用快捷键速查</span>
+Ctrl + Alt + V     <span class="c">// 切换到项目视图</span>
+Ctrl + 1           <span class="c">// 聚焦项目树</span>
+Ctrl + 4           <span class="c">// 切换巡视窗口标签</span>
+Ctrl + Shift + D    <span class="c">// 显示/隐藏巡视窗口</span>
+Ctrl + Shift + K    <span class="c">// 聚焦指令库搜索</span>
+Ctrl + .           <span class="c">// 放大编辑区</span>
+Ctrl + ,           <span class="c">// 缩小编辑区</span>
+Ctrl + 0           <span class="c">// 重置缩放</span>
+F11                <span class="c">// 编译当前块</span>
+Ctrl + B           <span class="c">// 编译全部</span>
+Ctrl + L           <span class="c">// 开始在线监控</span>
+Ctrl + Shift + L    <span class="c">// 停止在线监控</span></pre>
+          </div>
+        </div>
+
       </div>
       <div class="sidebar">
         <span class="tag">1 天</span>
@@ -267,23 +642,297 @@ MD30  <span class="c">// 32 位运算结果</span>
       </div>
     </div>
 
-    <div class="chapter">
+    <div class="chapter detail">
       <div class="no">04</div>
       <div>
         <h3>LAD 梯形图基础指令组</h3>
         <div class="desc">常开/常闭触点、输出线圈、S/R 置复位、TON/TOF/TP 三种定时器、CTU/CTD 计数器、TONR 保持定时器，结合实例逐个掌握。</div>
-        <pre class="code"><span class="c">// 启保停（自锁）</span>
-<span class="c">//   I0.0 启动     I0.1 停止</span>
-<span class="c">// |─┤ ├─┬─┤/├─( Q0.1 电机输出 )─|</span>
-<span class="c">//       │</span>
-<span class="c">//   Q0.1│</span>
-<span class="c">//   |─┤ ├─┘</span></pre>
         <div class="kw">
           <span class="tag cyan">触点/线圈</span>
           <span class="tag">S/R 置复位</span>
           <span class="tag">TON TOF TP</span>
           <span class="tag">CTU CTD</span>
         </div>
+
+        <!-- === 04 详解：触点与线圈 === -->
+        <div class="detail-block">
+          <div class="detail-title">🔘 触点与线圈：LAD 基本元素</div>
+          <div class="detail-body">
+            <p>LAD（梯形图）用 <b>继电器图形符号</b> 表达逻辑，最基本的两个元素是 <b>触点</b> 和 <b>线圈</b>：</p>
+            <table class="tbl dtype-tbl">
+              <thead>
+                <tr><th>元素</th><th>符号</th><th>说明</th><th>对应指令</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><b>常开触点</b></td><td><code>─┤ ├─</code></td><td>条件为 ON 时导通</td><td><code>|--|</code></td></tr>
+                <tr><td><b>常闭触点</b></td><td><code>─┤/├─</code></td><td>条件为 OFF 时导通</td><td><code>|--|/|</code></td></tr>
+                <tr><td><b>上升沿触点</b></td><td><code>─┤↑├─</code></td><td>信号 0→1 跳变时导通 1 周期</td><td><code>|--P|</code></td></tr>
+                <tr><td><b>下降沿触点</b></td><td><code>─┤↓├─</code></td><td>信号 1→0 跳变时导通 1 周期</td><td><code>|--N|</code></td></tr>
+                <tr><td><b>输出线圈</b></td><td><code>─( )─</code></td><td>条件满足时输出 ON</td><td><code>-( )</code></td></tr>
+                <tr><td><b>反向线圈</b></td><td><code>─(/)─</code></td><td>条件满足时输出 OFF</td><td><code>-(/)</code></td></tr>
+                <tr><td><b>立即线圈</b></td><td><code>─(I)─</code></td><td>立即刷新输出（跳过映象区）</td><td><code>-(I)</code></td></tr>
+              </tbody>
+            </table>
+            <div class="deep-dive" style="margin-top:12px">
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag cyan">常开 vs 常闭触点</span></div>
+                <p><b>常开触点（NO）</b>：对应继电器逻辑中的"断开"状态。当 I0.0 = 1（按钮按下）时，触点闭合导通；I0.0 = 0（按钮松开）时，触点断开。</p>
+                <pre class="code"><span class="c">// 常开触点示例</span>
+<span class="c">// I0.0 是启动按钮（常开）</span>
+<span class="c">// 按钮松开 → I0.0 = 0 → 触点断开 → Q0.1 无输出</span>
+<span class="c">// 按钮按下 → I0.0 = 1 → 触点闭合 → Q0.1 有输出</span>
+
+|-- I0.0 --|-- Q0.1 (电机) --|
+  常开触点     输出线圈</pre>
+                <p><b>常闭触点（NC）</b>：对应继电器逻辑中的"闭合"状态。当 I0.0 = 1（按钮按下）时，触点断开；I0.0 = 0（按钮松开）时，触点闭合导通。</p>
+                <pre class="code"><span class="c">// 常闭触点示例（急停按钮）</span>
+<span class="c">// I0.1 是急停按钮（常闭接入）</span>
+<span class="c">// 正常 → I0.1 = 1 → 常闭触点断开？不！</span>
+<span class="c">// 急停未按下：I0.1 = 1 → 常闭触点 ┤/├ 导通</span>
+<span class="c">// 急停按下：I0.1 = 0 → 常闭触点 ┤/├ 断开</span>
+
+|-- I0.0 --┤/├── Q0.1 (电机) --|
+  启动    急停(常闭)  输出</pre>
+                <p class="tip">💡 <b>硬件配线</b>：急停按钮应接 <b>常闭触点</b> 到 PLC 输入端。正常状态 I 为 1（ON），急停按下时 I 变为 0（OFF）。这样即使线缆断裂也会触发停机，安全回路设计原则。</p>
+              </div>
+
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag warn">启保停（自锁）电路</span></div>
+                <p>这是 LAD 中最经典的电路，用 <b>自身触点锁定输出</b>，实现"启动后持续运行，直到停止"：</p>
+                <pre class="code"><span class="c">// 启保停（自锁）完整电路</span>
+<span class="c">// 输入：I0.0 启动按钮（常开）</span>
+<span class="c">//       I0.1 停止按钮（常开）</span>
+<span class="c">// 输出：Q0.1 电机运行</span>
+
+|-- I0.0 --┬─┤/├──( Q0.1 )--|
+  启动     │  I0.1 停止   输出
+           │  (常闭)
+           └─ Q0.1
+              自锁触点(常开)</pre>
+                <p><b>工作原理</b>：</p>
+                <ol style="color:var(--muted);line-height:1.9;margin-left:18px">
+                  <li>按下 I0.0 → 导通 → Q0.1 得电输出</li>
+                  <li>Q0.1 常开触点闭合 → 替代 I0.0 持续导通（自锁）</li>
+                  <li>松开 I0.0 → 不影响，自锁维持</li>
+                  <li>按下 I0.1（停止）→ 常闭触点断开 → Q0.1 失电</li>
+                  <li>松开 I0.1 → 回路重新就绪，等待下次启动</li>
+                </ol>
+                <p class="tip">💡 实际项目中建议用 <b>M 区中间变量</b> 做自锁，避免 Q 区竞争问题：<code>Motor_StartReq</code>（M0.0）作为自锁标志，最后驱动 Q0.1。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- === 04 详解：S/R 置复位 === -->
+        <div class="detail-block">
+          <div class="detail-title">🔄 S/R 置位与复位指令</div>
+          <div class="detail-body">
+            <p><b>S（Set 置位）</b> 把目标地址设为 1 并保持，<b>R（Reset 复位）</b> 把目标地址设为 0 并保持。与线圈的区别是：<b>触发一次即可永久改变状态</b>，无论条件是否持续。</p>
+            <table class="tbl dtype-tbl">
+              <thead>
+                <tr><th>指令</th><th>符号</th><th>功能</th><th>触发方式</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><code>S</code></td><td><code>─( S )─</code></td><td>置位为 1 并保持</td><td>条件导通时</td></tr>
+                <tr><td><code>R</code></td><td><code>─( R )─</code></td><td>复位为 0 并保持</td><td>条件导通时</td></tr>
+                <tr><td><code>RS</code></td><td>RS 触发器</td><td>优先复位的双稳态</td><td>S/R 同时有效时 R 优先</td></tr>
+                <tr><td><code>SR</code></td><td>SR 触发器</td><td>优先置位的双稳态</td><td>S/R 同时有效时 S 优先</td></tr>
+              </tbody>
+            </table>
+            <div class="deep-dive" style="margin-top:12px">
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag cyan">S/R 与线圈的区别</span></div>
+                <pre class="code"><span class="c">// 普通线圈：条件断开 → 输出立即断开</span>
+|-- I0.0 ----( Q0.1 )--|   <span class="c">// I0.0=1 时 Q0.1=1</span>
+                            <span class="c">// I0.0=0 时 Q0.1=0</span>
+
+<span class="c">// S 置位线圈：条件断开 → 输出保持为 1</span>
+|-- I0.0 ----( S Q0.1 )--|  <span class="c">// I0.0=1 时 Q0.1 置 1</span>
+                             <span class="c">// I0.0=0 时 Q0.1 仍为 1</span>
+
+|-- I0.1 ----( R Q0.1 )--|  <span class="c">// I0.1=1 时 Q0.1 复位为 0</span></pre>
+                <p><b>S/R 规则</b>：</p>
+                <ul class="detail-list">
+                  <li>同一地址的 S 和 R 可以写在不同网络（Network），不必紧挨着。</li>
+                  <li>扫描周期内，<b>最后执行的那条有效</b>（S 和 R 同时导通时取决于程序位置）。</li>
+                  <li>S/R 触发器块（RS/SR）可在同一位置处理 S 和 R，带优先级。</li>
+                </ul>
+              </div>
+
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag warn">应用场景：故障锁存</span></div>
+                <p>当故障是 <b>脉冲型</b>（如传感器瞬时触发），需要用 S/R 锁存，直到人工复位：</p>
+                <pre class="code"><span class="c">// 故障锁存电路</span>
+<span class="c">// I0.2 过载传感器（脉冲型，可能瞬时触发）</span>
+<span class="c">// I0.3 故障复位按钮</span>
+<span class="c">// M10.0 故障标志（锁存）</span>
+
+|-- I0.2 ----( S M10.0 )--|   <span class="c">// 过载触发 → 置位故障</span>
+|-- I0.3 ----( R M10.0 )--|   <span class="c">// 人工复位 → 清除故障</span>
+
+<span class="c">// 用 M10.0 控制报警灯和停机</span>
+|-- M10.0 --┤/├──( Q0.1 电机 )--|  <span class="c">// 故障时停机</span>
+|-- M10.0 ----( Q0.5 报警灯 )--|   <span class="c">// 故障时亮灯</span></pre>
+                <p class="tip">💡 这是工业项目中最常用的锁存方式，<b>所有故障报警都应使用 S/R 锁存</b>，确保瞬时故障不遗漏。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- === 04 详解：定时器 === -->
+        <div class="detail-block">
+          <div class="detail-title">⏱ 定时器指令详解（TON / TOF / TP / TONR）</div>
+          <div class="detail-body">
+            <p>定时器是 PLC 中最常用的指令之一，<b>S7-1200 推荐使用 IEC 定时器</b>（TON/TOF/TP/TONR），比传统 S5 定时器更灵活、精度更高。</p>
+            <table class="tbl dtype-tbl">
+              <thead>
+                <tr><th>类型</th><th>全称</th><th>工作方式</th><th>启动条件</th><th>复位方式</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><code>TON</code></td><td>Timer On Delay</td><td>通电延时</td><td>IN 上升沿</td><td>IN 断开 / R 复位</td></tr>
+                <tr><td><code>TOF</code></td><td>Timer Off Delay</td><td>断电延时</td><td>IN 下降沿</td><td>IN 闭合 / R 复位</td></tr>
+                <tr><td><code>TP</code></td><td>Timer Pulse</td><td>脉冲定时</td><td>IN 上升沿</td><td>自动（时间到）</td></tr>
+                <tr><td><code>TONR</code></td><td>Timer On Delay Retentive</td><td>保持型通电延时</td><td>IN 上升沿</td><td>R 复位（累计值保持）</td></tr>
+              </tbody>
+            </table>
+            <div class="deep-dive" style="margin-top:12px">
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag cyan">TON 通电延时定时器</span></div>
+                <p>IN 变为 1 后开始计时，达到 PT（预设时间）时 Q 输出变为 1。IN 断开立即复位。</p>
+                <pre class="code"><span class="c">// TON 定时器梯形图</span>
+|-- I0.0 ----[ TON T1, T#5S ]----|
+  触发输入        ↑       ↑
+              定时器   预设时间
+  
+<span class="c">// 时序图</span>
+<span class="c">// IN:  ┌───┐              ┌───</span>
+<span class="c">//      │   │              │</span>
+<span class="c">//      ┘   └──────────────┘</span>
+<span class="c">// Q:   ┌────────────────┐  ┌───</span>
+<span class="c">//      │                │  │</span>
+<span class="c">//      ┘                └──┘</span>
+<span class="c">//      │←   5 秒   →│</span>
+
+<span class="c">// 应用：电机星-三角启动延时切换</span>
+|-- Q0.1(星型) --[ TON T1, T#3S ]----|  <span class="c">// 星型运行 3 秒</span>
+|-- T1.Q ----( Q0.2(三角形) )--|         <span class="c">// 3 秒后切三角型</span>
+|-- T1.Q ----( R Q0.1(星型) )--|         <span class="c">// 同时断开星型</span></pre>
+              </div>
+
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag warn">TOF 断电延时定时器</span></div>
+                <p>IN 变为 1 时 Q 立即输出 1，IN 变为 0 后开始计时，达到 PT 时 Q 变为 0。</p>
+                <pre class="code"><span class="c">// TOF 定时器梯形图</span>
+|-- I0.0 ----[ TOF T2, T#10S ]----|
+  触发输入        ↑        ↑
+              定时器    预设时间
+
+<span class="c">// 时序图</span>
+<span class="c">// IN:  ┌───┐              ┌───</span>
+<span class="c">//      │   │              │</span>
+<span class="c">//      ┘   └──────────────┘</span>
+<span class="c">// Q:   ┌──────────────────────┐  ┌─</span>
+<span class="c">//      │                      │  │</span>
+<span class="c">//      ┘                      └──┘</span>
+<span class="c">//          │←  10 秒  →│
+
+<span class="c">// 应用：风扇延时停机（电机停后风扇继续转 10 秒散热）</span>
+|-- Q0.1(电机) --[ TOF T3, T#10S ]----|
+|-- T3.Q ----( Q0.3(风扇) )--|           <span class="c">// 电机停后风扇延时停</span></pre>
+              </div>
+
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag brand">TP 脉冲定时器 + TONR 保持定时器</span></div>
+                <pre class="code"><span class="c">// TP 脉冲定时器：触发后输出固定宽度脉冲</span>
+<span class="c">// IN 上升沿 → Q 输出 PT 时间宽度脉冲</span>
+|-- I0.0 ----[ TP T4, T#2S ]----|
+  启动按钮     定时器
+  
+<span class="c">// 时序图</span>
+<span class="c">// IN:  ┌─┐    ┌─┐    ┌────</span>
+<span class="c">//      │ │    │ │    │</span>
+<span class="c">//      ┘ └────┘ └────┘</span>
+<span class="c">// Q:   ┌──┐ ┌──┐ ┌──┐</span>
+<span class="c">//      │  │ │  │ │  │</span>
+<span class="c">//      ┘  └─┘  └─┘  └─</span>
+<span class="c">//      |2s| |2s| |2s|
+
+<span class="c">// 应用：按钮触发固定时间动作（如气缸动作 2 秒）</span>
+|-- I0.0(按钮) --[ TP T4, T#2S ]----|
+|-- T4.Q ----( Q0.2(气缸) )--|
+
+<span class="c">// TONR 保持型：累计计时，断电保持已计时间</span>
+<span class="c">// 适合间歇工作的累计计时场景</span>
+|-- I0.0(运行信号) --[ TONR T5, T#8H ]----|
+|-- T5.Q ----( M20.0(保养提醒) )--|
+|-- I0.1(保养复位) --( R T5 )--|  <span class="c">// 手动复位累计时间</span></pre>
+                <p class="tip">💡 <b>TIMER_DB 方式</b>：TIA V17+ 推荐用 IEC 定时器时自动分配独立 DB，每个定时器有唯一实例数据，避免地址冲突。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- === 04 详解：计数器 === -->
+        <div class="detail-block">
+          <div class="detail-title">🔢 计数器指令详解（CTU / CTD / CTUD）</div>
+          <div class="detail-body">
+            <p>计数器用于 <b>事件计数</b>，S7-1200 使用 IEC 计数器，支持加计数、减计数和双向计数。</p>
+            <table class="tbl dtype-tbl">
+              <thead>
+                <tr><th>类型</th><th>功能</th><th>计数输入</th><th>复位</th><th>输出</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><code>CTU</code></td><td>加计数</td><td>CU 上升沿 +1</td><td>R 复位为 0</td><td>CV ≥ PV 时 Q=1</td></tr>
+                <tr><td><code>CTD</code></td><td>减计数</td><td>CD 上升沿 -1</td><td>R 复位为 PV</td><td>CV ≤ 0 时 Q=1</td></tr>
+                <tr><td><code>CTUD</code></td><td>双向计数</td><td>CU/CD 均可</td><td>R 复位</td><td>同 CTU/CTD</td></tr>
+              </tbody>
+            </table>
+            <div class="deep-dive" style="margin-top:12px">
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag cyan">CTU 加计数器详解</span></div>
+                <pre class="code"><span class="c">// CTU 加计数器梯形图</span>
+|-- I0.0(传感器) --[ CTU C1, PV=100 ]----|
+  计数脉冲    ↑         ↑
+              计数器    预设值(100)
+
+<span class="c">// 参数说明</span>
+<span class="c">// CU：计数脉冲输入（上升沿 +1）</span>
+<span class="c">// R：复位输入（高电平复位为 0）</span>
+<span class="c">// PV：预设值（INT 类型，最大 32767）</span>
+<span class="c">// CV：当前计数值（实时更新）</span>
+<span class="c">// Q：输出（CV ≥ PV 时置 1）</span>
+
+<span class="c">// 应用：产品计数 + 满箱报警</span>
+|-- I0.0(光电传感器) --[ CTU C1, PV=50 ]----|  <span class="c">// 每 50 个一箱</span>
+|-- C1.Q ----( Q0.3(满箱报警) )--|             <span class="c">// 满箱时亮灯</span>
+|-- C1.Q ----( S Q0.4(推包气缸) )--|           <span class="c">// 触发推包</span>
+|-- I0.1(推包完成) --( R C1 )--|               <span class="c">// 推完复位计数</span></pre>
+              </div>
+
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag warn">CTD 减计数器 + CTUD 双向</span></div>
+                <pre class="code"><span class="c">// CTD 减计数器：从预设值递减到 0</span>
+|-- I0.0(出库信号) --[ CTD C2, PV=10 ]----|
+|-- C2.Q ----( M20.1(缺货报警) )--|  <span class="c">// 减到 0 时报警</span>
+
+<span class="c">// CTUD 双向计数器：可加可减</span>
+|-- I0.0(进库) --┬─[ CTUD C3, PV=100 ]----|
+|-- I0.1(出库) --┘
+|-- C3.CV 实时库存值
+|-- C3.Q ----( Q0.5(库存满) )--|
+
+<span class="c">// 计数器扩展</span>
+<span class="c">// S7-1200 单个计数器计数上限：32767（INT）</span>
+<span class="c">// 大范围计数可用 DINT 计数器（TIA V17+）</span>
+<span class="c">// 或用 M 区/DB 区自行累加：</span>
+|-- I0.0(脉冲) --[ ADD MW10, 1, MW10 ]--|  <span class="c">// MW10 = MW10 + 1</span>
+|-- MW10 >= 1000 --( Q0.1 )--|              <span class="c">// 达 1000 时输出</span></pre>
+                <p class="tip">💡 <b>计数器 vs 定时器</b>：定时器基于时间扫描，计数器基于脉冲事件。高频计数场景（如编码器脉冲）建议用 <b>高速计数器 HSC</b>（S7-1200 支持 3 路 100kHz HSC）。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
       <div class="sidebar">
         <span class="tag">3 天</span>
@@ -291,7 +940,7 @@ MD30  <span class="c">// 32 位运算结果</span>
       </div>
     </div>
 
-    <div class="chapter">
+    <div class="chapter detail">
       <div class="no">05</div>
       <div>
         <h3>比较运算 + 逻辑运算指令</h3>
@@ -302,6 +951,272 @@ MD30  <span class="c">// 32 位运算结果</span>
           <span class="tag">MOVE</span>
           <span class="tag">移位</span>
         </div>
+
+        <!-- === 05 详解：比较运算 === -->
+        <div class="detail-block">
+          <div class="detail-title">🔍 比较运算指令（CMP）</div>
+          <div class="detail-body">
+            <p>比较指令用于 <b>比较两个数值</b>，输出 BOOL 结果（TRUE/FALSE），在 LAD 中以 <b>功能框</b>（FBD 风格）形式出现，驱动后续触点/线圈。</p>
+            <table class="tbl dtype-tbl">
+              <thead>
+                <tr><th>指令</th><th>符号</th><th>功能</th><th>适用类型</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><code>CMP ==</code></td><td>==</td><td>等于</td><td>INT / DINT / REAL / STRING</td></tr>
+                <tr><td><code>CMP !=</code></td><td>!=</td><td>不等于</td><td>INT / DINT / REAL / STRING</td></tr>
+                <tr><td><code>CMP ></code></td><td>></td><td>大于</td><td>INT / DINT / REAL</td></tr>
+                <tr><td><code>CMP >=</code></td><td>>=</td><td>大于等于</td><td>INT / DINT / REAL</td></tr>
+                <tr><td><code>CMP <</code></td><td><</td><td>小于</td><td>INT / DINT / REAL</td></tr>
+                <tr><td><code>CMP <=</code></td><td><=</td><td>小于等于</td><td>INT / DINT / REAL</td></tr>
+              </tbody>
+            </table>
+            <div class="deep-dive" style="margin-top:12px">
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag cyan">LAD 中使用比较框</span></div>
+                <p>在 LAD 中，比较框的 <b>EN 端</b>（使能）必须有逻辑流入，<b>OUT 端</b>输出 BOOL 结果，可直接驱动触点：</p>
+                <pre class="code"><span class="c">// 比较框梯形图</span>
+|-- I0.0(启动) --[ CMP >= ]----( Q0.1(加热) )--|
+                      ↑    ↑
+                   MW10  500
+                  (温度) (设定值)
+
+<span class="c">// 含义：当温度 MW10 >= 500 且启动信号 I0.0=1 时，Q0.1 输出</span>
+<span class="c">// 注意：比较框 EN 端需要前置条件，OUT 端结果作为导通条件</span>
+
+<span class="c">// 复杂比较：多条件组合</span>
+|-- I0.0 --┬─[ CMP >= ]──┬─[ CMP <= ]──( Q0.1 )--|
+           │   MW10 >= 500  │   MW10 <= 800
+           │                │
+           └────────────────┘
+              (AND 串联)</pre>
+              </div>
+
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag warn">数据类型与注意事项</span></div>
+                <pre class="code"><span class="c">// INT vs DINT vs REAL 选择</span>
+<span class="c">// INT：整数（-32768 ~ 32767）→ 适合计数、简单比较</span>
+<span class="c">// DINT：双整数（-2³¹ ~ 2³¹-1）→ 大范围数值</span>
+<span class="c">// REAL：浮点（±3.4×10³⁸）→ 高精度温度/压力/流量</span>
+
+<span class="c">// REAL 比较注意事项</span>
+<span class="c">// ❌ 避免直接用 == 比较两个浮点数</span>
+CMP == REAL1, REAL2  <span class="c">// 浮点精度问题，可能永远不相等</span>
+
+<span class="c">// ✅ 用误差范围比较</span>
+|--[ CMP >= ]--┬--[ CMP <= ]--( M0.0(相等) )--|
+     REAL1 - 0.01  │    REAL1 + 0.01
+     REAL2         │    REAL2
+
+<span class="c">// 或用 ABS 差值判断</span>
+|--[ ABS ]--[ CMP <= ]--( M0.0 )--|
+   REAL1 - REAL2   0.01</pre>
+                <p class="tip">💡 REAL 比较时建议用 <b>误差范围法</b>，因为浮点数存在精度误差（如 0.1 + 0.2 ≠ 0.3）。推荐误差范围 0.001~0.01。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- === 05 详解：逻辑运算 === -->
+        <div class="detail-block">
+          <div class="detail-title">⚡ 逻辑运算指令（AND / OR / XOR / NOT）</div>
+          <div class="detail-body">
+            <p>逻辑运算对 <b>BOOL / WORD / DWORD</b> 类型数据进行逐位布尔运算：</p>
+            <table class="tbl dtype-tbl">
+              <thead>
+                <tr><th>指令</th><th>功能</th><th>规则</th><th>典型用途</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><code>AND</code></td><td>按位与</td><td>全 1 出 1</td><td>提取特定位（屏蔽）</td></tr>
+                <tr><td><code>OR</code></td><td>按位或</td><td>有 1 出 1</td><td>设置特定位</td></tr>
+                <tr><td><code>XOR</code></td><td>按位异或</td><td>不同出 1</td><td>位翻转、奇偶校验</td></tr>
+                <tr><td><code>NOT</code></td><td>按位取反</td><td>1 变 0，0 变 1</td><td>状态反转</td></tr>
+                <tr><td><code>NAND</code></td><td>按位与非</td><td>全 1 出 0</td><td>复合逻辑</td></tr>
+                <tr><td><code>NOR</code></td><td>按位或非</td><td>有 1 出 0</td><td>复合逻辑</td></tr>
+              </tbody>
+            </table>
+            <div class="deep-dive" style="margin-top:12px">
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag cyan">LAD 中的逻辑运算</span></div>
+                <pre class="code"><span class="c">// 1. 触点串联 = AND 逻辑</span>
+|-- I0.0 -- I0.1 --( Q0.1 )--|   <span class="c">// I0.0 AND I0.1</span>
+
+<span class="c">// 2. 触点并联 = OR 逻辑</span>
+|-- I0.0 --┬──( Q0.1 )--|          <span class="c">// I0.0 OR I0.1</span>
+|-- I0.1 --┘
+
+<span class="c">// 3. 显式 AND/OR 功能框（处理 WORD/DWORD）</span>
+|-- I0.0 --[ AND_W ]----( Q0.1 )--|
+              ↑   ↑
+           MW10 MW12
+<span class="c">// AND_W：字与运算 MW10 AND MW12 → 结果存 MW14</span>
+
+<span class="c">// 4. NOT 取反</span>
+|-- I0.0 --[ NOT ]----( Q0.1 )--|
+<span class="c">// NOT：I0.0=1 → 输出 0；I0.0=0 → 输出 1</span>
+
+<span class="c">// 5. XOR 异或（用于状态差异检测）</span>
+|--[ XOR_W ]--[ CMP != ]--( M0.0(变化标志) )--|
+   MB10  MB11</pre>
+              </div>
+
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag warn">位操作应用：状态字解析</span></div>
+                <p>逻辑运算最常见的用途是 <b>解析状态字（WORD/DWORD）</b>，提取或设置特定标志位：</p>
+                <pre class="code"><span class="c">// 假设 MW10 是电机状态字，各位定义：</span>
+<span class="c">// Bit0: 运行   Bit1: 停止   Bit2: 过载</span>
+<span class="c">// Bit3: 欠压   Bit4: 通信故障  Bit5: 就绪</span>
+
+<span class="c">// 提取 Bit0（运行标志）</span>
+|--[ AND_W ]--[ CMP != ]--( Q0.1(运行指示灯) )--|
+   MW10   16#0001    0
+<span class="c">// MW10 AND 0x0001 ≠ 0 → Bit0=1 → 电机运行
+
+<span class="c">// 提取 Bit2（过载标志）</span>
+|--[ AND_W ]--[ CMP != ]--( Q0.5(过载灯) )--|
+   MW10   16#0004    0
+<span class="c">// MW10 AND 0x0004 ≠ 0 → Bit2=1 → 过载
+
+<span class="c">// 清除 Bit2（复位过载）</span>
+|-- I0.1(复位) --[ AND_W ]--( MW10 )--|
+                   MW10    16#FFFB
+<span class="c">// MW10 AND 0xFFFB：将 Bit2 置 0，其余位不变</span></pre>
+                <p class="tip">💡 位掩码速查：Bit N 的掩码值 = <code>2^N</code>。Bit0 = 0x0001，Bit3 = 0x0008，Bit7 = 0x0080。清除 Bit N 用 <code>全1 XOR (2^N)</code>。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- === 05 详解：MOVE 与数据传送 === -->
+        <div class="detail-block">
+          <div class="detail-title">📦 MOVE 与数据传送指令</div>
+          <div class="detail-body">
+            <p>MOVE 是最基础的数据传送指令，将源地址内容 <b>复制</b> 到目标地址。S7-1200 支持多种传送变体：</p>
+            <table class="tbl dtype-tbl">
+              <thead>
+                <tr><th>指令</th><th>功能</th><th>数据类型</th><th>典型用途</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><code>MOVE</code></td><td>单值传送</td><td>ANY</td><td>变量赋值</td></tr>
+                <tr><td><code>MOVE_BLK</code></td><td>块传送</td><td>Array</td><td>数组批量复制</td></tr>
+                <tr><td><code>MOVE_BLK_VARIANT</code></td><td>变址块传送</td><td>Array + 索引</td><td>可变长度数组</td></tr>
+                <tr><td><code>FILL_BLK</code></td><td>填充块</td><td>Array</td><td>初始化数组</td></tr>
+                <tr><td><code>SWAP</code></td><td>字节交换</td><td>WORD / DWORD</td><td>高低字节调换</td></tr>
+                <tr><code>CONVERT</code></td><td>类型转换</td><td>ANY → ANY</td><td>数据类型互换</td></tr>
+                <tr><code>ROUND / TRUNC</code></td><td>浮点取整</td><td>REAL → INT/DINT</td><td>模拟量转整数</td></tr>
+              </tbody>
+            </table>
+            <div class="deep-dive" style="margin-top:12px">
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag cyan">MOVE 基本用法</span></div>
+                <pre class="code"><span class="c">// MOVE 单值传送</span>
+|-- I0.0(触发) --[ MOVE ]--( MW20(目标) )--|
+                   MW10(源)
+
+<span class="c">// MOVE_BLK 块传送（复制配方参数）</span>
+|-- I0.1(加载配方) --[ MOVE_BLK ]--|
+                        ↑    ↑    ↑
+                     Source Target 5
+                     (源数组)(目标)(长度)
+<span class="c">// 将 Recipe_DB.W[0..4] 复制到 Run_DB.W[0..4]
+
+<span class="c">// FILL_BLK 数组初始化</span>
+|-- SM0.1(首次扫描) --[ FILL_BLK ]--|
+                        ↑    ↑    ↑
+                       0   MW100  10
+<span class="c">// 将 MW100..MW118 全部清零
+
+<span class="c">// SWAP 字节交换</span>
+|-- I0.2 --[ SWAP ]--( MW30 )--|
+            MW30
+<span class="c">// MW30: 0x1234 → 0x3412（高低字节互换）</span></pre>
+              </div>
+
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag warn">CONVERT 类型转换</span></div>
+                <p>模拟量处理时最常用的就是 <b>REAL ↔ INT</b> 互转，配合 MOVE 使用：</p>
+                <pre class="code"><span class="c">// 模拟量 AIW256 → 温度值（0~100.0°C）</span>
+<span class="c">// AIW256 原始值 0~27648 对应 0~100°C</span>
+
+|-- SM0.1(首次) --[ CONV ]--( "Temp".Raw )--|
+                    AIW256 → DINT
+
+|--[ CONV ]--[ DIVITE_R ]--[ MOVE ]--( "Temp".Value )--|
+  "Temp".Raw      276.48
+  DINT → REAL     (缩放系数)
+<span class="c">// 简化版：用 SCALE_X 指令（见进阶篇）</span>
+
+<span class="c">// 设定温度 → 模拟量输出 AQW256</span>
+|--[ CONV ]--[ MULTIPLY_R ]--[ ROUND ]--[ CONV ]--( AQW256 )--|
+  "Set".Value    276.48      DINT    INT → Word
+  REAL → DINT    (0~100→0~27648)</span></pre>
+                <p class="tip">💡 TIA V17+ 推荐使用 <b>SCALE_X / UNSCALE_X</b> 标准缩放手柄，一条指令搞定模拟量线性转换，比手动乘除简洁得多。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- === 05 详解：移位指令 === -->
+        <div class="detail-block">
+          <div class="detail-title">➡ 移位与循环移位指令</div>
+          <div class="detail-body">
+            <p>移位指令将 <b>WORD / DWORD</b> 的各位左移或右移 N 位，空出的位补 0 或符号位。循环移位则将移出的位补到空位：</p>
+            <table class="tbl dtype-tbl">
+              <thead>
+                <tr><th>指令</th><th>功能</th><th>空位填充</th><th>典型用途</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><code>SHL</code></td><td>逻辑左移</td><td>低位补 0</td><td>乘法（×2^n）</td></tr>
+                <tr><td><code>SHR</code></td><td>逻辑右移</td><td>高位补 0</td><td>除法（÷2^n）</td></tr>
+                <tr><td><code>SHL_DI / SHR_DI</code></td><td>双整数移位</td><td>同上</td><td>32 位移位</td></tr>
+                <tr><td><code>ROL</code></td><td>循环左移</td><td>移出位补到空位</td><td>位旋转、流水灯</td></tr>
+                <tr><td><code>ROR</code></td><td>循环右移</td><td>移出位补到空位</td><td>位旋转</td></tr>
+              </tbody>
+            </table>
+            <div class="deep-dive" style="margin-top:12px">
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag cyan">移位原理与应用</span></div>
+                <pre class="code"><span class="c">// SHL 左移：各位左移，低位补 0</span>
+<span class="c">// MW10 = 0000 0001 0100 0000 = 0x0140</span>
+SHL MW10, 2  <span class="c">// 左移 2 位</span>
+<span class="c">// 结果: 0000 0101 0000 0000 = 0x0500</span>
+<span class="c">// 相当于 MW10 × 4（2²）
+
+<span class="c">// SHR 右移：各位右移，高位补 0</span>
+SHR MW10, 3  <span class="c">// 右移 3 位</span>
+<span class="c">// 结果: 0000 0000 0010 0010 = 0x0022</span>
+<span class="c">// 相当于 MW10 ÷ 8（2³）
+
+<span class="c">// 用移位做快速乘除（ powers of 2 ）</span>
+SHL MW10, 1  <span class="c">// MW10 × 2</span>
+SHL MW10, 4  <span class="c">// MW10 × 16</span>
+SHR MW10, 2  <span class="c">// MW10 ÷ 4</span></pre>
+              </div>
+
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag warn">流水灯实现（ROL 循环移位）</span></div>
+                <p>循环移位最经典的应用是 <b>流水灯效果</b>，8 路 LED 依次点亮：</p>
+                <pre class="code"><span class="c">// 流水灯：8 路 LED 循环点亮</span>
+<span class="c">// 初始化：MW20 = 0x0001（只有 Bit0 亮）</span>
+|-- SM0.1 --[ MOVE ]--( MW20 )--|
+               16#0001
+
+<span class="c">// 用 TON 定时器每 500ms 触发一次</span>
+|-- I0.0(运行) --[ TON T1, T#500MS ]--|
+|-- T1.Q --[ ROL ]--( MW20 )--|
+            MW20   1
+<span class="c">// 效果：0x0001 → 0x0002 → 0x0004 → ... → 0x8000 → 0x0001 → ...
+
+<span class="c">// 反向流水灯用 ROR</span>
+|-- T1.Q --[ ROR ]--( MW20 )--|
+
+<span class="c">// 输出到 8 个 LED</span>
+|-- MW20 --( QW0 )--|  <span class="c">// Q0.0~Q0.7 对应 8 路 LED</span></pre>
+                <p class="tip">💡 扩展到 16 路流水灯用 <code>MW</code>（字 = 16 位），32 路用 <code>MD</code>（双字 = 32 位）。循环移位的关键是 <b>初始化一个单 1 位</b>，每次移动 1 位即可。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
       <div class="sidebar">
         <span class="tag">2 天</span>
@@ -309,27 +1224,277 @@ MD30  <span class="c">// 32 位运算结果</span>
       </div>
     </div>
 
-    <div class="chapter">
+    <div class="chapter detail">
       <div class="no">06</div>
       <div>
         <h3>PLCSIM 仿真、下载、快捷键</h3>
         <div class="desc">项目编译、PLCSIM 启动、SIM 表监控、在线下载到 PLC、程序上传、在线监控修改、强制变量。核心快捷键速查（Ctrl+K 搜索、F11 编译、Ctrl+L 在线）。</div>
-        <table class="tbl">
-          <thead><tr><th>快捷键</th><th>作用</th><th>使用场景</th></tr></thead>
-          <tbody>
-            <tr><td><code>Ctrl + K</code></td><td>搜索全部</td><td>搜索块、变量、指令</td></tr>
-            <tr><td><code>F11</code></td><td>编译当前块</td><td>写完 SCL/GRAPF 编译检查</td></tr>
-            <tr><td><code>Ctrl + B</code></td><td>编译全部</td><td>下载前全项目编译</td></tr>
-            <tr><td><code>Ctrl + L</code></td><td>开始在线</td><td>连接 CPU 进入监控视图</td></tr>
-            <tr><td><code>Ctrl + Space</code></td><td>自动补全</td><td>SCL 编辑器补全变量/指令</td></tr>
-          </tbody>
-        </table>
-        <div class="kw" style="margin-top:10px">
+        <div class="kw">
           <span class="tag cyan">PLCSIM</span>
           <span class="tag">SIM 表</span>
           <span class="tag">强制变量</span>
           <span class="tag">快捷键</span>
         </div>
+
+        <!-- === 06 详解：PLCSIM 仿真 === -->
+        <div class="detail-block">
+          <div class="detail-title">🔬 PLCSIM 仿真环境使用</div>
+          <div class="detail-body">
+            <p>PLCSIM（PLC Simulation）是 TIA Portal 自带的 <b>无硬件仿真工具</b>，可在没有实际 PLC 的情况下完整调试程序。支持 S7-1200/1500 全系列。</p>
+            <table class="tbl dtype-tbl">
+              <thead>
+                <tr><th>功能</th><th>说明</th><th>硬件需求</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><b>程序执行</b></td><td>完整扫描周期、定时器/计数器正常工作</td><td>无</td></tr>
+                <tr><td><b>I/O 模拟</b></td><td>手动触发输入、观察输出变化</td><td>无</td></tr>
+                <tr><td><b>强制变量</b></td><td>强制 I/Q/M/DB 为特定值</td><td>无</td></tr>
+                <tr><td><b>断点调试</b></td><td>单步执行、查看中间变量</td><td>无</td></tr>
+                <tr><td><b>模拟量</b></td><td>设置 AI 通道电压值</td><td>无</td></tr>
+                <tr><td><b>多 CPU</b></td><td>多 CPU 通信仿真</td><td>无（V17+）</td></tr>
+              </tbody>
+            </table>
+            <p style="margin-top:10px"><b style="color:var(--warn)">PLCSIM 启动流程</b>：</p>
+            <div class="flow-diagram">
+              <div class="flow-node"><span class="flow-num">1</span>编译项目<br><small>F11 / Ctrl+B</small></div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node"><span class="flow-num">2</span><b>启动 PLCSIM</b><br><small>工具栏 → 开始仿真</small></div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node"><span class="flow-num">3</span><b>下载程序</b><br><small>拖拽块到仿真 CPU</small></div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node"><span class="flow-num">4</span><b>启动 CPU</b><br><small>将 CPU 切到 RUN 模式</small></div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node"><span class="flow-num">5</span><b>在线监控</b><br><small>观察 LAD 程序执行</small></div>
+            </div>
+            <div class="deep-dive" style="margin-top:12px">
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag cyan">SIM 表与变量强制</span></div>
+                <p>SIM 表是 <b>PLCSIM 的核心操作界面</b>，用于手动控制 I/O 状态：</p>
+                <pre class="code"><span class="c">// SIM 表典型操作</span>
+<span class="c">// ① 添加变量：拖拽 I/Q/M/DB 到 SIM 表</span>
+<span class="c">// ② "当前值" 列：显示 PLC 中变量实时值</span>
+<span class="c">// ③ "强制值" 列：设置强制值（BOOL 显示 TRUE/FALSE）</span>
+<span class="c">// ④ "强制" 按钮：锁定变量为强制值</span>
+
+<span class="c">// 模拟启动按钮</span>
+<span class="c">// 在 SIM 表中找到 I0.0（启动按钮）</span>
+<span class="c">// 点击"当前值" → 设为 TRUE → 点击"强制"</span>
+<span class="c">// 程序中 I0.0 变为 1，LAD 触点闭合</span>
+
+<span class="c">// 模拟传感器脉冲（计数值触发）</span>
+<span class="c">// I0.0(传感器) → 强制 TRUE → 松开 → 再强制 TRUE</span>
+<span class="c">// 每次 TRUE→FALSE 跳变 = 计数脉冲</span></pre>
+                <p class="tip">💡 PLCSIM 中强制变量的快捷键：选中变量后按 <code>F2</code> 切换强制，按 <code>Ctrl+F</code> 打开强制对话框。</p>
+              </div>
+
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag warn">强制 vs 修改 vs 写入</span></div>
+                <table class="tbl dtype-tbl">
+                  <thead><tr><th>操作</th><th>说明</th><th>是否永久</th></tr></thead>
+                  <tbody>
+                    <tr><td><b>强制</b></td><td>锁定变量为指定值，扫描周期不变</td><td>直到解除强制</td></tr>
+                    <tr><td><b>修改</b></td><td>修改变量当前值，下一周期可能被覆盖</td><td>仅 1 个周期</td></tr>
+                    <tr><td><b>写入</b></td><td>直接写入 M/DB 区值</td><td>保持直到下次修改</td></tr>
+                  </tbody>
+                </table>
+                <p><b>安全提示</b>：强制变量前务必确认影响范围，强制输出 Q 区可能导致 <b>设备误动作</b>！仿真环境无此风险，但接硬件时必须谨慎。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- === 06 详解：编译与下载 === -->
+        <div class="detail-block">
+          <div class="detail-title">📤 项目编译与下载流程</div>
+          <div class="detail-body">
+            <p>将程序从 TIA Portal 下载到 PLC（或 PLCSIM）需经过 <b>编译 → 连接 → 下载</b> 三步：</p>
+            <table class="tbl dtype-tbl">
+              <thead>
+                <tr><th>步骤</th><th>操作</th><th>快捷键</th><th>说明</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>① 编译</td><td>编译当前块 / 全部</td><td><code>F11</code> / <code>Ctrl+B</code></td><td>检查语法错误、生成中间代码</td></tr>
+                <tr><td>② 连接</td><td>搜索 PLC / 选择接口</td><td>工具栏"在线"</td><td>确保 PC 与 PLC 在同一网段</td></tr>
+                <tr><td>③ 下载</td><td>下载到 PLC</td><td><code>Ctrl+D</code></td><td>传输编译后的代码到 CPU</td></tr>
+                <tr><td>④ 启动</td><td>CPU 切 RUN</td><td>CPU 面板拨开关</td><td>程序开始执行</td></tr>
+                <tr><td>⑤ 监控</td><td>在线监控程序</td><td><code>Ctrl+L</code></td><td>实时查看变量状态</td></tr>
+              </tbody>
+            </table>
+            <div class="deep-dive" style="margin-top:12px">
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag cyan">编译详解</span></div>
+                <pre class="code"><span class="c">// 编译方式</span>
+F11          <span class="c">// 编译当前打开的块（OB/FB/FC/DB）</span>
+Ctrl + B     <span class="c">// 编译整个项目（所有块）</span>
+<span class="c">// 项目树右键 → 编译：按选中范围编译</span>
+
+<span class="c">// 编译结果</span>
+<span class="c">// ✅ 0 错误 → 可下载</span>
+<span class="c">// ⚠ 警告 → 通常不影响下载（如未使用变量）</span>
+<span class="c">// ❌ 错误 → 必须修正后才能下载</span>
+
+<span class="c">// 常见编译错误</span>
+<span class="c">// 1. 指令参数类型不匹配（如 INT 传给 REAL）</span>
+<span class="c">// 2. 数据块结构与引用不一致</span>
+<span class="c">// 3. 符号地址未定义</span>
+<span class="c">// 4. LAD 网络未连接（有悬空的 EN 端）</span></pre>
+              </div>
+
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag warn">下载与连接硬件</span></div>
+                <p>连接真实 PLC 时需要正确配置网络：</p>
+                <pre class="code"><span class="c">// 硬件连接步骤</span>
+<span class="c">// 1. 用网线连接 PC 与 CPU 的 PROFINET 口</span>
+<span class="c">// 2. 设置 PC IP 地址与 CPU 在同一网段</span>
+<span class="c">//    例如 CPU 默认 192.168.0.1 → PC 设 192.168.0.x</span>
+<span class="c">// 3. TIA 中"在线" → "搜索可访问节点"</span>
+<span class="c">// 4. 选中搜到的 CPU → 下载</span>
+
+<span class="c">// 下载选项</span>
+<span class="c">// "覆盖所有"：清空 CPU 原有程序，全新下载</span>
+<span class="c">// "仅下载修改"：只更新修改过的块（速度快）</span>
+
+<span class="c">// PLCSIM 下载（无需网线）</span>
+<span class="c">// 1. 启动 PLCSIM → 自动创建虚拟 CPU</span>
+<span class="c">// 2. 拖拽程序块到虚拟 CPU</span>
+<span class="c">// 3. 虚拟 CPU 切到 RUN → 开始仿真</span></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- === 06 详解：在线监控与调试 === -->
+        <div class="detail-block">
+          <div class="detail-title">👁 在线监控与调试技巧</div>
+          <div class="detail-body">
+            <p>下载完成后进入 <b>在线监控模式</b>，可实时观察程序运行状态：</p>
+            <div class="deep-dive">
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag cyan">LAD 在线监控视图</span></div>
+                <p>进入在线模式后，LAD 编辑器显示 <b>绿色高亮</b> 表示导通路径，<b>蓝色虚线</b> 表示未导通：</p>
+                <pre class="code"><span class="c">// 在线监控时的 LAD 显示</span>
+<span class="c">// 绿色实线 = 导通（信号流动）</span>
+<span class="c">// 蓝色虚线 = 未导通</span>
+
+|--[✅ 绿色] I0.0 ─┬─[✅ 绿色]┤/├──[✅ 绿色]( Q0.1 )--|
+                   │   I0.1(未按)     输出=1
+                   │
+                   └─[✅ 绿色] Q0.1
+                      自锁触点(已闭合)
+
+<span class="c">// 判断逻辑</span>
+<span class="c">// I0.0(按下) = ON → 导通 ✓</span>
+<span class="c">// I0.1(未按) = OFF → 常闭触点导通 ✓</span>
+<span class="c">// Q0.1 自锁触点已闭合 → 导通 ✓</span>
+<span class="c">// 整条路径导通 → Q0.1 输出 ON ✓</span></pre>
+              </div>
+
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag warn">变量监控与强制</span></div>
+                <p>在线监控时，所有变量 <b>实时更新</b>：</p>
+                <ul class="detail-list">
+                  <li><b>BOOL 变量</b>：显示绿色/灰色指示灯图标</li>
+                  <li><b>INT/DINT</b>：显示当前数值（十进制）</li>
+                  <li><b>REAL</b>：显示浮点数值（含小数位）</li>
+                  <li><b>TIMER</b>：显示当前计时值（如 T#2.35S）</li>
+                  <li><b>COUNTER</b>：显示当前计数值</li>
+                </ul>
+                <pre class="code"><span class="c">// 强制变量调试</span>
+<span class="c">// 场景：急停按钮测试</span>
+<span class="c">// 1. 在监控表中找到"急停"变量</span>
+<span class="c">// 2. 设置强制值 = TRUE</span>
+<span class="c">// 3. 观察 Q0.1（电机输出）是否断开</span>
+<span class="c">// 4. 解除强制 → 电机应恢复运行</span>
+
+<span class="c">// 场景：定时器调试（缩短时间验证逻辑）</span>
+<span class="c">// 将 TON T1, T#3S 改为 T#300MS</span>
+<span class="c">// 下载后观察 0.3 秒是否触发</span>
+<span class="c">// 验证正确后改回 T#3S</span></pre>
+                <p class="tip">💡 <b>强制安全</b>：接硬件调试时，强制输出 Q 区之前必须确认 <b>现场设备状态</b>。模拟量输出强制可能导致变频器误动作！</p>
+              </div>
+
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag brand">在线修改与断点</span></div>
+                <p>TIA 支持 <b>在线修改</b>（Online Change），不停机修改程序：</p>
+                <pre class="code"><span class="c">// 在线修改步骤</span>
+<span class="c">// 1. 在线监控模式下编辑 LAD 程序</span>
+<span class="c">// 2. 修改完成后点"下载修改"</span>
+<span class="c">// 3. CPU 不停机，新逻辑立即生效</span>
+
+<span class="c">// 断点调试（PLCSIM 支持）</span>
+<span class="c">// 在 LAD 编辑器的网络编号左侧双击 → 设置断点</span>
+<span class="c">// CPU 执行到断点时暂停</span>
+<span class="c">// 此时可查看所有变量当前值</span>
+<span class="c">// 按 F5 继续执行到下一断点或程序结束</span>
+
+<span class="c">// 强制 I/O 刷新</span>
+<span class="c">// 调试时可用"立即刷新"功能：</span>
+<span class="c">// WIW（立即读）→ 跳过输入映象区读取</span>
+<span class="c">// WOW（立即写）→ 跳过输出映象区写入</span></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- === 06 详解：快捷键速查 === -->
+        <div class="detail-block">
+          <div class="detail-title">⌨ 核心快捷键速查表</div>
+          <div class="detail-body">
+            <p>熟练使用快捷键可大幅提升编程效率，以下是 TIA Portal 最常用的快捷键：</p>
+            <table class="tbl dtype-tbl">
+              <thead>
+                <tr><th>快捷键</th><th>作用</th><th>使用场景</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><code>Ctrl + K</code></td><td>全局搜索</td><td>搜索所有块、变量、指令、字符串</td></tr>
+                <tr><td><code>F11</code></td><td>编译当前块</td><td>写完 LAD/SCL 后检查语法</td></tr>
+                <tr><td><code>Ctrl + B</code></td><td>编译全部</td><td>下载前全项目编译检查</td></tr>
+                <tr><td><code>Ctrl + L</code></td><td>开始在线监控</td><td>连接 CPU 进入监控视图</td></tr>
+                <tr><td><code>Ctrl + Shift + L</code></td><td>停止在线监控</td><td>断开 CPU 连接</td></tr>
+                <tr><td><code>Ctrl + D</code></td><td>下载到 PLC</td><td>将编译好的程序传入 CPU</td></tr>
+                <tr><td><code>Ctrl + U</code></td><td>从 PLC 上传</td><td>读取 CPU 中的原始程序</td></tr>
+                <tr><td><code>Ctrl + Space</code></td><td>自动补全</td><td>SCL/LAD 编辑器中补全变量名</td></tr>
+                <tr><td><code>Ctrl + 1</code></td><td>聚焦项目树</td><td>快速定位工程结构</td></tr>
+                <tr><td><code>Ctrl + 4</code></td><td>切换巡视窗口</td><td>在属性/诊断/监控间切换</td></tr>
+                <tr><td><code>Ctrl + Shift + D</code></td><td>显隐巡视窗口</td><td>扩大编辑区</td></tr>
+                <tr><td><code>F2</code></td><td>强制/取消强制</td><td>SIM 表或在线监控中</td></tr>
+                <tr><td><code>F5</code></td><td>继续执行</td><td>断点调试时继续运行</td></tr>
+                <tr><td><code>Ctrl + . / , / 0</code></td><td>放大/缩小/重置</td><td>编辑区缩放</td></tr>
+                <tr><td><code>Ctrl + Alt + V</code></td><td>项目视图</td><td>切换到完整工程界面</td></tr>
+                <tr><td><code>Ctrl + Alt + P</code></td><td>门户视图</td><td>返回欢迎首页</td></tr>
+                <tr><td><code>Ctrl + Z</code></td><td>撤销</td><td>撤销最近的编辑操作</td></tr>
+                <tr><td><code>Ctrl + Y</code></td><td>重做</td><td>恢复撤销的操作</td></tr>
+              </tbody>
+            </table>
+            <p class="tip" style="margin-top:10px">💡 记住 <b>3 大核心快捷键</b>：<code>Ctrl+K</code>（搜索）、<code>F11</code>（编译）、<code>Ctrl+L</code>（在线），覆盖 80% 的日常操作。</p>
+          </div>
+        </div>
+
+        <!-- === 06 详解：常见问题排查 === -->
+        <div class="detail-block">
+          <div class="detail-title">🛠 常见问题排查手册</div>
+          <div class="detail-body">
+            <p>入门阶段最容易遇到的 10 个坑和解决方案：</p>
+            <table class="tbl dtype-tbl">
+              <thead>
+                <tr><th>问题</th><th>原因</th><th>解决方案</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>编译报"无法解析符号"</td><td>符号表未定义或拼写错误</td><td>检查符号表，确保 Tag 已创建</td></tr>
+                <tr><td>下载提示"固件版本不匹配"</td><td>TIA 中组态版本 ≠ 实际硬件</td><td>组态时选择与硬件一致的 FW 版本</td></tr>
+                <tr><td>在线监控无绿色路径</td><td>CPU 未切换到 RUN 模式</td><td>将 CPU 拨到 RUN，点击"开始监控"</td></tr>
+                <tr><td>定时器不计时</td><td>IN 端未触发或 R 端有复位</td><td>检查 IN 端条件和 R 端状态</td></tr>
+                <tr><td>计数器不计数</td><td>CU 端缺少上升沿触发</td><td>必须有 0→1 跳变才能计数</td></tr>
+                <tr><td>PLCSIM 下载失败</td><td>未启动 PLCSIM 或 CPU 未就绪</td><td>先启动 PLCSIM 再下载</td></tr>
+                <tr><td>强制变量自动解除</td><td>程序逻辑覆盖了强制值</td><td>检查是否有 MOVE 指令写入同一地址</td></tr>
+                <tr><td>CPU 报错"STOP"</td><td>程序有死循环或诊断触发</td><td>检查 OB 块逻辑，查看诊断缓冲区</td></tr>
+                <tr><td>模拟量显示异常</td><td>地址错误或未接线</td><td>确认 AIW 地址和传感器接线</td></tr>
+                <tr><td>TIA 启动很慢</td><td>杀毒软件扫描安装目录</td><td>将 TIA 安装目录加入杀毒白名单</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
       </div>
       <div class="sidebar">
         <span class="tag">5 天</span>

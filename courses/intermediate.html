@@ -68,46 +68,593 @@
 
   <div class="chapters">
 
-    <div class="chapter">
+    <div class="chapter detail">
       <div class="no">01</div>
       <div>
         <h3>结构化编程 OB / FC / FB / DB</h3>
         <div class="desc">OB1 只做调度不写逻辑；FC（纯函数）/ FB（状态函数+背景DB）/ DB（数据）职责分离。OB35 循环中断、OB100 启动 OB、错误 OB（OB82/OB86/OB121）避免停机。</div>
-        <table class="tbl">
-          <thead><tr><th>类型</th><th>有无静态数据</th><th>典型用途</th></tr></thead>
-          <tbody>
-            <tr><td>FC</td><td>无（每次调用临时变量）</td><td>数学计算、字符串处理、纯逻辑判断</td></tr>
-            <tr><td>FB</td><td>有（背景 DB 存储）</td><td>设备封装、PID、状态机、定时逻辑</td></tr>
-            <tr><td>DB</td><td>全局/实例 数据容器</td><td>配方、生产数据、标签共享</td></tr>
-            <tr><td>OB</td><td>—</td><td>执行入口：循环 OB1、启动 OB100、循环中断 OB3x</td></tr>
-          </tbody>
-        </table>
-        <div class="kw" style="margin-top:10px"><span class="tag brand">优化块访问</span><span class="tag">背景 DB</span><span class="tag">全局 DB</span><span class="tag">OB35 循环中断</span></div>
+        <div class="kw">
+          <span class="tag brand">优化块访问</span>
+          <span class="tag">背景 DB</span>
+          <span class="tag">全局 DB</span>
+          <span class="tag">OB35 循环中断</span>
+        </div>
+
+        <!-- === 01 详解：块体系架构 === -->
+        <div class="detail-block">
+          <div class="detail-title">🏗 结构化编程块体系架构</div>
+          <div class="detail-body">
+            <p>TIA Portal 的 <b style="color:var(--brand)">块模型</b> 是结构化编程的核心，将程序拆分为不同职责的"积木"，通过调用组装成完整应用：</p>
+            <div class="flow-diagram">
+              <div class="flow-node"><span class="flow-num">1</span>OB1 主循环<br><small>调度中心，不写逻辑</small></div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node"><span class="flow-num">2</span><b>调用 FB/FC</b><br><small>按功能拆分子程序</small></div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node"><span class="flow-num">3</span><b>FB 读写 DB</b><br><small>操作实例 DB 持久数据</small></div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node"><span class="flow-num">4</span><b>FC 读写 M/DB</b><br><small>纯计算无状态</small></div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node flow-cycle">↺ 返回 OB1</div>
+            </div>
+            <p style="margin-top:10px"><b style="color:var(--warn)">核心原则</b>：</p>
+            <ul class="detail-list">
+              <li><b>OB1 只做调度</b>：不在 OB1 写任何线圈/逻辑，仅按顺序调用各个 FB/FC。</li>
+              <li><b>FC 无状态</b>：每次调用的临时变量独立，不记忆上一次结果，适合纯计算。</li>
+              <li><b>FB 有状态</b>：通过绑定的 <b>实例 DB（背景 DB）</b> 保存静态数据，多次调用之间保持状态。</li>
+              <li><b>DB 分层</b>：全局 DB 存共享数据（配方、标签），实例 DB 存单个 FB 的运行状态。</li>
+              <li><b>高内聚低耦合</b>：每个 FB 封装一个设备/功能，接口（Input/Output/InOut）明确。</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- === 01 详解：OB 组织块 === -->
+        <div class="detail-block">
+          <div class="detail-title">⚡ OB 组织块：程序执行的入口</div>
+          <div class="detail-body">
+            <p>OB（Organization Block）是 PLC 程序的 <b>执行入口</b>，由操作系统调度，不能互相调用。S7-1200/1500 常用 OB 类型：</p>
+            <table class="tbl dtype-tbl">
+              <thead>
+                <tr><th>OB 编号</th><th>名称</th><th>触发条件</th><th>典型用途</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><code>OB1</code></td><td>程序循环</td><td>每扫描周期执行一次</td><td>主调度：按序调用各 FB/FC</td></tr>
+                <tr><td><code>OB100</code></td><td>启动 OB</td><td>CPU 上电/重启时执行一次</td><td>初始化：复位变量、设置默认值</td></tr>
+                <tr><td><code>OB101</code></td><td>暖启动</td><td>STOP→RUN 切换</td><td>暖启动初始化</td></tr>
+                <tr><td><code>OB35</code></td><td>循环中断</td><td>固定间隔（默认 100ms）</td><td>周期性任务：PID 运算、数据采集</td></tr>
+                <tr><td><code>OB30~OB38</code></td><td>循环中断</td><td>可配置 1~100ms</td><td>高精度循环任务</td></tr>
+                <tr><td><code>OB40~OB47</code></td><td>硬件中断</td><td>数字量/模拟量信号跳变</td><td>快速响应：急停、高速计数</td></tr>
+                <tr><td><code>OB82</code></td><td>诊断中断</td><td>模块故障/变化</td><td>读取诊断信息、触发报警</td></tr>
+                <tr><td><code>OB86</code></td><td>机架故障</td><td>PROFINET IO 设备掉线</td><td>网络异常处理、切换到安全模式</td></tr>
+                <tr><td><code>OB121</code></td><td>编程错误</td><td>访问不存在的地址</td><td>防止 CPU 停机、错误恢复</td></tr>
+                <tr><td><code>OB122</code></td><td>I/O 访问错误</td><td>访问故障模块</td><td>记录错误、切换输出状态</td></tr>
+              </tbody>
+            </table>
+            <div class="deep-dive" style="margin-top:12px">
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag cyan">OB1 调度模板</span></div>
+                <pre class="code"><span class="c">// OB1 主循环 — 只做调度，不写逻辑</span>
+<span class="c">// 推荐调度顺序</span>
+<span class="k">CALL</span> <span class="t">FB_ErrorHandler</span>     <span class="c">// 1. 错误处理优先级最高</span>
+<span class="k">CALL</span> <span class="t">FB_SafetyLogic</span>       <span class="c">// 2. 安全回路</span>
+<span class="k">CALL</span> <span class="t">FB_Conveyor</span>         <span class="c">// 3. 输送机控制</span>
+<span class="k">CALL</span> <span class="t">FB_Mixer</span>             <span class="c">// 4. 搅拌罐控制</span>
+<span class="k">CALL</span> <span class="t">FC_DataExchange</span>     <span class="c">// 5. 数据交换</span>
+<span class="k">CALL</span> <span class="t">FC_HMI_Update</span>        <span class="c">// 6. HMI 刷新</span>
+
+<span class="c">// ❌ 禁止在 OB1 写直接输出</span>
+<span class="c">// Q0.1 := TRUE;  // 错误！应封装到 FB 内部</span></pre>
+                <p class="tip">💡 OB1 扫描周期内所有 FB/FC 按顺序执行，前一个 FB 的输出会被后一个 FB 读到。合理安排调用顺序至关重要。</p>
+              </div>
+
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag warn">OB100 启动初始化</span></div>
+                <pre class="code"><span class="c">// OB100 启动组织块 — 只执行一次</span>
+<span class="c">// 典型初始化操作</span>
+
+<span class="c">// 1. 复位所有中间标志</span>
+<span class="k">FOR</span> <span class="t">i</span> := <span class="n">0</span> <span class="k">TO</span> <span class="n">31</span> <span class="k">DO</span>
+    <span class="s">"SystemDB".ErrorFlags[#i]</span> := <span class="k">FALSE</span>;
+<span class="k">END_FOR</span>;
+
+<span class="c">// 2. 加载默认配方</span>
+<span class="k">CALL</span> <span class="t">FB_RecipeLoader</span>(
+    <span class="t">RecipeID</span>  := <span class="n">1</span>,
+    <span class="t">RecipeDB</span>  => <span class="s">"RecipeDB"</span>,
+    <span class="t">Done</span>       => <span class="t">StartupDone</span>
+);
+
+<span class="c">// 3. 清零累计量</span>
+<span class="s">"ProductionDB".TotalCount</span> := <span class="n">0</span>;
+<span class="s">"ProductionDB".StartTime</span>   := <span class="k">RD_LOC_T</span>(<span class="k">DT</span>);</pre>
+                <p class="tip">💡 初始化逻辑必须在 OB100 完成，不要放在 OB1 里用"首次扫描"标志判断，既不优雅也不安全。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- === 01 详解：FC vs FB === -->
+        <div class="detail-block">
+          <div class="detail-title">🔀 FC vs FB：何时用哪个？</div>
+          <div class="detail-body">
+            <p>FC（Function）和 FB（Function Block）的核心区别在于 <b style="color:var(--brand)">是否需要记忆状态</b>：</p>
+            <table class="tbl dtype-tbl">
+              <thead>
+                <tr><th>特性</th><th>FC</th><th>FB</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><b>静态数据</b></td><td>无（每次调用临时变量）</td><td>有（背景 DB 持久存储）</td></tr>
+                <tr><td><b>状态记忆</b></td><td>不记忆上次调用</td><td>记忆并可读取历史状态</td></tr>
+                <tr><td><b>定时器</b></td><td>用 IEC 定时器需额外 DB</td><td>定时器实例存储在背景 DB</td></tr>
+                <tr><td><b>多次实例</b></td><td>可随意复用</td><td>每个实例需独立 DB</td></tr>
+                <tr><td><b>典型用途</b></td><td>数学计算、字符串处理、纯逻辑</td><td>设备封装、PID、状态机、计数器</td></tr>
+                <tr><td><b>执行速度</b></td><td>稍快（无 DB 访问）</td><td>稍慢（读写背景 DB）</td></tr>
+              </tbody>
+            </table>
+            <div class="deep-dive" style="margin-top:12px">
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag cyan">FC 示例：纯计算</span></div>
+                <pre class="code"><span class="c">// FC_CalcFlow.scl — 纯流量计算，无状态</span>
+<span class="k">FUNCTION</span> <span class="t">FC_CalcFlow</span> : <span class="k">REAL</span>
+<span class="c">// 输入：</span>
+<span class="c">//   InletPress : REAL  // 进口压力</span>
+<span class="c">//   OutletPress: REAL  // 出口压力</span>
+<span class="c">//   PipeDia    : REAL  // 管径 mm</span>
+<span class="c">// 输出：</span>
+<span class="c">//   函数返回值 = 流量 m³/h</span>
+
+<span class="k">VAR_TEMP</span>
+    <span class="t">DeltaP</span> : <span class="k">REAL</span>;
+    <span class="t">Area</span>   : <span class="k">REAL</span>;
+<span class="k">END_VAR_TEMP</span>
+
+<span class="t">DeltaP</span> := #InletPress - #OutletPress;
+<span class="t">Area</span>   := <span class="n">3.14159</span> * (#PipeDia / <span class="n">1000.0</span>) * (#PipeDia / <span class="n">2000.0</span>);
+<span class="k">FC_CalcFlow</span> := <span class="n">3600.0</span> * <span class="k">SQRT</span>(<span class="n">2.0</span> * #DeltaP / <span class="n">1000.0</span>) * #Area;</pre>
+                <p>✅ FC 内的 DeltaP、Area 是临时变量，调用后释放。下次调用重新计算。</p>
+              </div>
+
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag brand">FB 示例：设备封装</span></div>
+                <pre class="code"><span class="c">// FB_Starter.scl — 电机启动器，有状态</span>
+<span class="k">FUNCTION_BLOCK</span> <span class="t">FB_Starter</span>
+<span class="k">VAR_INPUT</span>
+    <span class="t">StartBtn</span>   : <span class="k">BOOL</span>;
+    <span class="t">StopBtn</span>    : <span class="k">BOOL</span>;
+    <span class="t">Overload</span>   : <span class="k">BOOL</span>;
+    <span class="t">RatedCurrent</span>: <span class="k">REAL</span> := <span class="n">10.0</span>;
+<span class="k">END_VAR_INPUT</span>
+
+<span class="k">VAR_OUTPUT</span>
+    <span class="t">MotorRun</span>   : <span class="k">BOOL</span>;
+    <span class="t">AlarmCode</span>  : <span class="k">INT</span>;
+<span class="k">END_VAR_OUTPUT</span>
+
+<span class="k">VAR</span>
+    <span class="t">StartReq</span>   : <span class="k">BOOL</span>;      <span class="c">// 自锁状态（保持）</span>
+    <span class="t">RunHours</span>   : <span class="k">REAL</span>;     <span class="c">// 累计运行小时数（保持）</span>
+    <span class="t">LastStart</span>  : <span class="k">DATE_AND_TIME</span>;  <span class="c">// 上次启动时间（保持）</span>
+<span class="k">END_VAR</span>
+
+<span class="c">// 启保停逻辑</span>
+<span class="t">StartReq</span> := (#StartBtn OR #StartReq)
+                AND NOT #StopBtn
+                AND NOT #Overload;
+<span class="t">MotorRun</span> := #StartReq;
+
+<span class="c">// 累计运行时间</span>
+<span class="k">IF</span> #MotorRun <span class="k">THEN</span>
+    <span class="t">RunHours</span> := #RunHours + <span class="n">0.00278</span>;  <span class="c">// 10ms = 0.00278h</span>
+<span class="k">END_IF</span>;
+
+<span class="c">// 报警代码</span>
+<span class="k">IF</span> #Overload <span class="k">THEN</span>
+    <span class="t">AlarmCode</span> := <span class="n">101</span>;  <span class="c">// 过载</span>
+<span class="k">ELSIF</span> #StopBtn <span class="k">THEN</span>
+    <span class="t">AlarmCode</span> := <span class="n">0</span>;    <span class="c">// 正常停机</span>
+<span class="k">END_IF</span>;</pre>
+                <p>✅ FB 内的 StartReq、RunHours、LastStart 存储在 <b>实例 DB</b> 中，调用之间保持不变。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- === 01 详解：DB 数据块 === -->
+        <div class="detail-block">
+          <div class="detail-title">💾 DB 数据块：优化块访问与多实例</div>
+          <div class="detail-body">
+            <p>S7-1200/1500 默认使用 <b style="color:var(--brand)">优化块访问</b>（Optimized Block Access），所有变量通过 <b>符号名</b> 访问，不再使用绝对偏移地址。</p>
+            <table class="tbl dtype-tbl">
+              <thead>
+                <tr><th>DB 类型</th><th>创建方式</th><th>绑定关系</th><th>典型用途</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><b>实例 DB（背景 DB）</b></td><td>FB 属性 → 生成实例 DB</td><td>绑定 FB 的接口和内部变量</td><td>每个 FB 实例独立存储</td></tr>
+                <tr><td><b>全局 DB</b></td><td>新建 DB → 手动添加变量</td><td>无绑定，通用数据容器</td><td>配方、生产数据、HMI 共享</td></tr>
+                <tr><td><b>UDT 类型 DB</b></td><td>先建 UDT 类型，再用其建 DB</td><td>基于用户自定义结构</td><td>多设备共用同一数据结构</td></tr>
+                <tr><td><b>数组 DB</b></td><td>建 Array of UDT</td><td>多个同结构数据集合</td><td>10 路传感器数据统一管理</td></tr>
+              </tbody>
+            </table>
+            <div class="deep-dive" style="margin-top:12px">
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag cyan">多实例 FB 调用</span></div>
+                <pre class="code"><span class="c">// 同一 FB 类型，不同实例 DB → 多实例</span>
+<span class="c">// 调用 FB_Starter 三次，各用独立 DB</span>
+
+<span class="k">CALL</span> <span class="t">FB_Starter</span>
+<span class="p">(</span>
+    <span class="t">StartBtn</span>    := <span class="s">"Tags".M1_Start</span>,
+    <span class="t">StopBtn</span>     := <span class="s">"Tags".M1_Stop</span>,
+    <span class="t">Overload</span>    := <span class="s">"Tags".M1_OL</span>,
+    <span class="t">MotorRun</span>    => <span class="s">"Tags".M1_Run</span>,
+    <span class="t">AlarmCode</span>   => <span class="s">"Tags".M1_Alarm</span>
+<span class="p">)</span>;
+
+<span class="c">// 自动使用 FB_Starter 的实例 DB（系统分配）</span>
+<span class="c">// 或指定：</span>
+<span class="k">CALL</span> <span class="t">FB_Starter</span>, <span class="t">DB_Starter_M1</span> <span class="p">(</span>...<span class="p">)</span>;</pre>
+                <p class="tip">💡 S7-1200 默认自动分配实例 DB 编号（1, 2, 3...），可在 FB 属性 → 实例 DB 中手动指定编号和名称。</p>
+              </div>
+
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag brand">全局 DB 设计规范</span></div>
+                <pre class="code"><span class="c">// 全局 DB 设计：按功能分组</span>
+<span class="c">// DB_Recipe：配方数据</span>
+<span class="k">DATA_BLOCK</span> <span class="t">DB_Recipe</span>
+<span class="k">BEGIN</span>
+    <span class="t">CurrentID</span>   : <span class="k">INT</span>;
+    <span class="t">Tank1_Volume</span> : <span class="k">REAL</span>;     <span class="c">// 罐1 容量 L</span>
+    <span class="t">Tank2_Volume</span> : <span class="k">REAL</span>;
+    <span class="t">MixSpeed</span>    : <span class="k">REAL</span>;     <span class="c">// 搅拌速度 rpm</span>
+    <span class="t">SetTemp</span>     : <span class="k">REAL</span>;     <span class="c">// 设定温度 ℃</span>
+    <span class="t">KeepTime</span>    : <span class="k">TIME</span>;     <span class="c">// 保温时间</span>
+<span class="k">END</span>;
+
+<span class="c">// DB_Production：生产统计</span>
+<span class="k">DATA_BLOCK</span> <span class="t">DB_Production</span>
+<span class="k">BEGIN</span>
+    <span class="t">DailyCount</span>   : <span class="k">DINT</span>;    <span class="c">// 当日产量</span>
+    <span class="t">TotalCount</span>   : <span class="k">DINT</span>;    <span class="c">// 累计产量</span>
+    <span class="t">LastUpdate</span>   : <span class="k">DATE_AND_TIME</span>;
+<span class="k">END</span>;</pre>
+                <p class="tip">💡 <b>优化块访问</b> 下禁止使用 <code>%DB1.DBD0</code> 这种绝对寻址。所有访问必须使用符号名如 <code>"DB_Recipe".SetTemp</code>。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
-      <div class="sidebar"><span class="tag">6 天</span><a href="#" class="btn">开始学习</a></div>
+      <div class="sidebar">
+        <span class="tag">6 天</span>
+        <a href="#" class="btn">开始学习</a>
+      </div>
     </div>
 
-    <div class="chapter">
+    <div class="chapter detail">
       <div class="no">02</div>
       <div>
         <h3>SCL 结构化文本 <span class="tag ok">●配套</span></h3>
         <div class="desc">从 LAD 过渡到 SCL：IF/CASE/FOR 控制流、数组、间接寻址、沿信号自写、定时器调用避坑、SCALE_X/NORM_X 标度变换、S7-GRAPH 顺控图形编程。9 节完整大纲，第 7 节「PID 算法封装」已配套完整工程。</div>
-        <pre class="code"><span class="c">// S1. 启保停一行 SCL</span>
-#Motor := (#StartBtn OR #Motor) AND NOT #StopBtn;
+        <div class="kw">
+          <span class="tag brand">IF/CASE/FOR</span>
+          <span class="tag">沿信号自写</span>
+          <span class="tag">数组/寻址</span>
+          <span class="tag">定时器避坑</span>
+        </div>
 
-<span class="c">// S7. CASE 多档位</span>
-CASE #SpeedLevel OF
-    1 : #Output := 33;
-    2 : #Output := 66;
-    3 : #Output := 100;
-    ELSE #Output := 0;
-END_CASE;
+        <!-- === 02 详解：SCL 基础语法 === -->
+        <div class="detail-block">
+          <div class="detail-title">📝 SCL 基础语法与 LAD 对比</div>
+          <div class="detail-body">
+            <p>SCL（Structured Control Language）是 <b style="color:var(--brand)">结构化控制语言</b>，语法类似 Pascal，是 TIA Portal 中功能最强大的编程语言。从 LAD 转向 SCL 需要理解以下核心差异：</p>
+            <table class="tbl dtype-tbl">
+              <thead>
+                <tr><th>特性</th><th>LAD 梯形图</th><th>SCL 结构化文本</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><b>表达方式</b></td><td>图形化（触点/线圈）</td><td>文本（类 Pascal）</td></tr>
+                <tr><td><b>逻辑表达</b></td><td>AND/OR 串联并联</td><td>AND / OR / XOR / NOT</td></tr>
+                <tr><td><b>控制流</b></td><td>无（只能顺序执行）</td><td>IF / CASE / FOR / WHILE / REPEAT</td></tr>
+                <tr><td><b>运算</b></td><td>基础加减乘除</td><td>完整数学库 + 字符串 + 数组</td></tr>
+                <tr><td><b>复杂度</b></td><td>适合简单逻辑</td><td>适合复杂算法/数据处理</td></tr>
+                <tr><td><b>可读性</b></td><td>电工直觉</td><td>程序员直觉</td></tr>
+              </tbody>
+            </table>
+            <div class="deep-dive" style="margin-top:12px">
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag cyan">一行启保停</span></div>
+                <pre class="code"><span class="c">// LAD: 启保停电路需要 3 个元素</span>
+<span class="c">// |--Start--┬─┤/├──Motor--|</span>
+<span class="c">//          │  Stop        </span>
+<span class="c">//          └─Motor(自锁) </span>
 
-<span class="c">// S3. FOR 循环求和</span>
-FOR #i := 1 TO 8 DO
-    #Sum := #Sum + #Data[#i];
-END_FOR;</pre>
-        <div class="kw" style="margin-top:10px"><span class="tag brand">IF/CASE/FOR</span><span class="tag">沿信号自写</span><span class="tag">数组/寻址</span><span class="tag">定时器避坑</span></div>
+<span class="c">// SCL: 一行搞定</span>
+<span class="t">Motor</span> := (#StartBtn OR <span class="t">Motor</span>) AND NOT #StopBtn;
+
+<span class="c">// 读作：电机 = (启动按钮 OR 电机自身) AND NOT 停止按钮</span></pre>
+                <p>SCL 中 `#` 前缀表示 <b>块接口参数</b>（Input/Output/InOut），无前缀表示 <b>全局 DB 变量</b>。</p>
+              </div>
+
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag brand">SCL 关键字速查</span></div>
+                <pre class="code"><span class="c">// SCL 关键字分类</span>
+
+<span class="c">// 1. 控制流</span>
+<span class="k">IF</span> ... <span class="k">THEN</span> ... <span class="k">ELSIF</span> ... <span class="k">ELSE</span> ... <span class="k">END_IF</span>;
+<span class="k">CASE</span> ... <span class="k">OF</span> ... <span class="k">ELSE</span> ... <span class="k">END_CASE</span>;
+<span class="k">FOR</span> i := start <span class="k">TO</span> end <span class="k">DO</span> ... <span class="k">END_FOR</span>;
+<span class="k">WHILE</span> condition <span class="k">DO</span> ... <span class="k">END_WHILE</span>;
+<span class="k">REPEAT</span> ... <span class="k">UNTIL</span> condition <span class="k">END_REPEAT</span>;
+
+<span class="c">// 2. 块声明</span>
+<span class="k">FUNCTION</span> FC_Name : ReturnType ... <span class="k">END_FUNCTION</span>;
+<span class="k">FUNCTION_BLOCK</span> FB_Name ... <span class="k">END_FUNCTION_BLOCK</span>;
+<span class="k">DATA_BLOCK</span> DB_Name ... <span class="k">END_DATA_BLOCK</span>;
+
+<span class="c">// 3. 变量声明</span>
+<span class="k">VAR_INPUT</span> ... <span class="k">END_VAR_INPUT</span>;
+<span class="k">VAR_OUTPUT</span> ... <span class="k">END_VAR_OUTPUT</span>;
+<span class="k">VAR_IN_OUT</span> ... <span class="k">END_VAR_IN_OUT</span>;
+<span class="k">VAR_TEMP</span> ... <span class="k">END_VAR_TEMP</span>;
+<span class="k">VAR</span> ... <span class="k">END_VAR</span>;   <span class="c">// FB 静态变量</span></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- === 02 详解：控制流语句 === -->
+        <div class="detail-block">
+          <div class="detail-title">🔀 IF / CASE / FOR 控制流实战</div>
+          <div class="detail-body">
+            <p>SCL 的控制流语句是其相对于 LAD 的最大优势，支持完整的结构化编程三要素：顺序、选择、循环。</p>
+            <div class="deep-dive">
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag cyan">IF 条件判断</span></div>
+                <pre class="code"><span class="c">// 单级 IF</span>
+<span class="k">IF</span> #LevelHi <span class="k">THEN</span>
+    <span class="s">"Tags".Pump</span> := <span class="k">FALSE</span>;
+<span class="k">END_IF</span>;
+
+<span class="c">// 多级 IF / ELSIF / ELSE</span>
+<span class="k">IF</span> #Temp > <span class="n">80.0</span> <span class="k">THEN</span>
+    <span class="t">Status</span> := <span class="n">3</span>;       <span class="c">// 高温报警</span>
+    <span class="t">Cooling</span> := <span class="k">TRUE</span>;
+<span class="k">ELSIF</span> #Temp > <span class="n">60.0</span> <span class="k">THEN</span>
+    <span class="t">Status</span> := <span class="n">2</span>;       <span class="c">// 高温预警</span>
+    <span class="t">Cooling</span> := <span class="k">FALSE</span>;
+<span class="k">ELSIF</span> #Temp > <span class="n">30.0</span> <span class="k">THEN</span>
+    <span class="t">Status</span> := <span class="n">1</span>;       <span class="c">// 正常</span>
+<span class="k">ELSE</span>
+    <span class="t">Status</span> := <span class="n">0</span>;       <span class="c">// 低温</span>
+<span class="k">END_IF</span>;</pre>
+              </div>
+
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag warn">CASE 多分支选择</span></div>
+                <pre class="code"><span class="c">// CASE 替代多路 IF，清晰表达多档位</span>
+<span class="k">CASE</span> #SpeedLevel <span class="k">OF</span>
+    <span class="n">1</span> : <span class="t">Output</span> := <span class="n">33.0</span>;    <span class="c">// 低速</span>
+    <span class="n">2</span> : <span class="t">Output</span> := <span class="n">66.0</span>;    <span class="c">// 中速</span>
+    <span class="n">3</span> : <span class="t">Output</span> := <span class="n">100.0</span>;   <span class="c">// 高速</span>
+    <span class="k">ELSE</span> <span class="t">Output</span> := <span class="n">0.0</span>;    <span class="c">// 默认停机</span>
+<span class="k">END_CASE</span>;
+
+<span class="c">// CASE 多值合并</span>
+<span class="k">CASE</span> #DayOfWeek <span class="k">OF</span>
+    <span class="n">1</span>, <span class="n">2</span>, <span class="n">3</span>, <span class="n">4</span>, <span class="n">5</span> : <span class="t">IsWorkday</span> := <span class="k">TRUE</span>;
+    <span class="n">6</span>, <span class="n">7</span> : <span class="t">IsWorkday</span> := <span class="k">FALSE</span>;
+<span class="k">END_CASE</span>;</pre>
+              </div>
+            </div>
+            <div class="deep-dive" style="margin-top:12px">
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag brand">FOR 循环</span></div>
+                <pre class="code"><span class="c">// FOR 循环：固定次数迭代</span>
+<span class="c">// 计算 8 路传感器平均值</span>
+<span class="t">Sum</span> := <span class="n">0.0</span>;
+<span class="k">FOR</span> <span class="t">i</span> := <span class="n">0</span> <span class="k">TO</span> <span class="n">7</span> <span class="k">DO</span>
+    <span class="t">Sum</span> := <span class="t">Sum</span> + <span class="s">"SensorDB".Data[#i]</span>;
+<span class="k">END_FOR</span>;
+<span class="t">Average</span> := <span class="t">Sum</span> / <span class="n">8.0</span>;
+
+<span class="c">// FOR 循环：批量复位</span>
+<span class="k">FOR</span> <span class="t">i</span> := <span class="n">0</span> <span class="k">TO</span> <span class="n">15</span> <span class="k">DO</span>
+    <span class="s">"OutputDB".Dout[#i]</span> := <span class="k">FALSE</span>;
+<span class="k">END_FOR</span>;</pre>
+              </div>
+
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag ok">WHILE / REPEAT</span></div>
+                <pre class="code"><span class="c">// WHILE：先判断再执行（可能一次都不执行）</span>
+<span class="k">WHILE</span> #BufferCount > <span class="n">0</span> <span class="k">DO</span>
+    <span class="c">// 处理缓冲区数据</span>
+    <span class="k">CALL</span> <span class="t">FC_ProcessOne</span>(<span class="t">Index</span> := #BufferIdx);
+    <span class="t">BufferCount</span> := #BufferCount - <span class="n">1</span>;
+<span class="k">END_WHILE</span>;
+
+<span class="c">// REPEAT：先执行再判断（至少执行一次）</span>
+<span class="k">REPEAT</span>
+    <span class="t">Val</span> := <span class="t">Val</span> / <span class="n">2.0</span>;
+    <span class="t">Iter</span> := <span class="t">Iter</span> + <span class="n">1</span>;
+<span class="k">UNTIL</span> <span class="k">ABS</span>(<span class="t">Val</span>) < <span class="n">0.001</span> <span class="k">OR</span> #Iter > <span class="n">100</span>
+<span class="k">END_REPEAT</span>;</pre>
+                <p class="tip">💡 WHILE/REPEAT 可能导致扫描周期超时！PLC 循环内尽量用 FOR 或限制循环次数（如 REPEAT 最多 100 次）。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- === 02 详解：沿信号与定时器 === -->
+        <div class="detail-block">
+          <div class="detail-title">⏱ 沿信号检测与 IEC 定时器避坑</div>
+          <div class="detail-body">
+            <p>在 SCL 中实现 <b>上升沿/下降沿检测</b> 和 <b>IEC 定时器调用</b> 是两个经典难点，处理不当会出现"信号丢失"或"定时器乱跳"。</p>
+            <div class="deep-dive">
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag cyan">沿信号自写（R_TRIG/F_TRIG）</span></div>
+                <pre class="code"><span class="c">// 方法1：使用 R_TRIG 功能块</span>
+<span class="k">VAR</span>
+    <span class="t">RisingDetect</span> : <span class="k">R_TRIG</span>;   <span class="c">// 上升沿检测 FB</span>
+    <span class="t">FallingDetect</span>: <span class="k">F_TRIG</span>;   <span class="c">// 下降沿检测 FB</span>
+<span class="k">END_VAR</span>
+
+<span class="c">// 每个扫描周期调用</span>
+<span class="t">RisingDetect</span>(CLK := #StartBtn);
+<span class="t">FallingDetect</span>(CLK := #StopBtn);
+
+<span class="k">IF</span> <span class="t">RisingDetect</span>.Q <span class="k">THEN</span>
+    <span class="c">// 上升沿触发：启动按钮按下瞬间</span>
+    <span class="t">PulseStart</span> := <span class="k">TRUE</span>;
+<span class="k">END_IF</span>;
+
+<span class="c">// 方法2：自写沿检测（无需 FB）</span>
+<span class="k">IF</span> #Sensor <span class="k">AND NOT</span> #Sensor_Old <span class="k">THEN</span>
+    <span class="c">// 上升沿</span>
+    <span class="t">RisingPulse</span> := <span class="k">TRUE</span>;
+<span class="k">END_IF</span>;
+<span class="t">Sensor_Old</span> := #Sensor;  <span class="c">// 保存当前值供下次比较</span></pre>
+                <p class="tip">💡 R_TRIG 必须在 <b>每个扫描周期</b> 都调用，不能放在 IF 条件内。否则 CLK 变化期间不扫描会丢失沿信号。</p>
+              </div>
+
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag warn">IEC 定时器正确用法</span></div>
+                <pre class="code"><span class="c">// ❌ 错误：定时器放在 IF 条件内</span>
+<span class="k">IF</span> #Start <span class="k">THEN</span>
+    <span class="t">TON1</span>(IN := <span class="k">TRUE</span>, PT := T#5S);  <span class="c">// 条件不满足时定时器停止！</span>
+<span class="k">END_IF</span>;
+
+<span class="c">// ✅ 正确：定时器放在主路径，EN 恒定</span>
+<span class="c">// 定时器声明</span>
+<span class="k">VAR</span>
+    <span class="t">TON1</span> : <span class="k">TON</span>;
+<span class="k">END_VAR</span>
+
+<span class="c">// 定时器调用（始终执行）</span>
+<span class="t">TON1</span>(
+    IN        := #Start,        <span class="c">// IN 条件</span>
+    PT        := T#5S,          <span class="c">// 预设时间</span>
+    Q         => <span class="t">TimerDone</span>,
+    ET        => <span class="t">Elapsed</span>
+);
+
+<span class="c">// 使用定时器输出</span>
+<span class="k">IF</span> #TimerDone <span class="k">THEN</span>
+    <span class="s">"Tags".Buzzer</span> := <span class="k">TRUE</span>;
+<span class="k">END_IF</span>;</pre>
+                <p class="tip">💡 IEC 定时器的 IN 端信号在扫描周期内可能变化，但定时器的"内部计时"只在 <b>调用时</b> 更新。因此必须确保定时器指令每次扫描都被执行。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- === 02 详解：数组与间接寻址 === -->
+        <div class="detail-block">
+          <div class="detail-title">📇 数组、字符串与间接寻址</div>
+          <div class="detail-body">
+            <p>SCL 支持 <b>一维/多维数组</b> 和 <b>间接寻址</b>，是批量数据处理的利器。</p>
+            <div class="deep-dive">
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag cyan">数组声明与操作</span></div>
+                <pre class="code"><span class="c">// 在 DB 中声明数组</span>
+<span class="k">DATA_BLOCK</span> <span class="t">DB_Sensors</span>
+<span class="k">BEGIN</span>
+    <span class="t">Temperatures</span> : <span class="k">ARRAY</span>[<span class="n">0</span>..<span class="n">15</span>] <span class="k">OF</span> <span class="k">REAL</span>;
+    <span class="t">Pressures</span>   : <span class="k">ARRAY</span>[<span class="n">0</span>..<span class="n">7</span>]  <span class="k">OF</span> <span class="k">REAL</span>;
+    <span class="t">StatusBits</span>   : <span class="k">ARRAY</span>[<span class="n">0</span>..<span class="n">31</span>] <span class="k">OF</span> <span class="k">BOOL</span>;
+<span class="k">END</span>;
+
+<span class="c">// 数组元素访问</span>
+<span class="s">"DB_Sensors".Temperatures</span>[<span class="n">0</span>] := <span class="n">25.5</span>;
+<span class="t">CurrentTemp</span> := <span class="s">"DB_Sensors".Temperatures</span>[#Index];
+
+<span class="c">// 数组批量处理</span>
+<span class="k">FOR</span> <span class="t">i</span> := <span class="n">0</span> <span class="k">TO</span> <span class="n">15</span> <span class="k">DO</span>
+    <span class="c">// 限幅：限制在 0~100℃</span>
+    <span class="k">IF</span> <span class="s">"DB_Sensors".Temperatures</span>[#i] > <span class="n">100.0</span> <span class="k">THEN</span>
+        <span class="s">"DB_Sensors".Temperatures</span>[#i] := <span class="n">100.0</span>;
+    <span class="k">ELSIF</span> <span class="s">"DB_Sensors".Temperatures</span>[#i] < <span class="n">0.0</span> <span class="k">THEN</span>
+        <span class="s">"DB_Sensors".Temperatures</span>[#i] := <span class="n">0.0</span>;
+    <span class="k">END_IF</span>;
+<span class="k">END_FOR</span>;</pre>
+              </div>
+
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag brand">字符串处理</span></div>
+                <pre class="code"><span class="c">// STRING 声明（最大 254 字符）</span>
+<span class="t">Message</span> : <span class="k">STRING</span>[<span class="n">128</span>];
+<span class="t">RecipeName</span> : <span class="k">STRING</span>[<span class="n">32</span>];
+
+<span class="c">// 字符串赋值</span>
+<span class="t">Message</span> := <span class="s">'System Ready'</span>;
+
+<span class="c">// 字符串拼接（CONCAT_3 或 S_CONCAT）</span>
+<span class="t">FullMsg</span> := <span class="k">CONCAT_3</span>(
+    IN1 := <span class="s">'Error: '</span>,
+    IN2 := <span class="k">INT_TO_STRING</span>(#ErrorCode),
+    IN3 := <span class="s">' at line '</span>
+);
+
+<span class="c">// 字符串查找</span>
+<span class="t">Pos</span> := <span class="k">FIND</span>(IN1 := #Message, IN2 := <span class="s">'Error'</span>);
+
+<span class="c">// 数值转字符串</span>
+<span class="t">TextValue</span> := <span class="k">REAL_TO_STRING</span>(#Temperature);</pre>
+              </div>
+            </div>
+            <div class="deep-dive" style="margin-top:12px">
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag warn">AT 覆盖与间接寻址</span></div>
+                <pre class="code"><span class="c">// AT 指令：以不同类型覆盖同一内存</span>
+<span class="c">// 常用于按字节/位访问 WORD/DWORD</span>
+<span class="k">VAR</span>
+    <span class="t">ControlWord</span> : <span class="k">WORD</span>;
+    <span class="t">ControlBits</span> : <span class="k">ARRAY</span>[<span class="n">0</span>..<span class="n">15</span>] <span class="k">OF</span> <span class="k">BOOL</span>
+                        <span class="k">AT</span> #ControlWord;  <span class="c">// 覆盖访问</span>
+<span class="k">END_VAR</span>
+
+<span class="c">// 现在可以用 ControlBits[0] 访问 ControlWord 的第 0 位</span>
+<span class="k">IF</span> #ControlBits[<span class="n">3</span>] <span class="k">THEN</span>
+    <span class="s">"Tags".Alarm</span> := <span class="k">TRUE</span>;
+<span class="k">END_IF</span>;
+
+<span class="c">// PEEK/POKE：绝对地址间接读写</span>
+<span class="c">// 读 DB1.DBW10 的值</span>
+<span class="t">Val</span> := <span class="k">PEEK_WORD</span>(area := <span class="n">16#84</span>, <span class="c">// DB 区域</span>
+                     dbNumber := <span class="n">1</span>,
+                     byteOffset := <span class="n">10</span>);
+
+<span class="c">// 写 DB1.DBW20</span>
+<span class="k">POKE_WORD</span>(area := <span class="n">16#84</span>,
+             dbNumber := <span class="n">1</span>,
+             byteOffset := <span class="n">20</span>,
+             value := <span class="n">32767</span>);</pre>
+                <p class="tip">💡 优化块访问模式下推荐用符号寻址，PEEK/POKE 仅在特殊场景（如跨 DB 动态访问）使用。</p>
+              </div>
+
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag ok">类型转换</span></div>
+                <pre class="code"><span class="c">// SCL 类型转换函数</span>
+<span class="c">// 基础转换</span>
+<span class="t">RealVal</span> := <span class="k">INT_TO_REAL</span>(#IntVal);
+<span class="t">IntVal</span>  := <span class="k">REAL_TO_INT</span>(#RealVal);
+<span class="t">DintVal</span> := <span class="k">INT_TO_DINT</span>(#IntVal);
+
+<span class="c">// 带小数位的 REAL 转 INT</span>
+<span class="t">Scaled</span> := <span class="k">REAL_TO_INT</span>(#Temperature * <span class="n">10.0</span>);
+<span class="c">// 例：25.6℃ → 256（放大 10 倍存储）</span>
+
+<span class="c">// CONVERT 通用转换</span>
+<span class="t">Out</span> := <span class="k">CONVERT</span>(<span class="k">INT</span>, #In);
+
+<span class="c">// ROUND / TRUNC / CEIL / FLOOR</span>
+<span class="t">Rounded</span> := <span class="k">ROUND</span>(#RealVal);   <span class="c">// 四舍五入</span>
+<span class="t">Truncated</span> := <span class="k">TRUNC</span>(#RealVal);   <span class="c">// 截断小数</span>
+<span class="t">Ceiled</span>  := <span class="k">CEIL</span>(#RealVal);    <span class="c">// 向上取整</span>
+<span class="t">Floored</span> := <span class="k">FLOOR</span>(#RealVal);    <span class="c">// 向下取整</span></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
       <div class="sidebar">
         <span class="tag">8 天</span>
@@ -119,42 +666,471 @@ END_FOR;</pre>
       </div>
     </div>
 
-    <div class="chapter">
+    <div class="chapter detail">
       <div class="no">03</div>
       <div>
         <h3>FBD / S7-GRAPH 顺控</h3>
         <div class="desc">FBD 功能块图（信号流表达 PID/驱动逻辑）；S7-GRAPH 步-转换-动作，专为灌装/装配顺序工艺，图形化顺控配合监视步。</div>
-        <div class="kw"><span class="tag brand">FBD</span><span class="tag brand">S7-GRAPH</span><span class="tag">步 Step</span><span class="tag">转换 Transition</span><span class="tag">动作 Action</span></div>
+        <div class="kw">
+          <span class="tag brand">FBD</span>
+          <span class="tag brand">S7-GRAPH</span>
+          <span class="tag">步 Step</span>
+          <span class="tag">转换 Transition</span>
+          <span class="tag">动作 Action</span>
+        </div>
+
+        <!-- === 03 详解：FBD 功能块图 === -->
+        <div class="detail-block">
+          <div class="detail-title">🔷 FBD 功能块图：信号流编程</div>
+          <div class="detail-body">
+            <p>FBD（Function Block Diagram）用 <b style="color:var(--brand)">信号流</b> 的方式表达数据从左到右的传递过程，特别适合 <b>数学运算、PID 调节、模拟量处理</b> 等需要清晰展示信号流向的场景。</p>
+            <table class="tbl dtype-tbl">
+              <thead>
+                <tr><th>元素</th><th>图形</th><th>说明</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><b>功能块</b></td><td>矩形框 + 输入/输出引脚</td><td>代表一个运算或功能（ADD, PID, MOVE 等）</td></tr>
+                <tr><td><b>信号线</b></td><td>箭头连线</td><td>数据从左流向右</td></tr>
+                <tr><td><b>连接点</b></td><td>● 小圆点</td><td>多条线汇合点</td></tr>
+                <tr><td><b>跳转</b></td><td>→|标记|→</td><td>跨区域连接</td></tr>
+              </tbody>
+            </table>
+            <div class="deep-dive" style="margin-top:12px">
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag cyan">FBD 典型应用：温度 PID</span></div>
+                <pre class="code"><span class="c">// FBD 信号流示意</span>
+<span class="c">// ┌──────────┐   ┌──────┐   ┌──────┐   ┌──────────────┐</span>
+<span class="c">// │ Setpoint │──→│ PID  │──→│ LIMIT│──→│ AQW256 (AQ)  │</span>
+<span class="c">// │ Actual ──→│      │   │ 0-100│   │ 模拟量输出   │</span>
+<span class="c">// └──────────┘   └──┬─┘   └──────┘   └──────────────┘</span>
+<span class="c">//                   │</span>
+<span class="c">//                   ↓</span>
+<span class="c">//              ┌──────────┐</span>
+<span class="c">//              │ Alarm FB │──→ Q0.5 (报警)</span>
+<span class="c">//              └──────────┘</span>
+
+<span class="c">// FBD 表达式：</span>
+<span class="t">PID_Output</span> := <span class="k">PID_Compact</span>(
+    <span class="t">Setpoint</span> := #SetTemp,
+    <span class="t">Input</span>     := #ActualTemp,
+    <span class="t">Output</span>    => <span class="t">RawOutput</span>
+);
+<span class="t">Limited</span> := <span class="k">LIMIT</span>(MN := <span class="n">0.0</span>, MX := <span class="n">100.0</span>, IN := #PID_Output);</pre>
+              </div>
+
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag brand">FBD vs LAD vs SCL 选择</span></div>
+                <table class="tbl dtype-tbl" style="margin-top:8px">
+                  <thead><tr><th>场景</th><th>推荐语言</th><th>原因</th></tr></thead>
+                  <tbody>
+                    <tr><td>PID/模拟量回路</td><td><b>FBD</b></td><td>信号流清晰，便于调试</td></tr>
+                    <tr><td>纯逻辑（启保停/互锁）</td><td><b>LAD</b></td><td>电工直觉，传统易懂</td></tr>
+                    <tr><td>批量数据/算法</td><td><b>SCL</b></td><td>代码效率高，功能最全</td></tr>
+                    <tr><td>顺序工艺</td><td><b>S7-GRAPH</b></td><td>图形化状态机</td></tr>
+                  </tbody>
+                </table>
+                <p class="tip">💡 FBD 的优势在于 <b>可视化数据流向</b>，一眼看出信号经过了哪些处理步骤，对于 PID 调试和模拟量回路特别有用。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- === 03 详解：S7-GRAPH 基础 === -->
+        <div class="detail-block">
+          <div class="detail-title">📊 S7-GRAPH：图形化顺控编程</div>
+          <div class="detail-body">
+            <p>S7-GRAPH（Graphics）是专为 <b>顺序控制工艺</b> 设计的 <b>图形化编程语言</b>，基于 <b>Petri 网</b> 原理，用 <b>步（Step）→ 转换（Transition）→ 动作（Action）</b> 的三元组描述工艺流程。</p>
+            <div class="flow-diagram">
+              <div class="flow-node"><span class="flow-num">S0</span><b>初始步</b><br><small>Idle 等待</small></div>
+              <div class="flow-arrow">── T0 ──</div>
+              <div class="flow-node"><span class="flow-num">S1</span><b>加料步</b><br><small>进料阀打开</small></div>
+              <div class="flow-arrow">── T1 ──</div>
+              <div class="flow-node"><span class="flow-num">S2</span><b>升温步</b><br><small>加热器启动</small></div>
+              <div class="flow-arrow">── T2 ──</div>
+              <div class="flow-node"><span class="flow-num">S3</span><b>保温步</b><br><small>温度保持</small></div>
+              <div class="flow-arrow">── T3 ──</div>
+              <div class="flow-node flow-cycle">S4 出料 → S0</div>
+            </div>
+            <p style="margin-top:10px"><b style="color:var(--cyan)">核心概念</b>：</p>
+            <table class="tbl dtype-tbl">
+              <thead>
+                <tr><th>元素</th><th>符号</th><th>说明</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><b>步 Step</b></td><td>矩形框</td><td>当前正在执行的阶段，分为活动步/非活动步</td></tr>
+                <tr><td><b>转换 Transition</b></td><td>水平连线 + 条件</td><td>从上一步到下一步的切换条件（布尔表达式）</td></tr>
+                <tr><td><b>动作 Action</b></td><td>步旁边的输出框</td><td>该步激活时执行的输出或操作</td></tr>
+                <tr><td><b>跳转 Jump</b></td><td>→|目标步|</td><td>跳转到指定步</td></tr>
+                <tr><td><b>并行分支</b></td><td>双线 =</td><td>多个分支同时执行</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- === 03 详解：步-转换-动作 -->
+        <div class="detail-block">
+          <div class="detail-title">🔧 步-转换-动作详解</div>
+          <div class="detail-body">
+            <div class="deep-dive">
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag cyan">步（Step）类型</span></div>
+                <table class="tbl dtype-tbl" style="margin-top:8px">
+                  <thead><tr><th>类型</th><th>说明</th><th>特点</th></tr></thead>
+                  <tbody>
+                    <tr><td><b>初始步 S0</b></td><td>流程起始点</td><td>必须标记为 Initial Step</td></tr>
+                    <tr><td><b>普通步 S1~Sn</b></td><td>工艺阶段</td><td>根据转换条件激活</td></tr>
+                    <tr><td><b>终止步</b></td><td>流程结束</td><td>自动回到初始步</td></tr>
+                    <tr><td><b>活动步</b></td><td>当前正在执行</td><td>蓝色高亮显示</td></tr>
+                  </tbody>
+                </table>
+                <p><b>步的动作分类</b>：</p>
+                <ul class="detail-list">
+                  <li><b>输出动作（Output）</b>：该步激活时置位/复位输出，如 <code>"Valve1" := TRUE</code></li>
+                  <li><b>动作框（Action Box）</b>：该步激活时调用 FB/FC，如 <code>CALL FB_Heater</code></li>
+                  <li><b>定时器动作</b>：该步内启动定时器，如 <code>TONR T#30S</code>（保温计时）</li>
+                  <li><b>监控步（Monitor）</b>：在当前步激活时监控某些条件，异常时跳转到错误步</li>
+                </ul>
+              </div>
+
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag warn">转换条件编写</span></div>
+                <pre class="code"><span class="c">// 转换条件（Transition）示例</span>
+<span class="c">// T0: 启动条件 → 从 S0 跳 S1</span>
+<span class="s">"Tags".CycleStart</span>  <span class="c">// 按钮触发</span>
+
+<span class="c">// T1: 液位到 → 从 S1 跳 S2</span>
+<span class="s">"Tags".LevelHigh</span> AND <span class="k">NOT</span> <span class="s">"Tags".Emergency</span>
+
+<span class="c">// T2: 温度到 + 计时到 → 从 S2 跳 S3</span>
+<span class="s">"Tags".TempReached</span> AND <span class="s">"Graph".T_Done</span>
+
+<span class="c">// T3: 保温时间到 → 从 S3 跳 S4</span>
+<span class="s">"Tags".HoldTimer_Q</span>
+
+<span class="c">// T_Error: 任意步异常 → 跳 Error 步</span>
+<span class="s">"Tags".Alarm</span> OR <span class="s">"Tags".Emergency"</span></pre>
+                <p class="tip">💡 转换条件是 <b>纯布尔表达式</b>，不能包含线圈或赋值。条件为 TRUE 时，上一步激活下一步进入活动态。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- === 03 详解：GRAPH 顺控实战 === -->
+        <div class="detail-block">
+          <div class="detail-title">🏭 GRAPH 顺控实战：灌装线案例</div>
+          <div class="detail-body">
+            <p>以 <b>灌装生产线</b> 为例，完整展示 S7-GRAPH 的建模方法：</p>
+            <div class="flow-diagram">
+              <div class="flow-node"><span class="flow-num">S0</span>Idle<br><small>等待启动</small></div>
+              <div class="flow-arrow">T0: Start</div>
+              <div class="flow-node"><span class="flow-num">S1</span>进料<br><small>开进料阀</small></div>
+              <div class="flow-arrow">T1: LevelHi</div>
+              <div class="flow-node"><span class="flow-num">S2</span>加热<br><small>开加热器</small></div>
+              <div class="flow-arrow">T2: TempOK</div>
+              <div class="flow-node"><span class="flow-num">S3</span>保温<br><small>计时 30s</small></div>
+              <div class="flow-arrow">T3: Timer</div>
+              <div class="flow-node"><span class="flow-num">S4</span>出料<br><small>开出料阀</small></div>
+              <div class="flow-arrow">T4: Empty</div>
+              <div class="flow-node flow-cycle">↺ S0</div>
+            </div>
+            <div class="deep-dive" style="margin-top:12px">
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag cyan">GRAPH 同步 vs 异步</span></div>
+                <table class="tbl dtype-tbl" style="margin-top:8px">
+                  <thead><tr><th>模式</th><th>说明</th><th>适用场景</th></tr></thead>
+                  <tbody>
+                    <tr><td><b>Static 同步</b></td><td>转换条件满足立即跳转</td><td>普通顺控</td></tr>
+                    <tr><td><b>Dynamic 异步</b></td><td>活动步保持激活直到下一步激活</td><td>需要重叠动作</td></tr>
+                    <tr><td><b>Persist 保持</b></td><td>步激活时的输出保持到步失活</td><td>阀类动作</td></tr>
+                  </tbody>
+                </table>
+                <p>在 GRAPH 编辑器中设置每步的 <b>Synchronization</b> 属性：Static / Dynamic / Persist。</p>
+              </div>
+
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag brand">GRAPH 监控与调试</span></div>
+                <pre class="code"><span class="c">// GRAPH 块自动生成以下数据结构</span>
+<span class="c">// 1. 状态字（显示当前步）</span>
+<span class="s">"Graph_DB".Step</span>       <span class="c">// INT: 当前活动步编号</span>
+<span class="s">"Graph_DB".PrevStep</span>   <span class="c">// INT: 上一步编号</span>
+<span class="s">"Graph_DB".Error</span>     <span class="c">// BOOL: 错误标志</span>
+
+<span class="c">// 2. 步活动标志</span>
+<span class="s">"Graph_DB".S0_Active</span>   <span class="c">// Step 0 活动</span>
+<span class="s">"Graph_DB".S1_Active</span>   <span class="c">// Step 1 活动</span>
+<span class="s">"Graph_DB".S2_Active</span>   <span class="c">// Step 2 活动</span>
+
+<span class="c">// 3. HMI 画面用这些标志做指示灯</span>
+<span class="c">// 监控表实时查看步切换 → 快速定位卡点</span></pre>
+                <p class="tip">💡 S7-GRAPH 提供 <b>Sequence Monitor</b> 调试工具，在线监控时可以看到步的流动和转换条件，非常直观。</p>
+              </div>
+            </div>
+            <p class="tip">💡 <b>GRAPH vs SCL CASE OF</b>：两者实现相同的状态机逻辑。GRAPH 用图形化方式，CASE OF 用代码。GRAPH 的优势是 <b>可视化流程</b>，适合工艺工程师理解；SCL CASE 的优势是 <b>灵活性</b>，适合复杂逻辑和大规模复用。</p>
+          </div>
+        </div>
+
       </div>
-      <div class="sidebar"><span class="tag">4 天</span><a href="#" class="btn">开始学习</a></div>
+      <div class="sidebar">
+        <span class="tag">4 天</span>
+        <a href="#" class="btn">开始学习</a>
+      </div>
     </div>
 
-    <div class="chapter">
+    <div class="chapter detail">
       <div class="no">04</div>
       <div>
         <h3>ISA-88 程序架构 / 状态机 <span class="tag ok">●配套</span></h3>
         <div class="desc">ISA-88 批次标准：物理模型（Area→Unit→EquipMod→CtrlMod）+ 程序模型（Procedure→Operation→Phase），SCL CASE OF 驱动 Phase 6 状态机（Idle/Running/Paused/Held/Complete/Aborted），Running 内含加料/升温/保温/出料 4 工艺子步。</div>
-        <pre class="code"><span class="c">// FB_BatchPhase.scl · CASE 状态机片段</span>
-CASE #State OF
-    0:  <span class="c">// Idle</span>
-        IF #CmdStart THEN #NextState := 10; END_IF;
-    10: <span class="c">// Running（工艺子步 CASE 嵌套）</span>
-        IF #CmdAbort THEN #NextState := 99;
-        ELSIF #CmdPause THEN #NextState := 20;
-        ELSE
-            CASE #SubStep OF
-                10: #FeedValve := TRUE;
-                    IF #LevelHi THEN #SubStep := 20; END_IF;
-                20: #Heater := #PIDOutput;
-                    IF #ActualTemp >= #SetTemp THEN #SubStep := 30; END_IF;
-                30: <span class="c">// 保温 + IEC 计时</span>; ...;
-                40: #DrainValve := TRUE;
-                    IF #DrainDone THEN #NextState := 90; END_IF;
-            END_CASE;
-        END_IF;
-    99: <span class="c">// Aborted 异常处理</span>;
-END_CASE;</pre>
-        <div class="kw" style="margin-top:10px"><span class="tag brand">ISA-88</span><span class="tag brand">Phase 状态机</span><span class="tag">一周期延迟</span><span class="tag">命令优先级</span></div>
+        <div class="kw">
+          <span class="tag brand">ISA-88</span>
+          <span class="tag brand">Phase 状态机</span>
+          <span class="tag">一周期延迟</span>
+          <span class="tag">命令优先级</span>
+        </div>
+
+        <!-- === 04 详解：ISA-88 标准 === -->
+        <div class="detail-block">
+          <div class="detail-title">📐 ISA-88 批次控制标准</div>
+          <div class="detail-body">
+            <p>ISA-88 是 <b style="color:var(--brand)">国际批次控制标准</b>，为工业自动化提供了 <b>统一的物理层级模型和程序层级模型</b>，让不同厂商的控制系统能在同一架构下协作。</p>
+            <p><b style="color:var(--cyan)">物理模型（Physical Model）— 从大到小</b>：</p>
+            <div class="flow-diagram">
+              <div class="flow-node"><span class="flow-num">L4</span><b>Area</b><br><small>厂区（如灌装车间）</small></div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node"><span class="flow-num">L3</span><b>Unit</b><br><small>单元（如 1# 灌装线）</small></div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node"><span class="flow-num">L2</span><b>Equipment Module</b><br><small>设备模块（配料罐/加热器）</small></div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-node"><span class="flow-num">L1</span><b>Control Module</b><br><small>控制模块（阀/传感器）</small></div>
+            </div>
+            <p style="margin-top:10px"><b style="color:var(--warn)">程序模型（Procedural Model）— 从粗到细</b>：</p>
+            <table class="tbl dtype-tbl">
+              <thead>
+                <tr><th>层级</th><th>名称</th><th>说明</th><th>对应 PLC 实现</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>Level 0</td><td>Procedure</td><td>完整生产流程（配方）</td><td>顶层 FB 调用链</td></tr>
+                <tr><td>Level 1</td><td>Operation</td><td>一个操作（配料/加热）</td><td>FB_Operation</td></tr>
+                <tr><td>Level 2</td><td>Phase</td><td>工艺阶段（加料/升温/保温）</td><td>FB_Phase（状态机）</td></tr>
+                <tr><td>Level 3</td><td>Command</td><td>原子命令（开阀/启泵）</td><td>FC 或直接线圈</td></tr>
+              </tbody>
+            </table>
+            <p class="tip">💡 <b>对应关系</b>：物理模型的每个 Unit 对应一个 Procedure，每个 EquipMod 对应一个 Operation，每个 Operation 内含多个 Phase。</p>
+          </div>
+        </div>
+
+        <!-- === 04 详解：Phase 状态机 === -->
+        <div class="detail-block">
+          <div class="detail-title">🎰 Phase 六状态机核心</div>
+          <div class="detail-body">
+            <p>ISA-88 的核心是 <b style="color:var(--brand)">Phase 状态机</b>，每个 Operation 都有 6 种标准状态：</p>
+            <div class="flow-diagram">
+              <div class="flow-node">0 Idle<br><small>等待命令</small></div>
+              <div class="flow-arrow">Start</div>
+              <div class="flow-node">10 Running<br><small>执行工艺</small></div>
+              <div class="flow-arrow">Complete</div>
+              <div class="flow-node">90 Complete<br><small>正常完成</small></div>
+              <div class="flow-arrow">PAbort</div>
+              <div class="flow-node flow-cycle">99 Aborted<br><small>异常终止</small></div>
+            </div>
+            <p style="margin-top:10px"><b>6 种状态详解</b>：</p>
+            <table class="tbl dtype-tbl">
+              <thead>
+                <tr><th>状态码</th><th>状态名</th><th>进入条件</th><th>核心行为</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><code>0</code></td><td>Idle</td><td>初始化 / Complete 后</td><td>等待 Start 命令</td></tr>
+                <tr><td><code>10</code></td><td>Running</td><td>CmdStart = TRUE</td><td>执行工艺子步</td></tr>
+                <tr><td><code>20</code></td><td>Paused</td><td>CmdPause = TRUE</td><td>暂停（保留当前子步）</td></tr>
+                <tr><td><code>30</code></td><td>Held</td><td>CmdHold = TRUE</td><td>保持（输出冻结）</td></tr>
+                <tr><td><code>90</code></td><td>Complete</td><td>工艺正常完成</td><td>执行收尾动作</td></tr>
+                <tr><td><code>99</code></td><td>Aborted</td><td>CmdAbort / 故障</td><td>安全停机处理</td></tr>
+              </tbody>
+            </table>
+            <p style="margin-top:8px"><b style="color:var(--warn)">命令优先级</b>：<code>Abort（最高）> Pause > Hold > Start</code>。CASE 语句中必须先判断高优先级命令。</p>
+          </div>
+        </div>
+
+        <!-- === 04 详解：SCL CASE OF 实现 === -->
+        <div class="detail-block">
+          <div class="detail-title">💻 SCL CASE OF 实现状态机</div>
+          <div class="detail-body">
+            <p>用 SCL 的 <b>CASE OF 语句</b> 驱动 Phase 状态机，是 ISA-88 的标准 SCL 实现方式：</p>
+            <pre class="code"><span class="c">// FB_BatchPhase.scl — ISA-88 Phase 状态机核心</span>
+<span class="k">FUNCTION_BLOCK</span> <span class="t">FB_BatchPhase</span>
+<span class="k">VAR_INPUT</span>
+    <span class="t">CmdStart</span>  : <span class="k">BOOL</span>;    <span class="c">// 启动命令</span>
+    <span class="t">CmdPause</span>  : <span class="k">BOOL</span>;    <span class="c">// 暂停命令</span>
+    <span class="t">CmdHold</span>   : <span class="k">BOOL</span>;    <span class="c">// 保持命令</span>
+    <span class="t">CmdAbort</span>  : <span class="k">BOOL</span>;    <span class="c">// 终止命令</span>
+    <span class="t">SetTemp</span>   : <span class="k">REAL</span>;    <span class="c">// 设定温度</span>
+    <span class="t">MaxLevel</span> : <span class="k">REAL</span>;    <span class="c">// 最大液位</span>
+<span class="k">END_VAR_INPUT</span>
+
+<span class="k">VAR_OUTPUT</span>
+    <span class="t">State</span>       : <span class="k">INT</span>;     <span class="c">// 当前状态码</span>
+    <span class="t">SubStep</span>     : <span class="k">INT</span>;     <span class="c">// 工艺子步</span>
+    <span class="t">Valve_Feed</span> : <span class="k">BOOL</span>;    <span class="c">// 进料阀</span>
+    <span class="t">Heater</span>     : <span class="k">BOOL</span>;    <span class="c">// 加热器</span>
+    <span class="t">Valve_Drain</span>: <span class="k">BOOL</span>;    <span class="c">// 出料阀</span>
+    <span class="t">PhaseDone</span>  : <span class="k">BOOL</span>;    <span class="c">// Phase 完成标志</span>
+<span class="k">END_VAR_OUTPUT</span>
+
+<span class="k">VAR</span>
+    <span class="t">Level</span>        : <span class="k">REAL</span>;
+    <span class="t">ActualTemp</span>   : <span class="k">REAL</span>;
+    <span class="t">HoldTimer</span>   : <span class="k">TONR</span>;
+    <span class="t">NextState</span>    : <span class="k">INT</span>;
+<span class="k">END_VAR</span></pre>
+            <div class="deep-dive" style="margin-top:12px">
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag cyan">状态机主逻辑</span></div>
+                <pre class="code"><span class="c">// Phase 状态机 CASE 驱动</span>
+<span class="c">// 读取过程数据</span>
+<span class="t">Level</span>      := <span class="s">"PhaseDB".Level</span>;
+<span class="t">ActualTemp</span> := <span class="s">"PhaseDB".Temp</span>;
+
+<span class="c">// 定时器（始终调用）</span>
+<span class="t">HoldTimer</span>(IN := (<span class="t">State</span>=<span class="n">30</span>), PT := T#30S);
+
+<span class="c">// 默认：下一状态 = 当前状态（自循环）</span>
+<span class="t">NextState</span> := <span class="t">State</span>;
+
+<span class="k">CASE</span> <span class="t">State</span> <span class="k">OF</span>
+    <span class="n">0</span>:  <span class="c">// Idle</span>
+        <span class="k">IF</span> #CmdStart <span class="k">THEN</span>
+            <span class="t">SubStep</span> := <span class="n">10</span>;   <span class="c">// 进入加料子步</span>
+            <span class="t">NextState</span> := <span class="n">10</span>;  <span class="c">// → Running</span>
+        <span class="k">END_IF</span>;
+
+    <span class="n">10</span>: <span class="c">// Running — 工艺子步嵌套</span>
+        <span class="c">// 1. 先判断命令优先级</span>
+        <span class="k">IF</span> #CmdAbort <span class="k">THEN</span>
+            <span class="t">NextState</span> := <span class="n">99</span>;  <span class="c">// → Aborted</span>
+        <span class="k">ELSIF</span> #CmdPause <span class="k">THEN</span>
+            <span class="t">NextState</span> := <span class="n">20</span>;  <span class="c">// → Paused</span>
+        <span class="k">ELSIF</span> #CmdHold <span class="k">THEN</span>
+            <span class="t">NextState</span> := <span class="n">30</span>;  <span class="c">// → Held</span>
+        <span class="k">ELSE</span>
+            <span class="c">// 2. 工艺子步嵌套 CASE</span>
+            <span class="k">CASE</span> <span class="t">SubStep</span> <span class="k">OF</span>
+                <span class="n">10</span>: <span class="c">// 加料</span>
+                    <span class="t">Valve_Feed</span> := <span class="k">TRUE</span>;
+                    <span class="k">IF</span> #Level >= #MaxLevel <span class="k">THEN</span>
+                        <span class="t">Valve_Feed</span> := <span class="k">FALSE</span>;
+                        <span class="t">SubStep</span> := <span class="n">20</span>;  <span class="c">// → 升温</span>
+                    <span class="k">END_IF</span>;
+
+                <span class="n">20</span>: <span class="c">// 升温</span>
+                    <span class="t">Heater</span> := <span class="k">TRUE</span>;
+                    <span class="k">IF</span> #ActualTemp >= #SetTemp <span class="k">THEN</span>
+                        <span class="t">Heater</span> := <span class="k">FALSE</span>;
+                        <span class="t">SubStep</span> := <span class="n">30</span>;  <span class="c">// → 保温</span>
+                    <span class="k">END_IF</span>;
+
+                <span class="n">30</span>: <span class="c">// 保温（计时 30s）</span>
+                    <span class="k">IF</span> #HoldTimer.Q <span class="k">THEN</span>
+                        <span class="t">SubStep</span> := <span class="n">40</span>;  <span class="c">// → 出料</span>
+                    <span class="k">END_IF</span>;
+
+                <span class="n">40</span>: <span class="c">// 出料</span>
+                    <span class="t">Valve_Drain</span> := <span class="k">TRUE</span>;
+                    <span class="k">IF</span> #Level <= <span class="n">0.0</span> <span class="k">THEN</span>
+                        <span class="t">NextState</span> := <span class="n">90</span>;  <span class="c">// → Complete</span>
+                    <span class="k">END_IF</span>;
+            <span class="k">END_CASE</span>;
+        <span class="k">END_IF</span>;
+
+    <span class="n">20</span>: <span class="c">// Paused — 暂停时关闭所有输出</span>
+        <span class="t">Valve_Feed</span> := <span class="k">FALSE</span>;
+        <span class="t">Heater</span>     := <span class="k">FALSE</span>;
+        <span class="t">Valve_Drain</span>:= <span class="k">FALSE</span>;
+        <span class="k">IF</span> <span class="k">NOT</span> #CmdPause <span class="k">THEN</span>
+            <span class="t">NextState</span> := <span class="n">10</span>;  <span class="c">// → 恢复 Running</span>
+        <span class="k">END_IF</span>;
+
+    <span class="n">30</span>: <span class="c">// Held — 保持当前输出不变</span>
+        <span class="k">IF</span> <span class="k">NOT</span> #CmdHold <span class="k">THEN</span>
+            <span class="t">NextState</span> := <span class="n">10</span>;
+        <span class="k">END_IF</span>;
+
+    <span class="n">90</span>: <span class="c">// Complete — 正常完成</span>
+        <span class="t">Valve_Drain</span> := <span class="k">FALSE</span>;
+        <span class="t">PhaseDone</span> := <span class="k">TRUE</span>;
+        <span class="t">NextState</span> := <span class="n">0</span>;  <span class="c">// → Idle</span>
+
+    <span class="n">99</span>: <span class="c">// Aborted — 异常终止</span>
+        <span class="t">Valve_Feed</span> := <span class="k">FALSE</span>;
+        <span class="t">Heater</span>     := <span class="k">FALSE</span>;
+        <span class="t">Valve_Drain</span>:= <span class="k">FALSE</span>;
+        <span class="k">IF</span> <span class="k">NOT</span> #CmdAbort <span class="k">THEN</span>
+            <span class="t">NextState</span> := <span class="n">0</span>;  <span class="c">// → Idle</span>
+        <span class="k">END_IF</span>;
+<span class="k">END_CASE</span>;
+
+<span class="c">// 状态转换：一周期延迟避免竞争</span>
+<span class="t">State</span> := <span class="t">NextState</span>;</pre>
+              </div>
+
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag brand">关键设计要点</span></div>
+                <ul class="detail-list">
+                  <li><b>命令优先级</b>：Abort > Pause > Hold > Start，CASE 中先判断高优先级命令</li>
+                  <li><b>自循环赋值</b>：`NextState := State` 确保默认保持当前状态</li>
+                  <li><b>子步嵌套</b>：Running 状态内嵌第二个 CASE 驱动工艺子步（加料→升温→保温→出料）</li>
+                  <li><b>定时器始终调用</b>：HoldTimer 放在 CASE 外面，每个扫描周期都执行</li>
+                  <li><b>输出归位</b>：Paused/Aborted 状态必须关闭所有安全相关输出</li>
+                  <li><b>PhaseDone 标志</b>：Complete 时置 TRUE 通知上层 Operation 完成</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- === 04 详解：一周期延迟与竞争 === -->
+        <div class="detail-block">
+          <div class="detail-title">⏳ 一周期延迟与竞争条件</div>
+          <div class="detail-body">
+            <p>在状态机中，<b>当前状态决定输出，输出决定下一状态</b>。如果在同一个扫描周期内直接 `State := NextState`，可能导致 <b>竞争条件</b>（当前状态的 CASE 分支还在执行时状态已变）。</p>
+            <div class="deep-dive">
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag cyan">❌ 错误：无延迟直接赋值</span></div>
+                <pre class="code"><span class="c">// ❌ 问题：State 在 CASE 内部改变</span>
+<span class="k">CASE</span> <span class="t">State</span> <span class="k">OF</span>
+    <span class="n">0</span>: <span class="k">IF</span> #CmdStart <span class="k">THEN</span>
+            <span class="t">State</span> := <span class="n">10</span>;  <span class="c">// 当前周期内 State 变为 10</span>
+        <span class="k">END_IF</span>;
+    <span class="n">10</span>: <span class="c">// 同一周期内此分支也被执行！</span>
+        <span class="t">Valve_Feed</span> := <span class="k">TRUE</span>;  <span class="c">// 不该执行的输出被激活</span>
+<span class="k">END_CASE</span>;</pre>
+              </div>
+
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag ok">✅ 正确：NextState 中间变量</span></div>
+                <pre class="code"><span class="c">// ✅ 正确：用 NextState 做中间变量</span>
+<span class="c">// Step 1: 默认保持</span>
+<span class="t">NextState</span> := <span class="t">State</span>;
+
+<span class="c">// Step 2: CASE 根据当前 State 决定 NextState</span>
+<span class="k">CASE</span> <span class="t">State</span> <span class="k">OF</span>
+    <span class="n">0</span>: <span class="k">IF</span> #CmdStart <span class="k">THEN</span>
+            <span class="t">NextState</span> := <span class="n">10</span>;  <span class="c">// 只改变 NextState</span>
+        <span class="k">END_IF</span>;
+    <span class="n">10</span>: <span class="c">// 本分支安全执行</span>
+        <span class="t">Valve_Feed</span> := <span class="k">TRUE</span>;
+        <span class="k">IF</span> #LevelHi <span class="k">THEN</span>
+            <span class="t">NextState</span> := <span class="n">20</span>;
+        <span class="k">END_IF</span>;
+<span class="k">END_CASE</span>;
+
+<span class="c">// Step 3: 一周期后才赋值</span>
+<span class="t">State</span> := <span class="t">NextState</span>;  <span class="c">// 下一周期 State 才更新</span></pre>
+                <p class="tip">💡 这种 <b>读旧值、算新值、末尾赋值</b> 的模式是 PLC 编程的核心范式，与 S7-1200 扫描周期的"输入采样→程序执行→输出刷新"原理一致。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
       <div class="sidebar">
         <span class="tag">6 天</span>
@@ -166,24 +1142,569 @@ END_CASE;</pre>
       </div>
     </div>
 
-    <div class="chapter">
+    <div class="chapter detail">
       <div class="no">05</div>
       <div>
         <h3>PROFINET 通信与 HMI 组态</h3>
         <div class="desc">PROFINET 基础：IO-Controller/IO-Device、GSDML 导入、ET 200SP 远程 IO 组态、设备名+IP 分配；HMI 画面：I/O 域、按钮指示灯、变量绑定、报警、趋势曲线。</div>
-        <div class="kw"><span class="tag brand">PROFINET</span><span class="tag">GSDML</span><span class="tag">ET 200SP</span><span class="tag">HMI 变量</span><span class="tag">报警记录</span></div>
+        <div class="kw">
+          <span class="tag brand">PROFINET</span>
+          <span class="tag">GSDML</span>
+          <span class="tag">ET 200SP</span>
+          <span class="tag">HMI 变量</span>
+          <span class="tag">报警记录</span>
+        </div>
+
+        <!-- === 05 详解：PROFINET 基础 === -->
+        <div class="detail-block">
+          <div class="detail-title">🌐 PROFINET 工业以太网基础</div>
+          <div class="detail-body">
+            <p>PROFINET 是基于 <b style="color:var(--brand)">标准以太网</b> 的实时通信协议，是西门子 TIA 生态中 <b>最核心的通信方式</b>，支持分布式 IO、HMI 通信、PLC 间通信等。</p>
+            <table class="tbl dtype-tbl">
+              <thead>
+                <tr><th>角色</th><th>说明</th><th>典型设备</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><b>IO-Controller</b></td><td>主站，控制 IO 设备</td><td>S7-1200/1500 CPU（带 PN 口）</td></tr>
+                <tr><td><b>IO-Device</b></td><td>从站，被 IO-Controller 控制</td><td>ET 200SP、V90 伺服、第三方设备</td></tr>
+                <tr><td><b>IO-Supervisor</b></td><td>监控站（可选）</td><td>PC 上的 PROFINET 监控软件</td></tr>
+                <tr><td><b>PN-Device（非实时）</b></td><td>标准以太网设备</td><td>HMI、交换机、上位机</td></tr>
+              </tbody>
+            </table>
+            <p style="margin-top:10px"><b style="color:var(--cyan)">PROFINET 实时通信三要素</b>：</p>
+            <ul class="detail-list">
+              <li><b>设备名（Device Name）</b>：每个 IO-Device 必须有唯一的设备名（如 <code>ET200SP_Line1</code>），替代传统 Profibus 的地址</li>
+              <li><b>IP 地址</b>：192.168.0.x 默认网段，所有设备必须在同一子网</li>
+              <li><b>实时通信周期</b>：默认 8ms（S7-1200），S7-1500 支持 1ms 级</li>
+            </ul>
+            <div class="flow-diagram">
+              <div class="flow-node"><b>CPU 1215C</b><br><small>IO-Controller</small><br>IP: 192.168.0.1</div>
+              <div class="flow-arrow">PN</div>
+              <div class="flow-node"><b>ET 200SP</b><br><small>IO-Device #1</small><br>Name: ET200SP_1</div>
+              <div class="flow-arrow">PN</div>
+              <div class="flow-node"><b>ET 200SP</b><br><small>IO-Device #2</small><br>Name: ET200SP_2</div>
+              <div class="flow-arrow">PN</div>
+              <div class="flow-node"><b>HMI KTP1200</b><br><small>PN-Device</small><br>IP: 192.168.0.100</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- === 05 详解：ET 200SP 组态 === -->
+        <div class="detail-block">
+          <div class="detail-title">📦 ET 200SP 远程 IO 组态</div>
+          <div class="detail-body">
+            <p>ET 200SP 是西门子最流行的 <b>分布式 IO 系统</b>，通过 PROFINET 连接到 CPU，支持灵活的模块扩展。</p>
+            <div class="deep-dive">
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag cyan">ET 200SP 硬件结构</span></div>
+                <pre class="code"><span class="c">// ET 200SP 模块排列（左→右）</span>
+<span class="c">// ┌────────┬────────┬────────┬────────┬────────┐</span>
+<span class="c">// │ IM 155 │ DI 16  │ DI 16  │ DO 16  │ AQ 4   │</span>
+<span class="c">// │ PN 接口│ 数字入 │ 数字入 │ 数字出 │ 模拟出 │</span>
+<span class="c">// └────────┴────────┴────────┴────────┴────────┘</span>
+<span class="c">//   ↑ 接口模块             ↑ 基座 BU（Base Unit）</span>
+
+<span class="c">// 常用模块</span>
+<span class="c">// IM 155-6 PN: PROFINET 接口（必选，最左侧）</span>
+<span class="c">// DI 16 × 24V DC: 16 路数字量输入</span>
+<span class="c">// DO 16 × 24V DC: 16 路数字量输出</span>
+<span class="c">// AI 8 × 13bit: 8 路模拟量输入</span>
+<span class="c">// AQ 4 × 14bit: 4 路模拟量输出</span>
+<span class="c">// F 模块: 安全数字量（故障安全）</span></pre>
+              </div>
+
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag warn">TIA 组态步骤</span></div>
+                <pre class="code"><span class="c">// ET 200SP 组态 5 步走</span>
+
+<span class="c">// 1. 导入 GSDML（第三方设备需要，西门子原生不需要）</span>
+<span class="c">//    硬件目录 → 通用 → PROFINET IO → 导入 GSDML</span>
+
+<span class="c">// 2. 添加 IO-Device</span>
+<span class="c">//    硬件目录 → PROFINET IO → ET 200SP → 拖拽到拓扑视图</span>
+
+<span class="c">// 3. 配置设备名</span>
+<span class="c">//    右键 ET 200SP → 属性 → PROFINET → 设备名</span>
+<span class="c">//    例：ET200SP_Line1（只能用字母数字和连字符）</span>
+
+<span class="c">// 4. 配置 IP</span>
+<span class="c">//    默认 192.168.0.2，与 CPU 同网段不同 IP
+
+<span class="c">// 5. 分配设备名（下载前必做！）</span>
+<span class="c">//    菜单 → PLC → 分配设备名称</span>
+<span class="c">//    选择接口 → 扫描 → 分配 → 下载</span></pre>
+                <p class="tip">💡 <b>分配设备名</b> 是最常见的坑！如果跳过此步骤直接下载，CPU 找不到 ET 200SP 会报 <code>OB86 机架故障</code>。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- === 05 详解：GSDML 与第三方 === -->
+        <div class="detail-block">
+          <div class="detail-title">🔌 GSDML 与第三方设备集成</div>
+          <div class="detail-body">
+            <p>GSDML（General Station Description Markup Language）是 <b>PROFINET 设备描述文件</b>（XML 格式），第三方设备通过它告诉 TIA "我有哪些 IO、如何配置"。</p>
+            <table class="tbl dtype-tbl">
+              <thead>
+                <tr><th>步骤</th><th>操作</th><th>说明</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>1</td><td>获取 GSDML 文件</td><td>从设备厂商官网下载 <code>.xml</code> 文件</td></tr>
+                <tr><td>2</td><td>导入 TIA</td><td>硬件目录 → 通用 → PROFINET IO → 导入 GSDML</td></tr>
+                <tr><td>3</td><td>安装固件</td><td>部分设备需要安装 GSDML 对应的固件版本</td></tr>
+                <tr><td>4</td><td>拖拽组态</td><td>从硬件目录拖入拓扑视图，配置 IO 映射</td></tr>
+                <tr><td>5</td><td>分配设备名</td><td>同原生设备，分配后下载</td></tr>
+              </tbody>
+            </table>
+            <div class="deep-dive" style="margin-top:12px">
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag cyan">常见第三方 PROFINET 设备</span></div>
+                <ul class="detail-list">
+                  <li><b>编码器</b>：库伯勒（Kübler）、倍加福（Pepperl+Fuchs）</li>
+                  <li><b>变频器</b>：安川（Yaskawa）、伦茨（Lenze）、ABB</li>
+                  <li><b>伺服</b>：松下（Panasonic）、台达（Delta）</li>
+                  <li><b>视觉</b>：基恩士（Keyence）、康耐视（Cognex）</li>
+                  <li><b>流量计</b>：恩德斯豪斯（E+H）、横河（Yokogawa）</li>
+                </ul>
+              </div>
+
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag brand">IO 数据交换</span></div>
+                <pre class="code"><span class="c">// PROFINET IO 数据映射</span>
+<span class="c">// CPU → IO-Device（输出数据区）</span>
+<span class="c">// Q 区自动映射到 IO-Device 的输出</span>
+<span class="s">"Tags".Motor_Start</span> → <span class="t">ET200SP_1</span>.DO0.0  <span class="c">// 启动信号</span>
+
+<span class="c">// IO-Device → CPU（输入数据区）</span>
+<span class="c">// IO-Device 的输入自动映射到 I 区</span>
+<span class="t">ET200SP_1</span>.DI0.0 → <span class="s">"Tags".Sensor_1</span>  <span class="c">// 传感器状态</span>
+
+<span class="c">// 注意：优化块访问下用符号名访问</span>
+<span class="c">// 绝对地址 %I0.0 仍然存在但不推荐</span></pre>
+                <p class="tip">💡 PROFINET IO 数据交换是 <b>实时的、硬件级的</b>，不需要用户编程。只要组态正确，IO 数据自动在 CPU 和 IO-Device 之间交换。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- === 05 详解：HMI 组态 === -->
+        <div class="detail-block">
+          <div class="detail-title">🖥 HMI 画面组态</div>
+          <div class="detail-body">
+            <p>TIA Portal 集成了 <b>WinCC Comfort/Advanced</b> HMI 组态软件，支持 TP（Touch Panel）和 PC 工控机两种类型。</p>
+            <div class="deep-dive">
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag cyan">HMI 组态流程</span></div>
+                <div class="flow-diagram">
+                  <div class="flow-node"><span class="flow-num">1</span>添加 HMI<br><small>TP1200 / KTP1200</small></div>
+                  <div class="flow-arrow">→</div>
+                  <div class="flow-node"><span class="flow-num">2</span><b>连接 PLC</b><br><small>添加 PROFINET 连接</small></div>
+                  <div class="flow-arrow">→</div>
+                  <div class="flow-node"><span class="flow-num">3</span><b>创建变量</b><br><small>绑定 PLC Tags</small></div>
+                  <div class="flow-arrow">→</div>
+                  <div class="flow-node"><span class="flow-num">4</span><b>设计画面</b><br><small>拖拽控件 + 动画</small></div>
+                  <div class="flow-arrow">→</div>
+                  <div class="flow-node"><span class="flow-num">5</span><b>报警/趋势</b><br><small>配置历史数据</small></div>
+                </div>
+              </div>
+
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag warn">变量绑定与控件</span></div>
+                <pre class="code"><span class="c">// HMI 变量绑定（在 HMI 变量表中）</span>
+<span class="c">// 连接类型：PROFINET → PLC_1</span>
+
+<span class="c">// HMI 变量名       连接        PLC 变量</span>
+<span class="s">"Motor_Speed"</span>     ←→  <span class="s">"DB_Motor".Speed</span>
+<span class="s">"Set_Temp"</span>      ←→  <span class="s">"DB_Recipe".SetTemp"</span>
+<span class="s">"Alarm_Active"</span>  ←→  <span class="s">"Tags".Alarm"</span>
+<span class="s">"Cycle_Count"</span>   ←→  <span class="s">"DB_Production".DailyCount"</span>
+
+<span class="c">// 控件动画绑定</span>
+<span class="c">// 指示灯：绑定 Alarm_Active → 颜色动画</span>
+<span class="c">// 数值显示：绑定 Motor_Speed → 实时显示</span>
+<span class="c">// 输入框：绑定 Set_Temp → 可写入 PLC</span>
+<span class="c">// 按钮：点击事件 → 触发 PLC 变量写 1 脉冲</span></pre>
+              </div>
+            </div>
+            <div class="deep-dive" style="margin-top:12px">
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag brand">报警与趋势</span></div>
+                <pre class="code"><span class="c">// HMI 报警配置</span>
+<span class="c">// 1. 在 HMI → 报警管理中配置</span>
+<span class="c">//    报警号 | 触发变量 | 报警文本 | 等级</span>
+<span class="c">//    1001   | Alarm_OV | "电机过载" | 错误</span>
+<span class="c">//    1002   | Alarm_TP | "温度过高" | 警告</span>
+<span class="c">//    1003   | Alarm_PR | "压力异常" | 警告</span>
+
+<span class="c">// 2. 启用报警历史（SQLite / CSV）</span>
+<span class="c">//    设置 → 历史数据 → 启用报警日志
+
+<span class="c">// 趋势曲线</span>
+<span class="c">// 1. 拖拽 TrendView 控件到画面</span>
+<span class="c">// 2. 添加曲线 → 绑定变量</span>
+<span class="c">//    曲线1: Motor_Speed（实时）</span>
+<span class="c">//    曲线2: Actual_Temp（实时）</span>
+<span class="c">// 3. 配置采样周期（默认 1s）</span>
+<span class="c">// 4. 配置时间窗口（最近 10 分钟）</span></pre>
+              </div>
+
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag ok">HMI 画面规范</span></div>
+                <table class="tbl dtype-tbl" style="margin-top:8px">
+                  <thead><tr><th>区域</th><th>内容</th><th>规范</th></tr></thead>
+                  <tbody>
+                    <tr><td><b>顶部</b></td><td>标题 + 状态指示</td><td>设备名、运行/停止状态、时间</td></tr>
+                    <tr><td><b>左侧</b></td><td>导航菜单</td><td>手动/自动、配方、历史、设置</td></tr>
+                    <tr><td><b>中央</b></td><td>工艺流程图</td><td>带动画的 P&ID 图形</td></tr>
+                    <tr><td><b>右侧</b></td><td>参数面板</td><td>设定值输入、模式切换</td></tr>
+                    <tr><td><b>底部</b></td><td>报警条 + 操作按钮</td><td>报警闪烁、确认/消音</td></tr>
+                  </tbody>
+                </table>
+                <p class="tip">💡 HMI 画面遵循 <b>ISA-106</b> 人机界面标准：关键信息在视野中心最高频区域，操作按钮分组清晰。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
-      <div class="sidebar"><span class="tag">4 天</span><a href="#" class="btn">开始学习</a></div>
+      <div class="sidebar">
+        <span class="tag">4 天</span>
+        <a href="#" class="btn">开始学习</a>
+      </div>
     </div>
 
-    <div class="chapter">
+    <div class="chapter detail">
       <div class="no">06</div>
       <div>
         <h3>模拟量处理与 PID</h3>
         <div class="desc">2/3/4 线制传感器接线、NORM_X/SCALE_X 工程标度变换、PIW 数字量→工程量；工艺对象 PID_Compact 自整定 vs SCL 手写位置式 PID，调试方法与抗饱和。</div>
-        <div class="kw"><span class="tag brand">NORM_X/SCALE_X</span><span class="tag">PID_Compact</span><span class="tag">自整定</span><span class="tag">抗积分饱和</span></div>
+        <div class="kw">
+          <span class="tag brand">NORM_X/SCALE_X</span>
+          <span class="tag">PID_Compact</span>
+          <span class="tag">自整定</span>
+          <span class="tag">抗积分饱和</span>
+        </div>
+
+        <!-- === 06 详解：模拟量基础 === -->
+        <div class="detail-block">
+          <div class="detail-title">📡 模拟量传感器与接线</div>
+          <div class="detail-body">
+            <p>模拟量信号是 PLC 与物理世界交互的桥梁，常用传感器输出 <b>电压（0-10V）</b> 或 <b>电流（0-20mA）</b> 信号。</p>
+            <table class="tbl dtype-tbl">
+              <thead>
+                <tr><th>接线方式</th><th>适用传感器</th><th>接线端子</th><th>特点</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><b>2 线制</b></td><td>电流型（4-20mA）</td><td>AI+ 和 AI-</td><td>信号远传抗干扰，供电信号二合一</td></tr>
+                <tr><td><b>3 线制</b></td><td>电压型（0-10V）</td><td>AI+, AI-, 公共端</td><td>信号与供电分开，精度高</td></tr>
+                <tr><td><b>4 线制</b></td><td>高精度传感器</td><td>AI+, AI-, 电源+, 电源-</td><td>独立供电和信号，最精确</td></tr>
+                <tr><td><b>热电偶</b></td><td>温度（TC）</td><td>TC+, TC- 专用端子</td><td>直接接 K/S/B 型热电偶</td></tr>
+                <tr><td><b>热电阻</b></td><td>温度（RTD）</td><td>激励电流 + 测量</td><td>PT100/Cu50 等</td></tr>
+              </tbody>
+            </table>
+            <div class="deep-dive" style="margin-top:12px">
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag cyan">SM 1231 模拟量输入模块</span></div>
+                <pre class="code"><span class="c">// SM 1231 AI 8 模块 — 接线示意</span>
+<span class="c">// ┌─────────────────────────────────────┐</span>
+<span class="c">// │  端子排（接线侧）                     │</span>
+<span class="c">// │  0+  0-  1+  1-  ... 7+  7-         │</span>
+<span class="c">// │  │    │   │    │        │    │        │</span>
+<span class="c">// │  └─传感器 0─┘  └─传感器 1─┘    └─传感器 7─┘  │</span>
+<span class="c">// └─────────────────────────────────────┘</span>
+
+<span class="c">// 通道映射</span>
+<span class="c">// AIW256 → 通道 0（数字量 0~27648）</span>
+<span class="c">// AIW258 → 通道 1</span>
+<span class="c">// ...</span>
+<span class="c">// AIW270 → 通道 7</span>
+
+<span class="c">// 原始值范围</span>
+<span class="c">// 单极性（0-10V / 0-20mA）：0 ~ 27648</span>
+<span class="c">// 双极性（±10V）：-27648 ~ 27648</span>
+<span class="c">// 热电偶：-27648 ~ 27648（对应温度范围）</span></pre>
+              </div>
+
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag warn">传感器选型对照</span></div>
+                <table class="tbl dtype-tbl" style="margin-top:8px">
+                  <thead><tr><th>物理量</th><th>传感器类型</th><th>输出信号</th><th>量程示例</th></tr></thead>
+                  <tbody>
+                    <tr><td>温度</td><td>PT100 / K 型热电偶</td><td>4-20mA / 直接 TC</td><td>-50~+200℃</td></tr>
+                    <tr><td>压力</td><td>压力变送器</td><td>4-20mA</td><td>0~10 bar</td></tr>
+                    <tr><td>液位</td><td>雷达/超声液位计</td><td>0-10V / 4-20mA</td><td>0~5 m</td></tr>
+                    <tr><td>流量</td><td>电磁/涡街流量计</td><td>4-20mA / 脉冲</td><td>0~100 m³/h</td></tr>
+                    <tr><td>浓度</td><td>PH 计/电导率</td><td>4-20mA</td><td>0~14 pH</td></tr>
+                  </tbody>
+                </table>
+                <p class="tip">💡 电流型（4-20mA）相比电压型 <b>抗干扰能力强</b>，适合远距离传输（可达 100m+），是工业首选。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- === 06 详解：标度变换 === -->
+        <div class="detail-block">
+          <div class="detail-title">📐 NORM_X / SCALE_X 标度变换</div>
+          <div class="detail-body">
+            <p>模拟量处理的核心是 <b>从原始数字量（PIW）到工程量（如 ℃、bar、m³/h）的转换</b>。TIA 提供两个标准指令：</p>
+            <div class="deep-dive">
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag cyan">NORM_X 归一化</span></div>
+                <pre class="code"><span class="c">// NORM_X: 将原始值归一化到 0.0 ~ 1.0（REAL）</span>
+<span class="c">// 公式：(Value - Min) / (Max - Min)</span>
+
+<span class="t">NormTemp</span> := <span class="k">NORM_X</span>(
+    IN    := <span class="t">PIW256</span>,      <span class="c">// 原始 PIW 值（INT）</span>
+    MIN   := <span class="n">0</span>,           <span class="c">// 原始最小值</span>
+    MAX   := <span class="n">27648</span>,       <span class="c">// 原始最大值</span>
+    STANDARD := <span class="k">REAL</span>
+);
+
+<span class="c">// 例：PIW256 = 13824 → NormTemp = 0.5（50%）</span></pre>
+              </div>
+
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag warn">SCALE_X 工程量转换</span></div>
+                <pre class="code"><span class="c">// SCALE_X: 将归一化值映射到工程量范围</span>
+<span class="c">// 公式：Min + Norm * (Max - Min)</span>
+
+<span class="t">ActualTemp</span> := <span class="k">SCALE_X</span>(
+    IN    := #NormTemp,    <span class="c">// 归一化值（0.0~1.0）</span>
+    MIN   := <span class="n">-50.0</span>,     <span class="c">// 工程量最小值（℃）</span>
+    MAX   := <span class="n">200.0</span>,      <span class="c">// 工程量最大值（℃）</span>
+    STANDARD := <span class="k">REAL</span>
+);
+
+<span class="c">// 例：NormTemp = 0.5 → ActualTemp = 25.0℃</span></pre>
+              </div>
+            </div>
+            <div class="deep-dive" style="margin-top:12px">
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag brand">完整标度变换封装</span></div>
+                <pre class="code"><span class="c">// FC_ScaleAnalog.scl — 封装完整标度变换</span>
+<span class="k">FUNCTION</span> <span class="t">FC_ScaleAnalog</span> : <span class="k">REAL</span>
+<span class="k">VAR_INPUT</span>
+    <span class="t">RawValue</span>   : <span class="k">INT</span>;      <span class="c">// PIW 原始值</span>
+    <span class="t">RawMin</span>    : <span class="k">INT</span> := <span class="n">0</span>;
+    <span class="t">RawMax</span>    : <span class="k">INT</span> := <span class="n">27648</span>;
+    <span class="t">EngMin</span>    : <span class="k">REAL</span> := <span class="n">0.0</span>;
+    <span class="t">EngMax</span>    : <span class="k">REAL</span> := <span class="n">100.0</span>;
+    <span class="t">Filter</span>     : <span class="k">BOOL</span> := <span class="k">TRUE</span>;  <span class="c">// 低通滤波</span>
+<span class="k">END_VAR_INPUT</span>
+
+<span class="k">VAR_TEMP</span>
+    <span class="t">NormVal</span>  : <span class="k">REAL</span>;
+    <span class="t">ScaledVal</span>: <span class="k">REAL</span>;
+<span class="k">END_VAR_TEMP</span>
+
+<span class="t">NormVal</span> := <span class="k">NORM_X</span>(IN := #RawValue,
+                                 MIN := #RawMin, MAX := #RawMax,
+                                 STANDARD := <span class="k">REAL</span>);
+
+<span class="t">ScaledVal</span> := <span class="k">SCALE_X</span>(IN := #NormVal,
+                                           MIN := #EngMin, MAX := #EngMax,
+                                           STANDARD := <span class="k">REAL</span>);
+
+<span class="k">IF</span> #Filter <span class="k">THEN</span>
+    <span class="t">FC_ScaleAnalog</span> := (#LastValue * <span class="n">0.7</span>) + (#ScaledVal * <span class="n">0.3</span>);
+<span class="k">ELSE</span>
+    <span class="t">FC_ScaleAnalog</span> := #ScaledVal;
+<span class="k">END_IF</span>;</pre>
+                <p class="tip">💡 常用量程速查：0-10V/0-20mA 对应 0~27648（单极性），±10V 对应 -27648~27648（双极性）。</p>
+              </div>
+
+              <div class="dive-card">
+                <div class="dive-tag ok">工程快捷公式</div>
+                <pre class="code"><span class="c">// 快速转换公式（不用 NORM_X/SCALE_X）</span>
+<span class="c">// 温度：0~100℃ 对应 0~27648</span>
+<span class="t">Temp</span> := <span class="n">100.0</span> * <span class="k">INT_TO_REAL</span>(#PIW) / <span class="n">27648.0</span>;
+
+<span class="c">// 压力：0~10 bar 对应 0~27648</span>
+<span class="t">Pressure</span> := <span class="n">10.0</span> * <span class="k">INT_TO_REAL</span>(#PIW) / <span class="n">27648.0</span>;
+
+<span class="c">// 电流：4-20mA 对应 5530~27648</span>
+<span class="t">Current</span> := <span class="n">4.0</span> + <span class="n">16.0</span> * (<span class="k">INT_TO_REAL</span>(#PIW) - <span class="n">5530.0</span>) / <span class="n">22118.0</span>;
+
+<span class="c">// 电压：0-10V 对应 0~27648</span>
+<span class="t">Voltage</span> := <span class="n">10.0</span> * <span class="k">INT_TO_REAL</span>(#PIW) / <span class="n">27648.0</span>;</pre>
+                <p>这些公式等价于 NORM_X + SCALE_X 两步合并，计算更快。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- === 06 详解：PID_Compact === -->
+        <div class="detail-block">
+          <div class="detail-title">🎛 PID_Compact：工艺对象自整定</div>
+          <div class="detail-body">
+            <p>PID_Compact 是 TIA Portal 内置的 <b>工艺对象（Technology Object）</b>，提供完整的 PID 功能：自整定、抗饱和、输出限幅、跟踪模式。</p>
+            <table class="tbl dtype-tbl">
+              <thead>
+                <tr><th>功能</th><th>说明</th><th>使用场景</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><b>预调节（Pretuning）</b></td><td>阶跃响应识别 PID 参数</td><td>首次启动时自动整定</td></tr>
+                <tr><td><b>精确调节（Fine-tuning）</b></td><td>优化动态响应</td><td>预调节后进一步优化</td></tr>
+                <tr><td><b>抗积分饱和</b></td><td>输出超限时暂停积分</td><td>防止积分饱和</td></tr>
+                <tr><td><b>跟踪模式</b></td><td>手动/自动无扰切换</td><td>手动操作后平滑切入自动</td></tr>
+                <tr><td><b>输出限幅</b></td><td>0~100% 或自定义范围</td><td>保护执行器</td></tr>
+              </tbody>
+            </table>
+            <div class="deep-dive" style="margin-top:12px">
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag cyan">PID_Compact 调用示例</span></div>
+                <pre class="code"><span class="c">// PID_Compact 在 OB35 循环中断中调用</span>
+<span class="c">// （100ms 周期，保证恒定采样时间）</span>
+
+<span class="k">CALL</span> <span class="t">PID_Compact</span>(
+    <span class="t">sRetVal</span>        => <span class="t">PID_RetVal</span>,
+    <span class="t">Setpoint</span>       := #SetTemp,        <span class="c">// 设定值</span>
+    <span class="t">Input</span>          := #ActualTemp,     <span class="c">// 过程值反馈</span>
+    <span class="t">Output</span>         => <span class="t">PID_Output</span>,   <span class="c">// PID 输出（0~100.0）</span>
+    <span class="t">ManualEnable</span>   := #ManualMode,     <span class="c">// 手动模式</span>
+    <span class="t">ManualValue</span>    := #ManualOutput,   <span class="c">// 手动输出值</span>
+    <span class="t">OutputUpperLimit</span> := <span class="n">100.0</span>,
+    <span class="t">OutputLowerLimit</span> := <span class="n">0.0</span>,
+    <span class="t">InputUpperLimit</span>  := <span class="n">200.0</span>,
+    <span class="t">InputLowerLimit</span>  := <span class="n">-50.0</span>,
+    <span class="t">bInverseActing</span>   := <span class="k">FALSE</span>,  <span class="c">// 正作用（温度↑→输出↑）</span>
+    <span class="t">KP</span>            := #Proportional,   <span class="c">// 比例增益</span>
+    <span class="t">TI</span>            := #IntegralTime,   <span class="c">// 积分时间</span>
+    <span class="t">TD</span>            := #DerivativeTime, <span class="c">// 微分时间</span>
+    <span class="t">PIDForward</span>     := <span class="n">1.0</span>,
+    <span class="t">PIDReverse</span>     := <span class="n">1.0</span>
+);
+
+<span class="c">// PID 输出 → 模拟量输出（0~100% → 0~27648）</span>
+<span class="t">AQW256</span> := <span class="k">REAL_TO_INT</span>(#PID_Output * <span class="n">276.48</span>);</pre>
+              </div>
+
+              <div class="dive-card">
+                <div class="dive-tag brand">自整定操作步骤</div>
+                <pre class="code"><span class="c">// PID_Compact 自整定步骤</span>
+
+<span class="c">// 1. 在 TIA 中组态 PID_Compact 对象</span>
+<span class="c">//    插入 → 工艺对象 → PID Control → PID_Compact
+
+<span class="c">// 2. 配置调试面板</span>
+<span class="c">//    右键 PID_Compact → 调试 → 打开调试面板
+
+<span class="c">// 3. 预调节（阶跃响应）</span>
+<span class="c">//    ① 切到手动模式，输出 50%</span>
+<span class="c">//    ② 点击 "预调节" 按钮</span>
+<span class="c">//    ③ 系统自动施加阶跃，记录响应曲线</span>
+<span class="c">//    ④ 完成后自动给出 Kp, Ti, Td 参数
+
+<span class="c">// 4. 精确调节</span>
+<span class="c">//    点击 "精确调节" → 等待完成 → 参数进一步优化
+
+<span class="c">// 5. 验证</span>
+<span class="c">//    切到自动模式 → 观察设定值跟踪效果</span>
+<span class="c">//    如有超调 → 减小 Kp 或增大 Ti</span></pre>
+                <p class="tip">💡 <b>正/反作用</b>：温度升高需要加热 → 正作用（bInverseActing = FALSE）。温度升高需要冷却 → 反作用（bInverseActing = TRUE）。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- === 06 详解：手写 PID === -->
+        <div class="detail-block">
+          <div class="detail-title">✏ SCL 手写 PID 与抗饱和</div>
+          <div class="detail-body">
+            <p>当 PID_Compact 不满足需求（如自定义算法、多回路耦合）时，可以用 SCL <b>手写位置式 PID</b>：</p>
+            <pre class="code"><span class="c">// FB_PID_Hand.scl — 手写位置式 PID</span>
+<span class="k">FUNCTION_BLOCK</span> <span class="t">FB_PID_Hand</span>
+<span class="k">VAR_INPUT</span>
+    <span class="t">Setpoint</span>  : <span class="k">REAL</span>;      <span class="c">// 设定值</span>
+    <span class="t">Input</span>     : <span class="k">REAL</span>;      <span class="c">// 过程值</span>
+    <span class="t">Kp</span>        : <span class="k">REAL</span> := <span class="n">1.0</span>;  <span class="c">// 比例增益</span>
+    <span class="t">Ti</span>        : <span class="k">REAL</span> := <span class="n">10.0</span>; <span class="c">// 积分时间（秒）</span>
+    <span class="t">Td</span>        : <span class="k">REAL</span> := <span class="n">1.0</span>;  <span class="c">// 微分时间（秒）</span>
+    <span class="t">Cycle</span>     : <span class="k">REAL</span> := <span class="n">0.1</span>; <span class="c">// 采样周期（秒）</span>
+    <span class="t">OutputMin</span> : <span class="k">REAL</span> := <span class="n">0.0</span>;
+    <span class="t">OutputMax</span> : <span class="k">REAL</span> := <span class="n">100.0</span>;
+    <span class="t">Manual</span>    : <span class="k">BOOL</span>;
+    <span class="t">ManualVal</span> : <span class="k">REAL</span>;
+<span class="k">END_VAR_INPUT</span>
+
+<span class="k">VAR_OUTPUT</span>
+    <span class="t">Output</span>     : <span class="k">REAL</span>;
+    <span class="t">P_Out</span>      : <span class="k">REAL</span>;    <span class="c">// 比例分量（调试用）</span>
+    <span class="t">I_Out</span>      : <span class="k">REAL</span>;    <span class="c">// 积分分量</span>
+    <span class="t">D_Out</span>      : <span class="k">REAL</span>;    <span class="c">// 微分分量</span>
+<span class="k">END_VAR_OUTPUT</span>
+
+<span class="k">VAR</span>
+    <span class="t">LastInput</span>  : <span class="k">REAL</span>;    <span class="c">// 上次过程值</span>
+    <span class="t">Integral</span>   : <span class="k">REAL</span>;    <span class="c">// 积分累积</span>
+<span class="k">END_VAR</span></pre>
+            <div class="deep-dive" style="margin-top:12px">
+              <div class="dive-card">
+                <div class="dive-head"><span class="dive-tag cyan">位置式 PID 核心算法</span></div>
+                <pre class="code"><span class="c">// 误差</span>
+<span class="t">Error</span> := #Setpoint - #Input;
+
+<span class="c">// 比例分量</span>
+<span class="t">P_Out</span> := #Kp * #Error;
+
+<span class="c">// 积分分量（带抗饱和）</span>
+<span class="k">IF</span> <span class="k">NOT</span> #Manual <span class="k">THEN</span>
+    <span class="c">// 抗饱和：输出在限幅内才积分</span>
+    <span class="t">I_Out</span> := #Integral + (#Kp / #Ti) * #Error * #Cycle;
+
+    <span class="k">IF</span> (#P_Out + #I_Out + #D_Out) > #OutputMax <span class="k">THEN</span>
+        <span class="t">I_Out</span> := #OutputMax - #P_Out - #D_Out;
+    <span class="k">ELSIF</span> (#P_Out + #I_Out + #D_Out) < #OutputMin <span class="k">THEN</span>
+        <span class="t">I_Out</span> := #OutputMin - #P_Out - #D_Out;
+    <span class="k">END_IF</span>;
+<span class="k">END_IF</span>;
+
+<span class="c">// 微分分量</span>
+<span class="t">D_Out</span> := #Kp * #Td * (#Error - #LastError) / #Cycle;
+
+<span class="c">// 计算输出</span>
+<span class="t">Output</span> := #P_Out + #I_Out + #D_Out;
+
+<span class="c">// 输出限幅</span>
+<span class="k">IF</span> #Output > #OutputMax <span class="k">THEN</span>
+    <span class="t">Output</span> := #OutputMax;
+<span class="k">ELSIF</span> #Output < #OutputMin <span class="k">THEN</span>
+    <span class="t">Output</span> := #OutputMin;
+<span class="k">END_IF</span>;
+
+<span class="c">// 手动模式</span>
+<span class="k">IF</span> #Manual <span class="k">THEN</span>
+    <span class="t">Output</span> := #ManualVal;
+    <span class="t">I_Out</span> := #ManualVal - #P_Out - #D_Out;  <span class="c">// 跟踪积分</span>
+<span class="k">END_IF</span>;
+
+<span class="c">// 保存状态</span>
+<span class="t">Integral</span> := #I_Out;
+<span class="t">LastError</span> := #Error;</pre>
+              </div>
+
+              <div class="dive-card">
+                <div class="dive-tag warn">PID 调试口诀</div>
+                <ul class="detail-list">
+                  <li><b>调参顺序</b>：先调 P → 再加 I → 最后加 D</li>
+                  <li><b>只有 P</b>：增大 Kp → 响应快但稳态误差大</li>
+                  <li><b>加入 I</b>：减小稳态误差，但太大容易震荡</li>
+                  <li><b>加入 D</b>：抑制超调，改善动态响应</li>
+                  <li><b>口诀</b>：<code>P 管现在，I 管过去，D 管将来</code></li>
+                  <li><b>响应类型</b>：欠阻尼（有超调）→ 临界阻尼（最佳）→ 过阻尼（慢但稳定）</li>
+                </ul>
+                <p class="tip">💡 工业温度控制典型参数：Kp = 2~5, Ti = 30~120s, Td = 5~20s。流量控制：Kp = 0.5~1, Ti = 5~10s。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
-      <div class="sidebar"><span class="tag">2 天</span><a href="#" class="btn">开始学习</a></div>
+      <div class="sidebar">
+        <span class="tag">2 天</span>
+        <a href="#" class="btn">开始学习</a>
+      </div>
     </div>
 
   </div>
