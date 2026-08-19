@@ -256,6 +256,9 @@ table.tbl tr:hover td{background:var(--panel-2)}
 
 /* 响应式 */
 @media(max-width:1024px){
+  .nav-inner{padding:0 16px;gap:16px}
+  .menu{overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:thin}
+  .menu a{flex-shrink:0}
   .hero{grid-template-columns:1fr;padding:28px}
   .tiers{grid-template-columns:1fr}
   .eng{grid-template-columns:repeat(3,1fr)}
@@ -265,8 +268,39 @@ table.tbl tr:hover td{background:var(--panel-2)}
   .grid2{grid-template-columns:1fr}
 }
 @media(max-width:640px){
-  .nav-inner{padding:0 14px;gap:14px}
-  .menu{display:none}
+  .nav-inner{padding:0 12px;gap:10px;height:56px}
+  .logo{font-size:14px}
+  .logo .ic{width:30px;height:30px;font-size:11px}
+  .logo .sub{display:none}
+  .menu{display:flex;overflow-x:auto;-webkit-overflow-scrolling:touch;flex:1;gap:2px;scrollbar-width:none}
+  .menu::-webkit-scrollbar{display:none}
+  .menu a{padding:6px 10px;font-size:12px;white-space:nowrap;flex-shrink:0}
+  .wrap{padding:18px 14px 50px}
+  .hero{padding:22px 18px}
+  .hero h1{font-size:21px;line-height:1.3}
+  .hero p{font-size:13px}
+  .hero .stats{gap:16px;flex-wrap:wrap}
+  .hero .stat b{font-size:18px}
+  .hero .preview{display:none}
+  .btn-group{gap:6px}
+  .btn{padding:8px 12px;font-size:12px}
+  .tiers{grid-template-columns:1fr;gap:12px}
+  .tier{padding:18px}
   .eng{grid-template-columns:1fr 1fr}
-  .supports{grid-template-columns:1fr 1fr}
+  .supports{grid-template-columns:1fr 1fr;gap:8px}
+  .support{padding:8px 10px;font-size:11px}
+  .chapter{grid-template-columns:1fr;gap:10px}
+  .chapter .no{margin-bottom:4px}
+  .chapter .sidebar{flex-direction:row;align-items:center;margin-top:6px}
+  .grid2{grid-template-columns:1fr}
+  .card{padding:16px 14px}
+  .card h2{font-size:14px}
+  pre.code{font-size:11.5px;padding:12px}
+  table.tbl{font-size:12px;display:block;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .footer{padding:18px 14px;font-size:11px}
+}
+@media(max-width:380px){
+  .hero h1{font-size:18px}
+  .eng{grid-template-columns:1fr}
+  .supports{grid-template-columns:1fr}
 }
