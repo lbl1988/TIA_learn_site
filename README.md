@@ -2,6 +2,11 @@
 
 > 系统化学习路线：三阶主线（入门→进阶→精通）+ 工程化能力横向贯穿 + 6 大支撑模块。
 > 配套可导入博途的 **SCL 源文件** 与浏览器内直接运行的 **HMI 仿真器**，无硬件也能边学边练。
+>
+> **v2 新特性**（2026）：内置 **用户注册/登录系统 + 学习记录与笔记绑定账号**
+> - 进度三态：未开始 / 学习中 / 已完成，章节卡片可一键切换
+> - 笔记系统：每章节独立笔记，输入后自动保存，跨设备同步
+> - 「我的学习」聚合页：按页面查看完成度、学习统计、笔记列表
 
 <br>
 
@@ -45,13 +50,22 @@
 
 ```
 TIA_learn_site/
+├── server.js                               # ✅ v2 Express 后端：静态托管 + /api/*（auth/notes）+ SQLite
+├── package.json                            # v2 依赖：express / better-sqlite3 / bcryptjs / jsonwebtoken / cors / dotenv
+├── data/                                   # SQLite 数据文件目录（自动创建，已加入 .gitignore）
+│   └── app.sqlite3                         # 用户表 + 笔记表（自动初始化）
 ├── index.html                              # 首页：Hero + 架构SVG + 三阶/工程化/支撑/配套速览
 ├── assets/
-│   └── css/style.css                       # 全局暗色主题 + 响应式（适配移动端）
+│   ├── css/style.css                       # 全局暗色主题 + 响应式（适配移动端）
+│   └── js/
+│       ├── auth.js                         # ✅ v2 前端鉴权：token 管理、登录/注册模态框、导航按钮
+│       └── notes.js                        # ✅ v2 笔记面板：进度切换、笔记编辑、我的学习页
 ├── courses/
 │   ├── beginner.html                       # 入门篇：6章 + 快捷键表 + 6项配套练习
 │   ├── intermediate.html                   # 进阶篇：6章 + SCL代码示例 + 配套标记
 │   └── advanced.html                       # 精通篇：6章 + 冗余对比表 + 3个毕业项目
+├── my-learning/
+│   └── index.html                          # ✅ v2 我的学习聚合页：学习统计 / 按页面进度 / 笔记概览
 ├── engineering/
 │   └── index.html                          # 工程化能力：UDT/规范/VCI-Git/虚拟调试/安全编程
 ├── lab/
@@ -69,6 +83,52 @@ TIA_learn_site/
 └── tools/
     └── index.html                          # 工具箱：进制+工程量+CRC16+CPU选型表
 ```
+
+### 🔐 v2 用户系统：数据模型
+
+```sql
+-- 用户表：用户名唯一，密码用 bcrypt 加盐哈希（绝不会保存明文）
+CREATE TABLE users (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  username TEXT UNIQUE NOT NULL,
+  email    TEXT,
+  password_hash TEXT NOT NULL,
+  created_at DATETIME DEFAULT NOW
+);
+
+-- 笔记/进度表：按 UNIQUE(user_id, page_key, section_key) 隔离
+-- page_key    = 相对根路径的稳定页面标识（例：courses/beginner.html）
+-- section_key = 章节 key（课程页为 chap-01..chap-NN，普通页为空字符串表示"整页"）
+-- progress    = not_started | learning | completed  三态
+CREATE TABLE notes (
+  id INTEGER PRIMARY KEY,
+  user_id       INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  page_key      TEXT    NOT NULL,
+  section_key   TEXT    DEFAULT '',
+  note_text     TEXT    DEFAULT '',
+  progress      TEXT    NOT NULL DEFAULT 'not_started',
+  created_at    DATETIME DEFAULT NOW,
+  updated_at    DATETIME DEFAULT NOW,
+  UNIQUE(user_id, page_key, section_key)
+);
+```
+
+### 📡 v2 REST API 一览
+
+| Method | 路径 | 鉴权 | 说明 |
+|---|---|---|---|
+| GET  | `/api/version` | ❌ | 版本与构建指纹（`X-Tia-Version` 响应头也会返回） |
+| POST | `/api/auth/register` | ❌ | 注册：`{ username, password, email? }` → `{ user, token }` |
+| POST | `/api/auth/login`    | ❌ | 登录（支持用户名/邮箱）：`{ username, password }` → `{ user, token }` |
+| GET  | `/api/auth/me`       | ✅ | 取当前登录用户 |
+| GET  | `/api/notes?page_key=X&group=by_page` | ✅ | 拉取笔记，`group=by_page` 会额外返回 `{ [page]: [...] }` 分组 |
+| POST | `/api/notes`         | ✅ | 创建或更新（按 UNIQUE 冲突 UPSERT）：`{ page_key, section_key?, note_text?, progress? }` |
+| PUT  | `/api/notes/:id`     | ✅ | 按 id 修改 note_text / progress |
+| DELETE | `/api/notes/:id`  | ✅ | 删除笔记与进度 |
+| GET  | `/api/notes/stats`   | ✅ | 统计：`{ total, completed, learning, not_started, pages, withNote }` |
+| GET  | `/healthz`           | ❌ | 健康检查（含用户数） |
+
+> 🔒 安全要点：notes 接口中 **user_id 一律由 JWT 鉴权中间件从 token 解出并注入**（`req.user.id`），**不接受**客户端传 user_id 参数，从源头避免越权。
 
 <br>
 
@@ -92,7 +152,28 @@ TIA_learn_site/
 
 ## 🖥 本地预览
 
-本仓库为 **纯静态站**，任意 HTTP 服务器都能跑。
+本仓库同时支持**纯静态预览**（只看课程/HMI 仿真）和**Express 动态服务**（启用用户注册/登录 + 笔记/进度账号绑定）。
+
+### ✨ 推荐：Express 动态服务（含用户系统 v2）
+
+```bash
+cd TIA_learn_site
+npm install
+
+# 方式 D-1：使用默认参数
+npm start
+# → 浏览器打开 http://localhost:3001  （/api/* + 静态页同一端口）
+
+# 方式 D-2：自定义端口 + JWT 密钥（生产必改！）
+# macOS / Linux:
+PORT=8080 JWT_SECRET='请替换为一段足够长的随机字符串' npm start
+# Windows PowerShell:
+$env:PORT=8080; $env:JWT_SECRET='请替换为一段足够长的随机字符串'; npm start
+```
+
+首次启动会自动在 `data/app.sqlite3` 创建 `users` 与 `notes` 表（SQLite WAL 模式）。
+
+### 纯静态预览（无用户系统）
 
 ```bash
 # 方式 A：Python 3
@@ -108,16 +189,53 @@ serve -s .
 
 <br>
 
-## 🌐 部署（GitHub Pages）
+## 🌐 部署
 
-仓库结构完全符合 GitHub Pages 要求，开启即发布：
+由于 v2 引入了用户系统（Node/Express + SQLite），请按你需要的部署方式选择：
+
+### ✅ 推荐 A：Render Web Service（Node + 持久化 SQLite）—— 用户系统完整可用
+
+> ⚠️ **注意**：如果你之前把本仓库部署为 **Render Static Site**，用户系统无法运行（静态站无 Node 运行时）。请把原服务删除或另建一个 **Web Service**（Node 环境）。
+
+步骤（6 步）：
 
 ```
+1. Render Dashboard → 右上角「New +」→ Web Service
+2. 选择本仓库（TIA_learn_site）→ Next
+3. Name:    tia-learn-site    （可自定义）
+   Region:  Singapore（离国内近） 或 Oregon
+   Runtime: Node
+   Branch:  main
+   Root Directory: （留空，或仓库不在根时填 repo/）
+   Build Command:  npm install
+   Start Command:  npm start
+4. 点「Advanced」→  Add Environment Variable：
+     Key:   JWT_SECRET
+     Value: 打开 https://1password.com/password-generator/ 生成一段 32+ 字符的随机串（生产必改！）
+5. 【关键：SQLite 持久化】→ Add Disk：
+     Name:      tia-learn-data
+     Mount Path: /opt/render/project/src/data        （对应仓库内 data/ 目录；如 Root Directory 填了子目录则相应调整）
+     Size:      1 GB   （存用户+笔记绰绰有余，够用 5+ 年）
+6. Create Web Service → 等待 1~3 分钟部署完成，访问 https://<你的服务名>.onrender.com
+```
+
+> 📌 `data/` 目录已加入 `.gitignore`，数据库不会提交到 Git。**Render 上如果没挂载 Disk，每次重新部署数据库会被清空（用户和笔记全丢），一定要加第 5 步。**
+>
+> 📌 健康检查：部署后访问 `https://<域名>/healthz` 或 `https://<域名>/api/version`，有 JSON 返回即表示服务正常。
+
+### 部署 B：GitHub Pages / Vercel / Netlify / Cloudflare Pages（仅静态，用户系统不可用）
+
+这些平台的"纯静态"模式无法运行 Node 服务端。仅部署静态版本时：
+- 课程内容、HMI 仿真器、SCL 源文件下载 **全部可用**
+- **用户注册/登录、笔记、学习进度会被禁用**（前端会提示需要动态服务端）
+
+```bash
+# GitHub Pages:
 Settings → Pages → Source: main 分支 / root 目录 → 保存
-# 几秒后即可访问 https://<username>.github.io/TIA_learn_site
+# → https://<username>.github.io/TIA_learn_site
 ```
 
-也可部署到 Vercel / Netlify / Cloudflare Pages，零配置，Import 本仓库即可。
+Vercel / Netlify / Cloudflare Pages：Import 本仓库即可，零配置。
 
 <br>
 

@@ -11,10 +11,17 @@ Desktop.ini
 *.swo
 *~
 
-# 常见构建产物（静态站一般无构建，留作扩展项目时用）
+# 依赖 / 构建产物
 dist/
 build/
 node_modules/
+
+# SQLite & 数据
+data/
+*.sqlite3
+*.sqlite3-wal
+*.sqlite3-shm
+*.db
 
 # 日志
 *.log
