@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>互动社区 · 博途学习站</title>
+<link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+<nav class="nav">
+<div class="nav-inner">
+  <a href="../index.html" class="logo"><div class="ic">TIA</div><div>博途学习站<span class="sub">From Zero to Hero</span></div></a>
+  <div class="menu">
+    <a href="../index.html">首页</a>
+    <a href="../courses/beginner.html" class="t1"><span class="dot"></span>入门篇</a>
+    <a href="../courses/intermediate.html" class="t2"><span class="dot"></span>进阶篇</a>
+    <a href="../courses/advanced.html" class="t3"><span class="dot"></span>精通篇</a>
+    <a href="../engineering/index.html" class="eng"><span class="dot"></span>工程化</a>
+    <a href="../lab/index.html">仿真实验室</a>
+    <a href="../resources/index.html">资源下载</a>
+    <a href="index.html" class="active">项目库</a>
+  </div>
+</div>
+</nav>
+
+<main class="wrap">
+  <div class="page-title">
+    <div style="flex:1">
+      <div class="bread"><a href="../index.html">首页</a><span class="sep">/</span>互动社区</div>
+      <h1>💬 互动社区</h1>
+      <p class="hint" style="margin-top:6px">新手问答、避坑经验帖、常见报错速查——来自一线集成商工程师的经验。</p>
+    </div>
+  </div>
+
+  <div class="grid2" style="gap:18px;margin-bottom:18px">
+    <section class="card">
+      <h2>常见报错速查（TOP 10）</h2>
+<table class="tbl">
+  <tr><th style="width:40%">报错/现象</th><th>根因 + 解决</th></tr>
+  <tr><td>编译失败：<code>The block ... cannot be compiled</code></td><td>路径含中文 → TIA 装英文路径 + 用户名改英文。</td></tr>
+  <tr><td>下载失败：<code>Online access failed</code></td><td>网卡/PnCable 设好 IP；网卡与 PLC IP 段一致；网线连接；防火墙/杀毒软件关闭或放行。</td></tr>
+  <tr><td>HMI 变量连接后显示 ####</td><td>HMI 未编译下载；或变量地址/数据类型不匹配；或 CPU 未进入运行。</td></tr>
+  <tr><td><code>80B1</code>（指令参数类型不匹配）</td><td>传参类型错误：INT 传进 INT_TO_REAL 参数等，检查接口类型。</td></tr>
+  <tr><td>定时器乱跳 / <code>TON.Q</code> 不变化</td><td>SCL 中 TON 放进了 IF 条件里，条件不满足时无法累计 PT，必须放到主路径调用。</td></tr>
+  <tr><td>PROFINET 组态后 BF 红灯</td><td>设备名不匹配；分配设备名后下装；或 GSDML 版本与设备固件不匹配。</td></tr>
+  <tr><td>S7 通信 PUT/GET 连接断</td><td>伙伴端未激活 PUT/GET（安全设置）；或 DB 块取消「优化块访问」才能按绝对地址读写。</td></tr>
+  <tr><td>仿真后 PLCSIM 变量无法强制</td><td>S7-PLCSIM 版本与 TIA 版本需匹配（同 V17、同 V18 等），或 CPU 未从 STOP→RUN。</td></tr>
+  <tr><td>UDT 改结构后 DB 数据丢失</td><td>用「保留变量存储」功能；或改 UDT 后重新生成 DB。建议先备份快照。</td></tr>
+  <tr><td>F-CPU 安全程序编译错误</td><td>F 块版本与 F-Runtime 版本必须一致；安全程序块里不要用 M 区（全局 DB/F-DB）。</td></tr>
+</table>
+    </section>
+
+    <section class="card">
+      <h2>避坑经验帖</h2>
+<div style="display:flex;flex-direction:column;gap:12px">
+<div style="padding:14px;background:var(--panel-2);border-radius:8px;border-left:3px solid var(--alarm)">
+<b style="color:var(--alarm)">🚫 路径千万不要有中文</b>
+<p class="hint" style="margin-top:4px">TIA Portal V17/V18 对中文路径极其敏感，C:\博途安装\ 会导致编译报 85xx 未知错误。安装路径、项目路径、用户名全用英文。推荐：C:\TIA\Proj\C100 这样。</p>
+</div>
+
+<div style="padding:14px;background:var(--panel-2);border-radius:8px;border-left:3px solid var(--warn)">
+<b style="color:var(--warn)">⚠️ M 区是坏习惯，尽早用 DB 符号</b>
+<p class="hint" style="margin-top:4px">M0.0/MW10/MD20 没有语义、不支持 S7 通信 PUT/GET 优化寻址、导入导出难。全部变量进 DB，用符号寻址 "DB".Tag 带语义。</p>
+</div>
+
+<div style="padding:14px;background:var(--panel-2);border-radius:8px;border-left:3px solid var(--brand)">
+<b style="color:var(--brand)">✓ 优化块访问默认开启</b>
+<p class="hint" style="margin-top:4px">S7-1200/1500 默认优化块访问，不要用绝对地址 %DB1.DBW0。只有跨 CPU S7 PUT/GET 通信、Modbus TCP 寄存器才需要「非优化块访问」——单独建一个 NonOpt DB。</p>
+</div>
+
+<div style="padding:14px;background:var(--panel-2);border-radius:8px;border-left:3px solid var(--cyan)">
+<b style="color:var(--cyan)">✓ LAD 位逻辑 + SCL 运算混编</b>
+<p class="hint" style="margin-top:4px">纯 SCL 的位逻辑监控非常丑（没有触点流动），纯 LAD 的批量赋值/算法臃肿。混编才是最优解：设备启停、置复位、互锁放 LAD；数学运算、数组、解析放 SCL。</p>
+</div>
+
+<div style="padding:14px;background:var(--panel-2);border-radius:8px;border-left:3px solid var(--ok)">
+<b style="color:var(--ok)">✓ OB35 放 PID、通信、运动</b>
+<p class="hint" style="margin-top:4px">OB1 扫描周期波动（通常 1-10ms），但 PID / 伺服报文 / TRACE 采样需要稳定周期。PID_Compact、工艺对象、循环通信放 OB35（100ms）或 OB32（10ms），Ts 参数匹配。</p>
+</div>
+
+<div style="padding:14px;background:var(--panel-2);border-radius:8px;border-left:3px solid var(--warn)">
+<b style="color:var(--warn)">⚠️ S7-GRAPH 写完必编译两次</b>
+<p class="hint" style="margin-top:4px">GRAPH 第一次编译生成背景逻辑，第二次编译才生成 S7 执行代码。只编一次会出现程序逻辑不更新的灵异现象。</p>
+</div>
+
+</div>
+    </section>
+  </div>
+
+  <section class="card">
+    <h2>官方问答 & 社区</h2>
+    <div class="grid2">
+      <table class="tbl">
+        <thead><tr><th>社区</th><th>链接</th><th>说明</th></tr></thead>
+        <tbody>
+          <tr><td>西门子工业支持 · 找答案</td><td><a href="https://www.ad.siemens.com.cn/service/answer/" target="_blank">访问</a></td><td>官方工程师 + 老玩家问答</td></tr>
+          <tr><td>工业论坛 · S7</td><td><a href="https://www.ad.siemens.com.cn/club/bbs/Forum_14.aspx" target="_blank">访问</a></td><td>程序/诊断/HMI 讨论</td></tr>
+          <tr><td>易创电气 · 西门子专区</td><td><a href="http://siemens.weisizhineng.com/" target="_blank">访问</a></td><td>中文上手文与避坑贴</td></tr>
+          <tr><td>ElecFans 西门子合集</td><td><a href="https://m.elecfans.com/zt/32178/" target="_blank">访问</a></td><td>入门视频+教程汇总</td></tr>
+        </tbody>
+      </table>
+      <div style="padding:18px;background:var(--panel-2);border-radius:10px;border:1px dashed var(--line)">
+        <h3 style="color:var(--muted);margin-bottom:8px">💡 提问模板（避免"没人答"）</h3>
+<pre class="code" style="margin:0">型号：S7-1215C DC/DC/DC，固件 V4.6
+TIA 版本：V18 Update 2
+错误码：80B1（编译报错）
+现象：FC_Calc 参数传递类型不匹配
+已尝试：
+  1. 切换 INT→DINT
+  2. 删除块重新建
+附件：报错截图.png + 代码片段
+附：<span class="ok">优先贴型号/固件/版本号</span></pre>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <div>© 博途学习站 · 本站内容仅供学习交流使用 · 西门子产品名权属 Siemens AG</div>
+  <div><a href="../projects/index.html">← 实战项目库</a> · <a href="../tools/index.html">工具箱 →</a></div>
+</footer>
+</body>
+</html>

@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>博途学习站 · ISA-88 批次状态机 HMI</title>
+<link rel="stylesheet" href="../assets/css/style.css">
+<style>
+  .local-top{display:flex;align-items:center;gap:14px;padding:14px 20px;background:linear-gradient(90deg,#212429,#2a2e36);border-bottom:1px solid #3a4050}
+  .local-top .logo{width:34px;height:34px;border-radius:8px;background:#7c5cff;display:grid;place-items:center;font-weight:700;color:#fff;font-size:12px}
+  .local-top h1{font-size:16px;font-weight:600;color:#e6e8ee}
+  .local-top .sub{color:#9aa0ad;font-size:12px}
+  .local-top .badge{margin-left:auto;font-size:11px;padding:4px 10px;border-radius:999px;background:#1f6feb22;color:#7fb4ff;border:1px solid #1f6feb55}
+  .local-wrap{display:grid;grid-template-columns:360px 1fr;gap:14px;padding:14px;max-width:1280px;margin:0 auto}
+  .local-card{background:#262a33;border:1px solid #3a4050;border-radius:10px;padding:14px}
+  .local-card h2{font-size:13px;color:#9aa0ad;margin-bottom:12px;letter-spacing:.5px;text-transform:uppercase;display:flex;align-items:center;gap:8px}
+  .local-card h2::before{content:"";width:3px;height:14px;background:#7c5cff;border-radius:2px}
+  .state-box{background:#2d3240;border:1px solid #3a4050;border-radius:10px;padding:16px;text-align:center;margin-bottom:14px}
+  .state-box .name{font-size:28px;font-weight:700;color:#7c5cff}
+  .state-box .no{font-size:12px;color:#9aa0ad;font-family:Consolas,monospace;margin-top:4px}
+  .state-box.run .name{color:#22c55e} .state-box.pause .name{color:#ff9800} .state-box.held .name{color:#7fb4ff} .state-box.aborted .name{color:#f44336} .state-box.complete .name{color:#22c55e}
+  .state-box .sub{font-size:12px;color:#9aa0ad;margin-top:6px}
+  .devs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+  .dev{background:#2d3240;border:1px solid #3a4050;border-radius:8px;padding:10px;text-align:center}
+  .dev .ic{width:34px;height:34px;margin:0 auto 6px;border-radius:6px;background:#3a4050;display:grid;place-items:center;font-size:18px;transition:.2s;color:#9aa0ad}
+  .dev.on .ic{background:#4caf50;color:#06210f;box-shadow:0 0 10px #4caf50}
+  .dev .nm{font-size:11px;color:#9aa0ad}
+  .dev .vl{font-size:12px;color:#e6e8ee;font-family:Consolas,monospace;margin-top:2px}
+  .cmds{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+  .cmd{padding:9px 4px;border-radius:7px;border:1px solid #3a4050;background:#2d3240;color:#e6e8ee;cursor:pointer;font-size:12px;transition:.15s;font-family:inherit}
+  .cmd:hover:not(.dis){border-color:#7c5cff;color:#c4a5ff}
+  .cmd.dis{opacity:.3;cursor:not-allowed}
+  .cmd.abort{border-color:#f4433655} .cmd.abort:hover:not(.dis){border-color:#f44336;color:#f44336}
+  .cmd.start:hover:not(.dis){border-color:#22c55e;color:#7fd8a0}
+  .flow{position:relative;background:#11141a;border:1px solid #3a4050;border-radius:10px;padding:14px;margin-bottom:14px}
+  .flow svg{display:block;width:100%;height:auto}
+  .gauge{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px}
+  .gauge .g{background:#2d3240;border:1px solid #3a4050;border-radius:8px;padding:10px}
+  .gauge .lbl{font-size:11px;color:#9aa0ad} .gauge .v{font-size:20px;font-weight:700;font-family:Consolas,monospace;margin-top:2px;color:#e6e8ee}
+  .gauge .v.lvl{color:#7fb4ff} .gauge .v.tp{color:#ff9800} .gauge .v.tm{color:#9aa0ad}
+  .prog{margin-bottom:14px}
+  .prog .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+  .prog .st{padding:8px 4px;border-radius:6px;border:1px solid #3a4050;background:#2d3240;text-align:center;font-size:11px;color:#9aa0ad}
+  .prog .st.on{background:#7c5cff;color:#fff;border-color:#7c5cff}
+  .prog .st.done{background:#22c55e22;color:#7fd8a0;border-color:#22c55e55}
+  .prog .lbl{font-size:12px;color:#9aa0ad;margin-bottom:6px}
+  .alarm-bar{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:8px;background:#f4433611;border:1px solid #f4433655;color:#ffd7d2;font-size:13px}
+  .alarm-bar .d{width:12px;height:12px;border-radius:50%;background:#3a4050}
+  .alarm-bar.on .d{background:#f44336;box-shadow:0 0 10px #f44336;animation:bl 1s infinite}
+  @keyframes bl{50%{opacity:.3}}
+  .alarm-bar.done{background:#22c55e11;border-color:#22c55e55;color:#b6f0c8}
+  .hint2{font-size:11px;color:#9aa0ad;margin-top:10px;line-height:1.6}
+  @media(max-width:960px){.local-wrap{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="local-top">
+  <div class="logo">S88</div>
+  <div>
+    <h1>ISA-88 批次 Phase 状态机 HMI</h1>
+    <div class="sub">联动 FB_BatchPhase.scl · 加料→升温→保温→出料 · <a href="../resources/index.html" style="color:#7c5cff">返回资源中心 ↩</a></div>
+  </div>
+  <div class="badge">可交互 · 浏览器仿真</div>
+</div>
+
+<div class="local-wrap">
+  <!-- 左：状态与控制 -->
+  <div class="local-card">
+    <h2>当前状态</h2>
+    <div class="state-box" id="stateBox">
+      <div class="name" id="stateName">空闲</div>
+      <div class="no" id="stateNo">State=0 · SubStep=10</div>
+      <div class="sub" id="stateSub">等待启动命令</div>
+    </div>
+
+    <h2>设备输出</h2>
+    <div class="devs">
+      <div class="dev" id="devFeed"><div class="ic">F</div><div class="nm">进料阀</div><div class="vl">OFF</div></div>
+      <div class="dev" id="devAgi"><div class="ic">A</div><div class="nm">搅拌</div><div class="vl">OFF</div></div>
+      <div class="dev" id="devHeat"><div class="ic">H</div><div class="nm">加热</div><div class="vl">0%</div></div>
+      <div class="dev" id="devDrain"><div class="ic">D</div><div class="nm">排料阀</div><div class="vl">OFF</div></div>
+    </div>
+
+    <h2>操作命令（上升沿触发）</h2>
+    <div class="cmds">
+      <button class="cmd start" id="bStart">启动</button>
+      <button class="cmd" id="bPause">暂停</button>
+      <button class="cmd" id="bResume">恢复</button>
+      <button class="cmd" id="bHold">保持</button>
+      <button class="cmd" id="bUnhold">解除</button>
+      <button class="cmd abort" id="bAbort">中止</button>
+    </div>
+    <button class="cmd" id="bReset" style="margin-top:6px;width:100%">复位（仅中止后）</button>
+    <div class="hint2">提示：Idle→启动；运行中可暂停/保持/中止；暂停可恢复，保持可解除；中止后复位。</div>
+  </div>
+
+  <!-- 右：状态流转图 + 进程 -->
+  <div class="local-card">
+    <h2>状态流转图（高亮当前）</h2>
+    <div class="flow">
+      <svg viewBox="0 0 660 230" role="img" aria-label="状态流转">
+        <defs>
+          <marker id="ah5" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto-start-reverse">
+            <path d="M1 1 L7 4 L1 7 Z" fill="#9aa0ad"></path>
+          </marker>
+        </defs>
+        <g class="ns" id="n0"><rect x="30" y="30" width="110" height="46" rx="8" fill="#2d3240" stroke="#3a4050"/><text x="85" y="50" text-anchor="middle" fill="#e6e8ee" font-size="13" font-weight="500">Idle</text><text x="85" y="66" text-anchor="middle" fill="#9aa0ad" font-size="10">空闲</text></g>
+        <g class="ns" id="n10"><rect x="275" y="30" width="110" height="46" rx="8" fill="#2d3240" stroke="#3a4050"/><text x="330" y="50" text-anchor="middle" fill="#e6e8ee" font-size="13" font-weight="500">Running</text><text x="330" y="66" text-anchor="middle" fill="#9aa0ad" font-size="10">运行</text></g>
+        <g class="ns" id="n90"><rect x="520" y="30" width="110" height="46" rx="8" fill="#2d3240" stroke="#3a4050"/><text x="575" y="50" text-anchor="middle" fill="#e6e8ee" font-size="13" font-weight="500">Complete</text><text x="575" y="66" text-anchor="middle" fill="#9aa0ad" font-size="10">完成</text></g>
+        <g class="ns" id="n20"><rect x="155" y="150" width="110" height="46" rx="8" fill="#2d3240" stroke="#3a4050"/><text x="210" y="170" text-anchor="middle" fill="#e6e8ee" font-size="13" font-weight="500">Paused</text><text x="210" y="186" text-anchor="middle" fill="#9aa0ad" font-size="10">暂停</text></g>
+        <g class="ns" id="n30"><rect x="395" y="150" width="110" height="46" rx="8" fill="#2d3240" stroke="#3a4050"/><text x="450" y="170" text-anchor="middle" fill="#e6e8ee" font-size="13" font-weight="500">Held</text><text x="450" y="186" text-anchor="middle" fill="#9aa0ad" font-size="10">保持</text></g>
+        <g class="ns" id="n99"><rect x="275" y="190" width="110" height="36" rx="8" fill="#2d3240" stroke="#f4433655"/><text x="330" y="213" text-anchor="middle" fill="#ffd7d2" font-size="12" font-weight="500">Aborted 中止</text></g>
+        <path d="M140,53 L275,53" stroke="#7c5cff" stroke-width="2" fill="none" marker-end="url(#ah5)"/>
+        <path d="M385,53 L520,53" stroke="#22c55e" stroke-width="2" fill="none" marker-end="url(#ah5)"/>
+        <path d="M305,76 L235,150" stroke="#9aa0ad" stroke-width="1.5" fill="none" marker-start="url(#ah5)" marker-end="url(#ah5)"/>
+        <path d="M355,76 L425,150" stroke="#9aa0ad" stroke-width="1.5" fill="none" marker-start="url(#ah5)" marker-end="url(#ah5)"/>
+        <path d="M330,76 L330,190" stroke="#f44336" stroke-width="1.5" fill="none" stroke-dasharray="5 4" marker-end="url(#ah5)"/>
+      </svg>
+    </div>
+
+    <div class="gauge">
+      <div class="g"><div class="lbl">料位</div><div class="v lvl" id="gLevel">0%</div></div>
+      <div class="g"><div class="lbl">实际温度</div><div class="v tp" id="gTemp">25℃</div></div>
+      <div class="g"><div class="lbl">保温倒计时</div><div class="v tm" id="gHold">0s</div></div>
+    </div>
+
+    <h2>工艺进度</h2>
+    <div class="prog">
+      <div class="lbl" id="progLbl">未启动</div>
+      <div class="steps">
+        <div class="st" id="s10">①加料</div>
+        <div class="st" id="s20">②升温</div>
+        <div class="st" id="s30">③保温</div>
+        <div class="st" id="s40">④出料</div>
+      </div>
+    </div>
+
+    <div class="alarm-bar" id="alarmBar"><div class="d"></div><span id="alarmTxt">无异常</span></div>
+  </div>
+</div>
+
+<script>
+const phase = {
+  state:0, nextState:0, subStep:10,
+  feedValve:false, drainValve:false, agitator:false, heater:0,
+  done:false, alarm:false,
+  level:0, temp:25, holdTimer:0,
+  setTemp:80, holdTime:6
+};
+const cmd = {start:false,pause:false,resume:false,hold:false,unhold:false,abort:false,reset:false};
+
+function step(){
+  phase.state = phase.nextState;
+  switch(phase.state){
+    case 0:
+      phase.feedValve=false; phase.drainValve=false; phase.agitator=false; phase.heater=0;
+      phase.done=false; phase.alarm=false;
+      if(cmd.start){ phase.nextState=10; phase.subStep=10; }
+      break;
+    case 10:
+      if(cmd.abort){ phase.nextState=99; }
+      else if(cmd.pause){ phase.nextState=20; }
+      else if(cmd.hold){ phase.nextState=30; }
+      else {
+        switch(phase.subStep){
+          case 10:
+            phase.feedValve=true; phase.agitator=false; phase.heater=0;
+            phase.level = Math.min(100, phase.level+2);
+            if(phase.level>=100) phase.subStep=20;
+            break;
+          case 20:
+            phase.feedValve=false; phase.agitator=true; phase.heater=80;
+            phase.temp += (phase.heater*0.5 - (phase.temp-25)*0.3)*0.05;
+            if(phase.temp>=phase.setTemp) phase.subStep=30;
+            break;
+          case 30:
+            phase.heater=60; phase.agitator=true;
+            phase.temp += (phase.heater*0.5 - (phase.temp-25)*0.3)*0.05;
+            phase.holdTimer += 0.1;
+            if(phase.holdTimer>=phase.holdTime){ phase.holdTimer=0; phase.subStep=40; }
+            break;
+          case 40:
+            phase.drainValve=true; phase.heater=0; phase.agitator=false;
+            phase.level = Math.max(0, phase.level-3);
+            if(phase.level<=0) phase.nextState=90;
+            break;
+        }
+      }
+      break;
+    case 20:
+      phase.feedValve=false; phase.heater=0; phase.agitator=false; phase.drainValve=false;
+      if(cmd.abort){ phase.nextState=99; }
+      else if(cmd.resume){ phase.nextState=10; }
+      break;
+    case 30:
+      if(cmd.abort){ phase.nextState=99; }
+      else if(cmd.unhold){ phase.nextState=10; }
+      break;
+    case 90:
+      phase.feedValve=false; phase.drainValve=false; phase.agitator=false; phase.heater=0;
+      phase.done=true; phase.nextState=0;
+      break;
+    case 99:
+      phase.feedValve=false; phase.drainValve=false; phase.agitator=false; phase.heater=0;
+      phase.alarm=true;
+      if(cmd.reset){ phase.alarm=false; phase.subStep=10; phase.nextState=0; }
+      break;
+  }
+  Object.keys(cmd).forEach(k=>cmd[k]=false);
+}
+
+const stateMap={0:['空闲','等待启动命令',''],10:['运行中','工艺执行中','run'],20:['暂停','关设备·留进度','pause'],30:['保持','设备不停·冻结流程','held'],90:['完成','批次完成','complete'],99:['中止','异常·需复位','aborted']};
+const $=id=>document.getElementById(id);
+const nodes={0:'n0',10:'n10',20:'n20',30:'n30',90:'n90',99:'n99'};
+
+function render(){
+  const [nm,sub,cls]=stateMap[phase.state];
+  $('stateName').textContent=nm;
+  $('stateNo').textContent=`State=${phase.state} · SubStep=${phase.subStep}`;
+  $('stateSub').textContent=sub;
+  const sb=$('stateBox'); sb.className='state-box '+cls;
+  $('devFeed').className='dev'+(phase.feedValve?' on':'');
+  $('devFeed').querySelector('.vl').textContent=phase.feedValve?'ON':'OFF';
+  $('devAgi').className='dev'+(phase.agitator?' on':'');
+  $('devAgi').querySelector('.vl').textContent=phase.agitator?'ON':'OFF';
+  $('devHeat').className='dev'+(phase.heater>0?' on':'');
+  $('devHeat').querySelector('.vl').textContent=phase.heater.toFixed(0)+'%';
+  $('devDrain').className='dev'+(phase.drainValve?' on':'');
+  $('devDrain').querySelector('.vl').textContent=phase.drainValve?'ON':'OFF';
+  Object.values(nodes).forEach(id=>{const r=$(id).querySelector('rect'); r.setAttribute('stroke','#3a4050'); r.setAttribute('fill','#2d3240');});
+  const cur=$(nodes[phase.state]); if(cur){const r=cur.querySelector('rect'); r.setAttribute('stroke','#7c5cff'); r.setAttribute('fill','#7c5cff22'); r.setAttribute('stroke-width','2');}
+  $('gLevel').textContent=phase.level.toFixed(0)+'%';
+  $('gTemp').textContent=phase.temp.toFixed(1)+'℃';
+  $('gHold').textContent=phase.state===10&&phase.subStep===30?(phase.holdTime-phase.holdTimer).toFixed(1)+'s':'—';
+  [10,20,30,40].forEach(s=>{const e=$('s'+s); e.className='st';});
+  if(phase.state===10){ const e=$('s'+phase.subStep); if(e)e.className='st on';
+    [10,20,30,40].forEach(s=>{if(s<phase.subStep)$('s'+s).className='st done';}); }
+  else if(phase.state===90){[10,20,30,40].forEach(s=>$('s'+s).className='st done');}
+  const progMap={0:'未启动',10:'执行子步 '+phase.subStep,20:'已暂停',30:'已保持',90:'批次完成',99:'已中止'};
+  $('progLbl').textContent=progMap[phase.state];
+  const ab=$('alarmBar'); const at=$('alarmTxt');
+  if(phase.alarm){ab.className='alarm-bar on'; at.textContent='异常中止！请按「复位」';}
+  else if(phase.done){ab.className='alarm-bar done'; at.textContent='✓ 批次完成';}
+  else{ab.className='alarm-bar'; at.textContent='无异常';}
+  const st=phase.state;
+  $('bStart').className='cmd start'+(st===0?'':' dis');
+  $('bPause').className='cmd'+(st===10?'':' dis');
+  $('bResume').className='cmd'+(st===20?'':' dis');
+  $('bHold').className='cmd'+(st===10?'':' dis');
+  $('bUnhold').className='cmd'+(st===30?'':' dis');
+  $('bAbort').className='cmd abort'+(st===0||st===90?' dis':'');
+  $('bReset').className='cmd'+(st===99?'':' dis');
+}
+
+$('bStart').onclick=()=>{if(phase.state===0)cmd.start=true;};
+$('bPause').onclick=()=>{if(phase.state===10)cmd.pause=true;};
+$('bResume').onclick=()=>{if(phase.state===20)cmd.resume=true;};
+$('bHold').onclick=()=>{if(phase.state===10)cmd.hold=true;};
+$('bUnhold').onclick=()=>{if(phase.state===30)cmd.unhold=true;};
+$('bAbort').onclick=()=>{if(phase.state!==0&&phase.state!==90)cmd.abort=true;};
+$('bReset').onclick=()=>{if(phase.state===99)cmd.reset=true;};
+
+setInterval(()=>{ step(); render(); }, 100);
+render();
+</script>
+</body>
+</html>

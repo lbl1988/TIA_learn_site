@@ -1,0 +1,272 @@
+/* ==========================================================
+   TIA Portal 学习站 · 全局样式
+   ========================================================== */
+:root{
+  --bg:#0f1115;
+  --panel:#161a21;
+  --panel-2:#1d212b;
+  --panel-3:#242a36;
+  --line:#2a3040;
+  --text:#e8ebf2;
+  --muted:#949cae;
+  --faint:#5c6477;
+  --brand:#7c5cff;
+  --brand-2:#5a3ff0;
+  --brand-soft:#7c5cff22;
+  --ok:#22c55e;
+  --ok-soft:#22c55e1f;
+  --warn:#ff9800;
+  --alarm:#ef4444;
+  --cyan:#22d3ee;
+  --radius:12px;
+  --radius-sm:8px;
+  --shadow:0 4px 24px rgba(0,0,0,.25);
+  --font-sans:"PingFang SC","Microsoft YaHei","SF Pro Text",system-ui,sans-serif;
+  --font-mono:"Consolas","JetBrains Mono",monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg);color:var(--text);
+  font:14px/1.6 var(--font-sans);
+  min-height:100vh;
+  background-image:
+    radial-gradient(1200px 600px at 10% -10%, #7c5cff14, transparent 60%),
+    radial-gradient(900px 500px at 100% 0%, #22d3ee10, transparent 60%);
+}
+a{color:var(--brand);text-decoration:none;transition:color .15s}
+a:hover{color:#a28bff}
+
+/* ========== 顶部导航 ========== */
+.nav{
+  position:sticky;top:0;z-index:50;
+  background:rgba(15,17,21,.85);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--line);
+}
+.nav-inner{max-width:1280px;margin:0 auto;padding:0 24px;height:64px;display:flex;align-items:center;gap:32px}
+.logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:16px;color:var(--text)}
+.logo .ic{width:34px;height:34px;border-radius:8px;background:linear-gradient(135deg,var(--brand),var(--cyan));display:grid;place-items:center;color:#fff;font-size:13px;letter-spacing:-.5px;font-weight:800}
+.logo .sub{font-size:11px;color:var(--muted);font-weight:400;margin-left:6px}
+.menu{display:flex;gap:4px;flex:1}
+.menu a{
+  color:var(--muted);padding:8px 14px;border-radius:var(--radius-sm);font-size:13px;
+  display:flex;align-items:center;gap:6px;
+}
+.menu a:hover,.menu a.active{color:var(--text);background:var(--panel-3)}
+.menu .dot{width:6px;height:6px;border-radius:50%;background:var(--faint)}
+.menu a.t1 .dot{background:var(--cyan)}
+.menu a.t2 .dot{background:var(--brand)}
+.menu a.t3 .dot{background:var(--ok)}
+.menu a.eng .dot{background:var(--warn)}
+
+/* ========== 主容器 ========== */
+.wrap{max-width:1280px;margin:0 auto;padding:28px 24px 60px}
+
+/* ========== 通用卡片 ========== */
+.card{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  padding:22px;
+  box-shadow:var(--shadow);
+}
+.card h2{font-size:15px;color:var(--text);margin-bottom:16px;display:flex;align-items:center;gap:10px;font-weight:600}
+.card h2::before{content:"";width:3px;height:16px;background:linear-gradient(180deg,var(--brand),var(--cyan));border-radius:2px}
+.card h3{font-size:13px;color:var(--muted);margin:14px 0 8px;font-weight:500;letter-spacing:.3px;text-transform:uppercase}
+
+.hint{color:var(--muted);font-size:12px;line-height:1.7}
+.hr{border:none;border-top:1px dashed var(--line);margin:18px 0}
+
+/* ========== 按钮 ========== */
+.btn{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:9px 16px;border-radius:var(--radius-sm);
+  border:1px solid var(--line);background:var(--panel-3);color:var(--text);
+  cursor:pointer;font-size:13px;font-family:inherit;transition:.15s;
+}
+.btn:hover{border-color:var(--brand);color:var(--brand)}
+.btn.primary{background:var(--brand);color:#fff;border-color:var(--brand)}
+.btn.primary:hover{background:var(--brand-2);color:#fff;transform:translateY(-1px)}
+.btn.ok{background:var(--ok-soft);color:var(--ok);border-color:#22c55e44}
+.btn.ok:hover{background:#22c55e2e}
+.btn-group{display:flex;flex-wrap:wrap;gap:8px}
+
+/* ========== 徽章 / 标签 ========== */
+.tag{
+  display:inline-flex;align-items:center;gap:5px;
+  font-size:11px;padding:3px 10px;border-radius:999px;
+  background:var(--panel-3);color:var(--muted);border:1px solid var(--line);
+}
+.tag.brand{background:var(--brand-soft);color:var(--brand);border-color:#7c5cff55}
+.tag.ok{background:var(--ok-soft);color:var(--ok);border-color:#22c55e44}
+.tag.warn{background:#ff98001a;color:var(--warn);border-color:#ff980055}
+.tag.cyan{background:#22d3ee1a;color:var(--cyan);border-color:#22d3ee55}
+.tag.new{background:var(--brand);color:#fff;border-color:var(--brand);font-weight:600}
+
+/* ========== 首页 Hero ========== */
+.hero{
+  background:
+    radial-gradient(700px 300px at 90% 10%, #7c5cff2a, transparent 60%),
+    radial-gradient(500px 260px at 0% 100%, #22d3ee1e, transparent 60%),
+    linear-gradient(180deg, var(--panel), var(--panel-2));
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:38px 36px;
+  display:grid;grid-template-columns:1.2fr 1fr;gap:32px;align-items:center;
+  box-shadow:var(--shadow);
+}
+.hero h1{font-size:30px;line-height:1.25;margin-bottom:10px;letter-spacing:-.3px}
+.hero .brand-c{color:var(--brand)}
+.hero p{color:var(--muted);font-size:14px;margin-bottom:20px;max-width:520px}
+.hero .stats{display:flex;gap:24px;margin-top:18px}
+.hero .stat{display:flex;flex-direction:column;gap:2px}
+.hero .stat b{font-size:22px;font-weight:700;font-family:var(--font-mono)}
+.hero .stat span{font-size:11px;color:var(--muted)}
+.hero .preview{
+  background:var(--panel-3);border:1px solid var(--line);border-radius:12px;
+  padding:18px;
+  font-family:var(--font-mono);font-size:12px;line-height:1.8;color:var(--muted);
+  position:relative;overflow:hidden;
+}
+.hero .preview::before{
+  content:"TIA Portal · PLCSIM";position:absolute;top:10px;right:14px;
+  font-size:10px;color:var(--faint);font-family:var(--font-sans);
+}
+.hero .preview .line1{color:var(--cyan)}.hero .preview .line2{color:#c4a5ff}
+.hero .preview .line3{color:var(--ok)}.hero .preview .line4{color:var(--warn)}
+
+/* ========== 三阶卡片 ========== */
+.tiers{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:24px}
+.tier{
+  background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+  padding:22px;transition:.2s;position:relative;overflow:hidden;
+}
+.tier::after{
+  content:"";position:absolute;top:0;left:0;width:4px;height:100%;
+}
+.tier.t1{border-left:3px solid var(--cyan)}
+.tier.t2{border-left:3px solid var(--brand)}
+.tier.t3{border-left:3px solid var(--ok)}
+.tier:hover{transform:translateY(-2px);border-color:var(--line);box-shadow:var(--shadow)}
+.tier .head{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.tier .num{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;color:#fff;font-weight:700;font-size:14px}
+.tier.t1 .num{background:var(--cyan);color:#05292f}
+.tier.t2 .num{background:var(--brand)}
+.tier.t3 .num{background:var(--ok);color:#06210f}
+.tier .name{font-size:17px;font-weight:700}
+.tier .dur{font-size:11px;color:var(--muted)}
+.tier ul{list-style:none;margin-top:12px}
+.tier li{padding:6px 0 6px 22px;font-size:13px;position:relative;color:var(--muted)}
+.tier li::before{content:"";position:absolute;left:4px;top:13px;width:6px;height:6px;border-radius:50%;background:var(--faint)}
+.tier.t1 li::before{background:var(--cyan)}
+.tier.t2 li.main::before{background:var(--brand);width:8px;height:8px}
+.tier.t3 li::before{background:var(--ok)}
+.tier li.hi{color:var(--text)}
+.tier .tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:12px}
+.tier .cta{margin-top:16px;display:flex;justify-content:space-between;align-items:center}
+
+/* ========== 工程化能力 ========== */
+.eng{
+  display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:16px;
+}
+.eng-card{
+  background:var(--panel-2);border:1px solid #7c5cff55;border-radius:var(--radius-sm);
+  padding:16px 14px;text-align:center;transition:.15s;
+}
+.eng-card:hover{background:var(--panel-3);transform:translateY(-2px)}
+.eng-card .ic{font-size:24px;margin-bottom:8px}
+.eng-card .nm{font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px}
+.eng-card .sb{font-size:11px;color:var(--muted);line-height:1.5}
+
+/* ========== 支撑模块 ========== */
+.supports{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-top:16px}
+.support{
+  background:var(--panel-2);border:1px dashed var(--line);border-radius:999px;
+  padding:10px 12px;text-align:center;font-size:12px;color:var(--muted);
+  transition:.15s;
+}
+.support:hover{color:var(--text);border-color:var(--brand);background:var(--panel-3)}
+
+/* ========== 子页 课程详情 ========== */
+.page-title{
+  margin-bottom:18px;
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+}
+.page-title h1{font-size:24px}
+.bread{font-size:12px;color:var(--muted)}
+.bread a{color:var(--muted)}
+.bread a:hover{color:var(--brand)}
+.bread .sep{margin:0 6px;color:var(--faint)}
+
+/* 课程章节 */
+.chapters{display:flex;flex-direction:column;gap:14px}
+.chapter{
+  background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+  padding:20px;
+  display:grid;grid-template-columns:60px 1fr 220px;gap:20px;align-items:flex-start;
+  transition:.15s;
+}
+.chapter:hover{border-color:#7c5cff44}
+.chapter .no{
+  width:44px;height:44px;border-radius:10px;
+  background:var(--panel-3);display:grid;place-items:center;
+  font-family:var(--font-mono);font-weight:700;font-size:15px;color:var(--brand);
+  border:1px solid var(--line);
+}
+.chapter h3{font-size:15px;margin-bottom:6px;color:var(--text);font-weight:600}
+.chapter .desc{font-size:13px;color:var(--muted);margin-bottom:10px}
+.chapter .kw{display:flex;flex-wrap:wrap;gap:5px}
+.chapter .sidebar{display:flex;flex-direction:column;gap:8px;align-items:flex-end}
+.chapter .sidebar .btn{justify-content:flex-end;width:fit-content}
+
+/* 代码块 */
+pre.code{
+  background:#0c0e13;border:1px solid var(--line);border-radius:8px;
+  padding:14px 16px;overflow-x:auto;
+  font-family:var(--font-mono);font-size:12.5px;line-height:1.8;color:#cfd3dc;
+  margin:10px 0;
+}
+pre.code .c{color:#5c6477;font-style:italic}
+pre.code .k{color:#c4a5ff}
+pre.code .s{color:#a5e3a5}
+pre.code .n{color:#ffd494}
+pre.code .t{color:#7fe0ef}
+
+/* 网格 2 列 */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+
+/* 表格 */
+table.tbl{width:100%;border-collapse:collapse;margin:10px 0;font-size:13px}
+table.tbl th,table.tbl td{border:1px solid var(--line);padding:10px 12px;text-align:left}
+table.tbl th{background:var(--panel-3);color:var(--text);font-weight:600;font-size:12px}
+table.tbl td{color:var(--muted)}
+table.tbl tr:hover td{background:var(--panel-2)}
+
+/* 页脚 */
+.footer{
+  max-width:1280px;margin:0 auto;padding:24px;border-top:1px solid var(--line);
+  color:var(--muted);font-size:12px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;
+}
+.footer a{color:var(--muted)}
+.footer a:hover{color:var(--brand)}
+
+/* 进度条 */
+.progress{height:4px;border-radius:2px;background:var(--panel-3);overflow:hidden}
+.progress>div{height:100%;background:linear-gradient(90deg,var(--brand),var(--cyan));border-radius:2px}
+
+/* 响应式 */
+@media(max-width:1024px){
+  .hero{grid-template-columns:1fr;padding:28px}
+  .tiers{grid-template-columns:1fr}
+  .eng{grid-template-columns:repeat(3,1fr)}
+  .supports{grid-template-columns:repeat(3,1fr)}
+  .chapter{grid-template-columns:50px 1fr}
+  .chapter .sidebar{align-items:flex-start;margin-top:10px}
+  .grid2{grid-template-columns:1fr}
+}
+@media(max-width:640px){
+  .nav-inner{padding:0 14px;gap:14px}
+  .menu{display:none}
+  .eng{grid-template-columns:1fr 1fr}
+  .supports{grid-template-columns:1fr 1fr}
+}

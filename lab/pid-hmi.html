@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>博途学习站 · PID 温度控制 HMI 仿真</title>
+<link rel="stylesheet" href="../assets/css/style.css">
+<style>
+  .local-top{display:flex;align-items:center;gap:14px;padding:14px 20px;background:linear-gradient(90deg,#212429,#2a2e36);border-bottom:1px solid #3a4050}
+  .local-top .logo{width:34px;height:34px;border-radius:8px;background:#7c5cff;display:grid;place-items:center;font-weight:700;color:#fff}
+  .local-top h1{font-size:16px;font-weight:600;color:#e6e8ee}
+  .local-top .sub{color:#9aa0ad;font-size:12px}
+  .local-top .badge{margin-left:auto;font-size:11px;padding:4px 10px;border-radius:999px;background:#1f6feb22;color:#7fb4ff;border:1px solid #1f6feb55}
+
+  .local-wrap{display:grid;grid-template-columns:340px 1fr;gap:14px;padding:14px;max-width:1280px;margin:0 auto}
+  .local-card{background:#262a33;border:1px solid #3a4050;border-radius:10px;padding:14px}
+  .local-card h2{font-size:13px;color:#9aa0ad;margin-bottom:12px;letter-spacing:.5px;text-transform:uppercase;display:flex;align-items:center;gap:8px}
+  .local-card h2::before{content:"";width:3px;height:14px;background:#7c5cff;border-radius:2px}
+
+  .row{margin-bottom:14px}
+  .row label{display:block;font-size:12px;color:#9aa0ad;margin-bottom:6px}
+  .num{display:flex;align-items:baseline;gap:6px;font-family:Consolas,monospace}
+  .num .val{font-size:26px;font-weight:700;color:#e6e8ee}
+  .num .unit{font-size:12px;color:#9aa0ad}
+  .num.sp .val{color:#ff9800} .num.pv .val{color:#4caf50} .num.out .val{color:#00bcd4}
+
+  input[type=range]{width:100%;accent-color:#7c5cff}
+  input[type=number]{background:#2d3240;border:1px solid #3a4050;color:#e6e8ee;padding:6px 8px;border-radius:6px;width:72px;font-family:inherit}
+  .setrow{display:flex;align-items:center;gap:10px}
+  .setrow input[type=range]{flex:1}
+
+  .btns{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .btn2{padding:9px;border-radius:7px;border:1px solid #3a4050;background:#2d3240;color:#e6e8ee;cursor:pointer;font-size:13px;transition:.15s;font-family:inherit}
+  .btn2:hover{border-color:#7c5cff}
+  .btn2.on{background:#22c55e;color:#06210f;border-color:#22c55e;font-weight:600}
+  .btn2.amode.on{background:#7c5cff;color:#fff;border-color:#7c5cff}
+  .btn2.off{opacity:.5}
+
+  .param{display:grid;grid-template-columns:38px 1fr 56px;align-items:center;gap:8px;margin-bottom:8px}
+  .param span{font-family:Consolas,monospace;color:#9aa0ad}
+  .param b{font-family:Consolas,monospace;color:#e6e8ee;text-align:right}
+
+  .alms{display:flex;gap:8px}
+  .alm{flex:1;text-align:center;padding:8px;border-radius:7px;border:1px solid #3a4050;background:#2d3240;font-size:12px;color:#9aa0ad}
+  .alm .d{width:10px;height:10px;border-radius:50%;background:#3a4050;margin:0 auto 4px}
+  .alm.hi.on{border-color:#f44336;color:#ffd7d2} .alm.hi.on .d{background:#f44336;box-shadow:0 0 8px #f44336}
+  .alm.lo.on{border-color:#ff9800;color:#ffe0b3} .alm.lo.on .d{background:#ff9800;box-shadow:0 0 8px #ff9800}
+  .alm.clamp.on{border-color:#00bcd4;color:#b3edf5} .alm.clamp.on .d{background:#00bcd4;box-shadow:0 0 8px #00bcd4}
+
+  .trend{position:relative;height:380px;background:#11141a;border:1px solid #3a4050;border-radius:10px;overflow:hidden}
+  canvas{display:block;width:100%;height:100%}
+  .legend{position:absolute;top:10px;left:12px;display:flex;gap:14px;font-size:12px;background:#11141aaa;padding:6px 10px;border-radius:6px;color:#e6e8ee}
+  .legend i{display:inline-block;width:14px;height:3px;border-radius:2px;vertical-align:middle;margin-right:5px}
+  .stat{position:absolute;bottom:10px;right:12px;font-size:11px;color:#9aa0ad;font-family:Consolas,monospace}
+  .hint2{font-size:11px;color:#9aa0ad;margin-top:8px;line-height:1.6}
+  .code-hint{font-size:11px;color:#9aa0ad;margin-top:10px;padding:8px 10px;background:#2d3240;border-radius:6px;border-left:3px solid #7c5cff;font-family:Consolas,monospace;line-height:1.7}
+  @media(max-width:960px){.local-wrap{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="local-top">
+  <div class="logo">PID</div>
+  <div>
+    <h1>PID 温度控制 HMI 仿真</h1>
+    <div class="sub">联动 FB_PID.scl · 浏览器内即可体验博途 PID 整定 · <a href="../resources/index.html" style="color:#7c5cff">返回资源中心 ↩</a></div>
+  </div>
+  <div class="badge">无硬件 · 在线仿真</div>
+</div>
+
+<div class="local-wrap">
+  <!-- 左：操作面板 -->
+  <div class="local-card">
+    <h2>过程变量</h2>
+    <div class="row num pv"><span class="val" id="pvVal">25.0</span><span class="unit">℃ 实际温度</span></div>
+    <div class="row num sp"><span class="val" id="spVal">80.0</span><span class="unit">℃ 设定值</span></div>
+    <div class="setrow">
+      <input type="range" id="sp" min="0" max="120" step="0.5" value="80">
+      <input type="number" id="spNum" min="0" max="120" step="0.5" value="80">
+    </div>
+
+    <h2 style="margin-top:18px">运行控制</h2>
+    <div class="btns" style="margin-bottom:10px">
+      <button class="btn2" id="runBtn">启动</button>
+      <button class="btn2" id="manBtn">切手动</button>
+    </div>
+    <div class="row">
+      <label>手动输出（仅手动模式生效）</label>
+      <div class="setrow">
+        <input type="range" id="man" min="0" max="100" step="1" value="0">
+        <input type="number" id="manNum" min="0" max="100" step="1" value="0">
+      </div>
+    </div>
+    <div class="row num out"><span class="val" id="outVal">0.0</span><span class="unit">% 输出（加热占空比）</span></div>
+
+    <h2 style="margin-top:18px">PID 参数</h2>
+    <div class="param"><span>Kp</span><input type="range" id="kp" min="0" max="10" step="0.1" value="2.0"><b id="kpV">2.0</b></div>
+    <div class="param"><span>Ki</span><input type="range" id="ki" min="0" max="3" step="0.01" value="0.30"><b id="kiV">0.30</b></div>
+    <div class="param"><span>Kd</span><input type="range" id="kd" min="0" max="5" step="0.05" value="0.50"><b id="kdV">0.50</b></div>
+
+    <h2 style="margin-top:18px">报警状态</h2>
+    <div class="alms">
+      <div class="alm hi" id="almHi"><div class="d"></div>高温</div>
+      <div class="alm lo" id="almLo"><div class="d"></div>低温</div>
+      <div class="alm clamp" id="almClamp"><div class="d"></div>饱和</div>
+    </div>
+    <div class="code-hint">// 算法与 FB_PID.scl 完全一致<br>// 抗饱和·无扰动切换·首拍防突跳</div>
+  </div>
+
+  <!-- 右：趋势曲线 -->
+  <div class="local-card" style="display:flex;flex-direction:column">
+    <h2>实时趋势曲线</h2>
+    <div class="trend">
+      <canvas id="cv"></canvas>
+      <div class="legend">
+        <span><i style="background:#ff9800"></i>设定 SP</span>
+        <span><i style="background:#4caf50"></i>实际 PV</span>
+        <span><i style="background:#00bcd4"></i>输出 OUT</span>
+      </div>
+      <div class="stat" id="stat">停止 · t=0s</div>
+    </div>
+    <div class="hint2">
+      操作：点「启动」后温度开始跟踪设定值。可在运行中改 Kp/Ki/Kd 观察响应——先 P 后 I 再 D。
+      「切手动」验证无扰动切换：手动时直接给定输出%，切回自动瞬间输出不突变。
+    </div>
+  </div>
+</div>
+
+<script>
+// ============ PID 状态（移植自 FB_PID.scl） ============
+const pid = {
+  enable:false, manualEnable:false,
+  setpoint:80, actual:25,
+  kp:2.0, ki:0.30, kd:0.50, ts:0.1,
+  outMax:100, outMin:0,
+  alarmHi:95, alarmLo:5,
+  manualOut:0,
+  integral:0, prevError:0, firstCycle:true,
+  output:0, error:0, clamped:false, autoMode:false,
+  t:0
+};
+const clamp=(v,lo,hi)=>Math.min(hi,Math.max(lo,v));
+
+// 单周期 PID 运算（与 FB_PID.scl 逻辑一致）
+function pidStep(){
+  pid.autoMode = pid.enable && !pid.manualEnable;
+  if(!pid.enable){
+    pid.output=0; pid.integral=0; pid.prevError=0; pid.firstCycle=true;
+    pid.clamped=false; pid.error=0;
+  }else{
+    pid.error = pid.setpoint - pid.actual;
+    if(pid.firstCycle){ pid.prevError=pid.error; pid.firstCycle=false; }
+    if(pid.manualEnable){
+      // 手动：输出=手动值，积分跟踪保证无扰动切换
+      pid.output = clamp(pid.manualOut, pid.outMin, pid.outMax);
+      pid.integral = pid.output - pid.kp*pid.error;
+      pid.clamped = false;
+    }else{
+      // 自动：位置式 PID
+      let deriv = (pid.error - pid.prevError) * pid.kd / pid.ts;
+      // 抗积分饱和
+      if(!pid.clamped
+         || (pid.clamped && pid.output>=pid.outMax && pid.error>0)
+         || (pid.clamped && pid.output<=pid.outMin && pid.error<0)){
+        pid.integral += pid.error * pid.ki * pid.ts;
+      }
+      pid.output = pid.kp*pid.error + pid.integral + deriv;
+      pid.clamped=false;
+      if(pid.output>pid.outMax){ pid.output=pid.outMax; pid.clamped=true; }
+      else if(pid.output<pid.outMin){ pid.output=pid.outMin; pid.clamped=true; }
+      pid.integral = clamp(pid.integral, pid.outMin*5, pid.outMax*5);
+      pid.prevError = pid.error;
+    }
+  }
+  // 被控对象：加热功率→温升；环境 25℃ 散热
+  pid.actual += (pid.output*0.8 - (pid.actual-25)*0.3) * 0.02;
+}
+
+// ============ 趋势曲线绘制 ============
+const cv=document.getElementById('cv'), ctx=cv.getContext('2d');
+const HIST=300, spHist=[], pvHist=[], outHist=[];
+function resize(){const r=cv.parentElement.getBoundingClientRect(); cv.width=r.width*devicePixelRatio; cv.height=r.height*devicePixelRatio; ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);}
+window.addEventListener('resize',resize); resize();
+
+function draw(){
+  const w=cv.width/devicePixelRatio, h=cv.height/devicePixelRatio;
+  ctx.clearRect(0,0,w,h);
+  // 网格
+  ctx.strokeStyle='#2a2e36'; ctx.lineWidth=1; ctx.font='10px Consolas'; ctx.fillStyle='#5a6070';
+  for(let i=0;i<=5;i++){const y=20+i*(h-40)/5; ctx.beginPath();ctx.moveTo(40,y);ctx.lineTo(w-10,y);ctx.stroke();
+    ctx.fillText((120-i*24).toFixed(0),6,y+3);}
+  for(let i=0;i<=6;i++){const x=40+i*(w-50)/6; ctx.beginPath();ctx.moveTo(x,20);ctx.lineTo(x,h-20);ctx.stroke();}
+  ctx.fillText('℃',6,14);
+  const plot=(arr,color)=>{
+    if(arr.length<2)return;
+    ctx.strokeStyle=color; ctx.lineWidth=2; ctx.beginPath();
+    arr.forEach((v,i)=>{const x=40+i*(w-50)/HIST; const y=h-20-(v/120)*(h-40); i?ctx.lineTo(x,y):ctx.moveTo(x,y);});
+    ctx.stroke();
+  };
+  plot(spHist,'#ff9800'); plot(pvHist,'#4caf50'); plot(outHist,'#00bcd4');
+}
+
+// ============ 主循环 ============
+let loopId;
+function loop(){
+  pidStep();
+  pid.t+=0.1;
+  spHist.push(pid.setpoint); pvHist.push(pid.actual); outHist.push(pid.output);
+  if(spHist.length>HIST){spHist.shift();pvHist.shift();outHist.shift();}
+  // 更新 UI
+  document.getElementById('pvVal').textContent=pid.actual.toFixed(1);
+  document.getElementById('spVal').textContent=pid.setpoint.toFixed(1);
+  document.getElementById('outVal').textContent=pid.output.toFixed(1);
+  document.getElementById('almHi').classList.toggle('on', pid.actual>=pid.alarmHi);
+  document.getElementById('almLo').classList.toggle('on', pid.actual<=pid.alarmLo);
+  document.getElementById('almClamp').classList.toggle('on', pid.clamped);
+  document.getElementById('stat').textContent = `${pid.enable?(pid.manualEnable?'手动':'自动'):'停止'} · t=${pid.t.toFixed(1)}s · err=${pid.error.toFixed(1)}`;
+  draw();
+}
+
+// ============ 事件绑定 ============
+const $=id=>document.getElementById(id);
+$('sp').oninput=e=>{pid.setpoint=+e.target.value; $('spNum').value=e.target.value;};
+$('spNum').oninput=e=>{pid.setpoint=clamp(+e.target.value,0,120); $('sp').value=pid.setpoint;};
+$('man').oninput=e=>{pid.manualOut=+e.target.value; $('manNum').value=e.target.value;};
+$('manNum').oninput=e=>{pid.manualOut=clamp(+e.target.value,0,100); $('man').value=pid.manualOut;};
+$('kp').oninput=e=>{pid.kp=+e.target.value; $('kpV').textContent=(+e.target.value).toFixed(1);};
+$('ki').oninput=e=>{pid.ki=+e.target.value; $('kiV').textContent=(+e.target.value).toFixed(2);};
+$('kd').oninput=e=>{pid.kd=+e.target.value; $('kdV').textContent=(+e.target.value).toFixed(2);};
+
+$('runBtn').onclick=()=>{
+  pid.enable=!pid.enable;
+  const b=$('runBtn');
+  if(pid.enable){b.textContent='停止'; b.classList.add('on'); if(!loopId)loopId=setInterval(loop,100);}
+  else{b.textContent='启动'; b.classList.remove('on');}
+};
+$('manBtn').onclick=()=>{
+  if(!pid.enable)return;
+  pid.manualEnable=!pid.manualEnable;
+  const b=$('manBtn');
+  b.textContent=pid.manualEnable?'切自动':'切手动';
+  b.classList.toggle('amode',pid.manualEnable);
+};
+
+// 初始绘制
+draw();
+</script>
+</body>
+</html>

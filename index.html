@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>博途学习站 · 西门子 TIA Portal 从入门到精通</title>
+<meta name="description" content="西门子 TIA Portal 系统化学习路线，三阶主线 + 工程化能力，从 LAD 梯形图到 SCL 结构化文本、ISA-88 状态机、PID、PROFINET，配套可交互 HMI 仿真。">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<!-- 顶部导航 -->
+<nav class="nav">
+<div class="nav-inner">
+  <a href="index.html" class="logo">
+    <div class="ic">TIA</div>
+    <div>博途学习站<span class="sub">From Zero to Hero</span></div>
+  </a>
+  <div class="menu">
+    <a href="index.html" class="active">首页</a>
+    <a href="courses/beginner.html" class="t1"><span class="dot"></span>入门篇</a>
+    <a href="courses/intermediate.html" class="t2"><span class="dot"></span>进阶篇</a>
+    <a href="courses/advanced.html" class="t3"><span class="dot"></span>精通篇</a>
+    <a href="engineering/index.html" class="eng"><span class="dot"></span>工程化</a>
+    <a href="lab/index.html">仿真实验室</a>
+    <a href="resources/index.html">资源下载</a>
+    <a href="projects/index.html">项目库</a>
+  </div>
+</div>
+</nav>
+
+<main class="wrap">
+
+  <!-- Hero -->
+  <section class="hero">
+    <div>
+      <h1>用 <span class="brand-c">三阶主线 + 工程化交付</span> 的方式<br>系统性掌握西门子 TIA Portal</h1>
+      <p>从 LAD 梯形图点灯到 ISA-88 批次状态机、从模拟量 PID 整定到 PROFINET 冗余网络、从会写程序到能独立交付项目。配套可交互 HMI 仿真，浏览器里就能边学边练。</p>
+      <div class="btn-group">
+        <a href="courses/beginner.html" class="btn primary">🚀 开始学习 · 入门篇</a>
+        <a href="lab/index.html" class="btn ok">🧪 进入仿真实验室</a>
+        <a href="resources/index.html" class="btn">📦 下载配套工程</a>
+      </div>
+      <div class="stats">
+        <div class="stat"><b>6</b><span>三阶课程主题</span></div>
+        <div class="stat"><b>5</b><span>工程化能力模块</span></div>
+        <div class="stat"><b>2</b><span>可交互 HMI 仿真</span></div>
+        <div class="stat"><b>2</b><span>PLC 工程源文件</span></div>
+      </div>
+    </div>
+    <div class="preview">
+<span class="line1">// FB_PID.scl · 位置式 PID</span><br>
+#Error := #Setpoint - #ActualValue;<br>
+#Integral += #Error * #Ki * #Ts;<br>
+<span class="line2">#Integral := LIMIT(MIN:=0, IN:=#Integral, MAX:=100);</span><br>
+<span class="line3">#Output := #Kp*#Error + #Integral + (#Error-#PrevError)*#Kd/#Ts;</span><br>
+#PrevError := #Error;<br>
+<br>
+<span class="line4">// ➜ 去仿真实验室看响应曲线</span>
+    </div>
+  </section>
+
+  <!-- 网站架构说明 -->
+  <section class="card" style="margin-top:24px">
+    <h2>学习架构一览</h2>
+    <p class="hint">三层体系：<b style="color:var(--cyan)">入门篇</b> 掌握基础语法与工具，<b style="color:var(--brand)">进阶篇</b> 学会结构化编程与标准架构，<b style="color:var(--ok)">精通篇</b> 专攻高级功能与产线应用。<b style="color:var(--warn)">工程化能力</b> 横向贯穿，确保学完能直接落地项目。</p>
+    <div style="margin-top:18px; padding:18px; background:var(--panel-2); border-radius:10px; border:1px solid var(--line)">
+      <svg viewBox="0 0 1200 260" width="100%" height="auto" role="img" aria-label="学习架构">
+        <!-- 三阶梯 -->
+        <g transform="translate(0,0)">
+          <rect x="40" y="60" width="340" height="160" rx="10" fill="#161a21" stroke="#22d3ee55" stroke-width="1.5"></rect>
+          <rect x="40" y="60" width="340" height="36" rx="10" fill="#22d3ee15"></rect>
+          <text x="70" y="83" fill="#22d3ee" font-size="14" font-weight="700">① 入门篇 · 约 2 周</text>
+          <text x="420" y="140" fill="#7c5cff" font-size="20" text-anchor="middle">→</text>
+          <g font-size="13" fill="#cfd3dc">
+            <circle cx="62" cy="118" r="3" fill="#22d3ee"/><text x="74" y="122">PLC 原理与数据类型</text>
+            <circle cx="62" cy="140" r="3" fill="#22d3ee"/><text x="74" y="144">TIA Portal 安装界面</text>
+            <circle cx="62" cy="162" r="3" fill="#22d3ee"/><text x="74" y="166">LAD 梯形图基础</text>
+            <circle cx="62" cy="184" r="3" fill="#22d3ee"/><text x="74" y="188">位逻辑/定时器/计数器</text>
+            <circle cx="62" cy="206" r="3" fill="#22d3ee"/><text x="74" y="210">点灯仿真与快捷键</text>
+          </g>
+        </g>
+        <g transform="translate(460,0)">
+          <rect x="0" y="60" width="340" height="160" rx="10" fill="#161a21" stroke="#7c5cff55" stroke-width="1.5"></rect>
+          <rect x="0" y="60" width="340" height="36" rx="10" fill="#7c5cff15"></rect>
+          <text x="30" y="83" fill="#c4a5ff" font-size="14" font-weight="700">② 进阶篇 · 约 1 月</text>
+          <text x="380" y="140" fill="#22c55e" font-size="20" text-anchor="middle">→</text>
+          <g font-size="13" fill="#cfd3dc">
+            <circle cx="22" cy="118" r="3" fill="#7c5cff"/><text x="34" y="122">结构化编程 FC/FB/DB</text>
+            <circle cx="22" cy="140" r="3" fill="#7c5cff"/><text x="34" y="144" fill="#fff">SCL 结构化文本 </text><text x="220" y="144" fill="#22c55e" font-size="11" font-weight="700">●配套</text>
+            <circle cx="22" cy="162" r="3" fill="#7c5cff"/><text x="34" y="166">FBD / S7-GRAPH 顺控</text>
+            <circle cx="22" cy="184" r="3" fill="#7c5cff"/><text x="34" y="188" fill="#fff">ISA-88 架构/状态机 </text><text x="260" y="188" fill="#22c55e" font-size="11" font-weight="700">●配套</text>
+            <circle cx="22" cy="206" r="3" fill="#7c5cff"/><text x="34" y="210">PROFINET 通信与 HMI</text>
+          </g>
+        </g>
+        <g transform="translate(880,0)">
+          <rect x="0" y="60" width="300" height="160" rx="10" fill="#161a21" stroke="#22c55e55" stroke-width="1.5"></rect>
+          <rect x="0" y="60" width="300" height="36" rx="10" fill="#22c55e15"></rect>
+          <text x="30" y="83" fill="#a4f0ba" font-size="14" font-weight="700">③ 精通篇 · 约 2 月+</text>
+          <g font-size="13" fill="#cfd3dc">
+            <circle cx="22" cy="118" r="3" fill="#22c55e"/><text x="34" y="122">运动控制与伺服 V90</text>
+            <circle cx="22" cy="140" r="3" fill="#22c55e"/><text x="34" y="144">安全 PLC 功能安全</text>
+            <circle cx="22" cy="162" r="3" fill="#22c55e"/><text x="34" y="166">WinCC SCADA 系统</text>
+            <circle cx="22" cy="184" r="3" fill="#22c55e"/><text x="34" y="188">诊断与冗余 R/H·MRP</text>
+            <circle cx="22" cy="206" r="3" fill="#22c55e"/><text x="34" y="210">OPC UA / TRACE 采集</text>
+          </g>
+        </g>
+        <!-- 工程化层 -->
+        <rect x="40" y="236" width="1140" height="22" rx="6" fill="#7c5cff10" stroke="#7c5cff33"></rect>
+        <text x="60" y="251" fill="#c4a5ff" font-size="11" font-weight="700">工程化能力（贯穿三阶）</text>
+        <g font-size="11" fill="#949cae">
+          <text x="260" y="251">UDT/库</text>
+          <text x="340" y="251">· 项目规范</text>
+          <text x="450" y="251">· 版本管理 VCI-Git</text>
+          <text x="620" y="251">· 虚拟调试</text>
+          <text x="720" y="251">· 安全编程</text>
+        </g>
+      </svg>
+    </div>
+  </section>
+
+  <!-- 三阶卡片详情 -->
+  <section style="margin-top:24px">
+    <div class="tiers">
+      <div class="tier t1">
+        <div class="head"><div class="num">1</div><div><div class="name">入门篇</div><div class="dur">约 2 周 · 打基础</div></div></div>
+        <ul>
+          <li>PLC 工作原理与扫描周期</li>
+          <li>进制/数据类型/硬件选型</li>
+          <li>TIA Portal 安装与界面分区</li>
+          <li>LAD 梯形图：触点/线圈/定时器</li>
+          <li>计数器/比较指令/置复位</li>
+          <li>点灯仿真 PLCSIM 实战</li>
+          <li>快捷键与项目上传下载</li>
+        </ul>
+        <div class="tags"><span class="tag cyan">S7-1200 练手首选</span><span class="tag">V17/V18+</span></div>
+        <div class="cta"><a href="courses/beginner.html" class="btn primary" style="flex:1;justify-content:center">进入入门篇 →</a></div>
+      </div>
+
+      <div class="tier t2">
+        <div class="head"><div class="num">2</div><div><div class="name">进阶篇</div><div class="dur">约 1 月 · 架构化</div></div></div>
+        <ul>
+          <li class="main hi">结构化编程 OB/FC/FB/DB</li>
+          <li class="main hi">SCL 结构化文本（含 PID 实战）</li>
+          <li class="main hi">FBD / S7-GRAPH 顺控</li>
+          <li class="main hi">ISA-88 程序架构/状态机</li>
+          <li>PROFINET 通信、远程 IO、HMI</li>
+          <li>模拟量处理与 PID_Compact</li>
+        </ul>
+        <div class="tags"><span class="tag ok">● 2 项已配套可交互</span><span class="tag brand">LAD+SCL 混用策略</span></div>
+        <div class="cta"><a href="courses/intermediate.html" class="btn primary" style="flex:1;justify-content:center">进入进阶篇 →</a></div>
+      </div>
+
+      <div class="tier t3">
+        <div class="head"><div class="num">3</div><div><div class="name">精通篇</div><div class="dur">约 2 月+ · 攻高级</div></div></div>
+        <ul>
+          <li>运动控制 V90 伺服 + 工艺对象</li>
+          <li>功能安全 S7-1200F/1500F</li>
+          <li>WinCC SCADA 变量记录/报警/报表</li>
+          <li>冗余 S7-1500 R/H · MRP 环网</li>
+          <li>OPC UA 对接 IT 系统</li>
+          <li>TRACE 轨迹 + 时序故障诊断</li>
+        </ul>
+        <div class="tags"><span class="tag warn">产线级应用</span><span class="tag cyan">IRT/MRPD</span></div>
+        <div class="cta"><a href="courses/advanced.html" class="btn primary" style="flex:1;justify-content:center">进入精通篇 →</a></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 工程化能力 -->
+  <section class="card" style="margin-top:24px">
+    <h2>工程化能力 <span class="tag new">NEW</span><span style="color:var(--muted);font-size:12px;font-weight:400;margin-left:6px">横向贯穿三阶 · 从"会写程序"到"能交付项目"</span></h2>
+    <div class="eng">
+      <a href="engineering/index.html#udt" class="eng-card">
+        <div class="ic">🧩</div>
+        <div class="nm">UDT / 程序库</div>
+        <div class="sb">多实例·软件单元<br>打造可复用标准块</div>
+      </a>
+      <a href="engineering/index.html#规范" class="eng-card">
+        <div class="ic">📐</div>
+        <div class="nm">项目规范</div>
+        <div class="sb">命名·编程指南<br>交付文档与变更管理</div>
+      </a>
+      <a href="engineering/index.html#vci" class="eng-card">
+        <div class="ic">🔀</div>
+        <div class="nm">版本管理</div>
+        <div class="sb">VCI 导出到 Git<br>AI Copilot 协同</div>
+      </a>
+      <a href="engineering/index.html#vd" class="eng-card">
+        <div class="ic">🎮</div>
+        <div class="nm">虚拟调试</div>
+        <div class="sb">PLCSIM Adv + SIMIT<br>NX MCD 机电联合仿真</div>
+      </a>
+      <a href="engineering/index.html#sec" class="eng-card">
+        <div class="ic">🔐</div>
+        <div class="nm">安全编程</div>
+        <div class="sb">Know-How 加密<br>用户访问控制</div>
+      </a>
+    </div>
+  </section>
+
+  <!-- 支撑模块 -->
+  <section class="card" style="margin-top:24px">
+    <h2>支撑功能模块 <span style="color:var(--muted);font-size:12px;font-weight:400;margin-left:6px">赋能学习全程</span></h2>
+    <div class="supports">
+      <a href="courses/beginner.html" class="support">📚 课程体系</a>
+      <a href="projects/index.html" class="support">🏭 实战项目库</a>
+      <a href="lab/index.html" class="support">🧪 仿真实验室</a>
+      <a href="resources/index.html" class="support">📦 资源下载</a>
+      <a href="community/index.html" class="support">💬 互动社区</a>
+      <a href="tools/index.html" class="support">🛠 工具箱</a>
+    </div>
+    <p class="hint" style="margin-top:16px">绿色「配套」标记的主题均已提供 PLC 源文件（可导入博途）+ 网页版 HMI 仿真（浏览器即可体验）。后续主题将持续补充配套工程。</p>
+  </section>
+
+  <!-- 配套速览 -->
+  <section class="card" style="margin-top:24px">
+    <h2>已配套可交互工程</h2>
+    <div class="grid2">
+      <div style="background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:18px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+          <span class="tag ok">● 配套</span>
+          <b style="font-size:15px">S7 PID 温度控制</b>
+        </div>
+        <p class="hint">位置式 PID，抗积分饱和、手自动无扰动切换、首拍防突跳。博途可导入 + 浏览器实时整定。</p>
+        <div class="btn-group" style="margin-top:12px">
+          <a href="lab/pid-hmi.html" class="btn ok">🧪 打开 HMI 仿真</a>
+          <a href="resources/FB_PID.scl" class="btn">📄 下载 SCL 源文件</a>
+        </div>
+      </div>
+      <div style="background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:18px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+          <span class="tag ok">● 配套</span>
+          <b style="font-size:15px">ISA-88 批次状态机</b>
+        </div>
+        <p class="hint">6 状态 Phase 机（Idle/Running/Paused/Held/Complete/Aborted）+ 4 工艺子步，CASE 实现，一周期延迟跳转。</p>
+        <div class="btn-group" style="margin-top:12px">
+          <a href="lab/isa88-hmi.html" class="btn ok">🧪 打开 HMI 仿真</a>
+          <a href="resources/FB_BatchPhase.scl" class="btn">📄 下载 SCL 源文件</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <div>© 博途学习站 · 本站内容仅供学习交流使用 · 西门子产品名权属 Siemens AG</div>
+  <div><a href="https://github.com/lbl1988/TIA_learn_site" target="_blank">GitHub 仓库</a> · <a href="resources/index.html">下载配套资源</a></div>
+</footer>
+
+</body>
+</html>

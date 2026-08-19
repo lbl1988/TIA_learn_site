@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>工具箱 · 博途学习站</title>
+<link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+<nav class="nav">
+<div class="nav-inner">
+  <a href="../index.html" class="logo"><div class="ic">TIA</div><div>博途学习站<span class="sub">From Zero to Hero</span></div></a>
+  <div class="menu">
+    <a href="../index.html">首页</a>
+    <a href="../courses/beginner.html" class="t1"><span class="dot"></span>入门篇</a>
+    <a href="../courses/intermediate.html" class="t2"><span class="dot"></span>进阶篇</a>
+    <a href="../courses/advanced.html" class="t3"><span class="dot"></span>精通篇</a>
+    <a href="../engineering/index.html" class="eng"><span class="dot"></span>工程化</a>
+    <a href="../lab/index.html">仿真实验室</a>
+    <a href="../resources/index.html">资源下载</a>
+    <a href="index.html" class="active">工具箱</a>
+  </div>
+</div>
+</nav>
+
+<main class="wrap">
+  <div class="page-title">
+    <div style="flex:1">
+      <div class="bread"><a href="../index.html">首页</a><span class="sep">/</span>工具箱</div>
+      <h1>🛠 工程师工具箱</h1>
+      <p class="hint" style="margin-top:6px">选型查询、进制/数据转换、IP 规划、Modbus CRC 计算、PROFINET 设备命名等实用小工具。</p>
+    </div>
+  </div>
+
+  <section class="card" style="margin-bottom:18px">
+    <h2>进制 / 数据转换 <span class="tag cyan">在线工具</span></h2>
+    <div class="grid2" style="gap:16px">
+      <div>
+        <h3>DEC ↔ HEX ↔ BIN ↔ REAL 四合一</h3>
+        <div style="padding:12px;background:var(--panel-2);border-radius:8px;border:1px solid var(--line)">
+          <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:4px">输入（十进制）</label>
+          <input id="decIn" type="number" value="123" style="width:100%;padding:8px 10px;border-radius:6px;border:1px solid var(--line);background:#0c0e13;color:var(--text);font-family:Consolas,monospace;font-size:13px">
+          <div style="margin-top:10px">
+            <button class="btn" onclick="conv()" style="width:100%;justify-content:center">🔄 转换</button>
+          </div>
+          <div style="margin-top:10px;font-family:Consolas,monospace;font-size:13px">
+            <div><span style="color:var(--muted)">HEX:</span> <code id="hexOut">—</code></div>
+            <div><span style="color:var(--muted)">BIN:</span> <code id="binOut">—</code></div>
+            <div><span style="color:var(--muted)">WORD (16位):</span> <code id="wordOut">—</code></div>
+            <div><span style="color:var(--muted)">DWORD (32位):</span> <code id="dwordOut">—</code></div>
+            <div><span style="color:var(--muted)">INT 范围检查:</span> <code id="intCheck">—</code></div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <h3>4-20mA / 0-10V 工程量换算</h3>
+        <div style="padding:12px;background:var(--panel-2);border-radius:8px;border:1px solid var(--line)">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div><label style="font-size:12px;color:var(--muted)">信号类型</label>
+              <select id="sig" style="width:100%;padding:8px;border-radius:6px;border:1px solid var(--line);background:#0c0e13;color:var(--text)">
+                <option value="4-20">4-20 mA</option>
+                <option value="0-10">0-10 V</option>
+                <option value="0-5">0-5 V</option>
+                <option value="0-27648">0-27648 原始值</option>
+              </select>
+            </div>
+            <div><label style="font-size:12px;color:var(--muted)">测量量程上限</label><input id="rHi" type="number" value="100" style="width:100%;padding:8px;border-radius:6px;border:1px solid var(--line);background:#0c0e13;color:var(--text);font-family:Consolas,monospace"></div>
+            <div><label style="font-size:12px;color:var(--muted)">测量量程下限</label><input id="rLo" type="number" value="0" style="width:100%;padding:8px;border-radius:6px;border:1px solid var(--line);background:#0c0e13;color:var(--text);font-family:Consolas,monospace"></div>
+            <div><label style="font-size:12px;color:var(--muted)">原始值（0-27648）</label><input id="raw" type="number" value="13824" style="width:100%;padding:8px;border-radius:6px;border:1px solid var(--line);background:#0c0e13;color:var(--text);font-family:Consolas,monospace"></div>
+          </div>
+          <button class="btn" onclick="scale()" style="width:100%;justify-content:center;margin-top:8px">📐 计算工程量</button>
+          <div style="margin-top:10px;font-family:Consolas,monospace;font-size:13px">
+            <div><span style="color:var(--muted)">工程量值:</span> <code id="engVal" style="color:var(--ok);font-size:15px">—</code></div>
+            <div><span style="color:var(--muted)">换算公式 SCL:</span>
+<pre style="background:#0c0e13;border:1px solid var(--line);border-radius:6px;padding:8px;margin-top:6px;font-size:11px;overflow-x:auto">#Normd := NORM_X(MIN:=0, VALUE:=#Raw, MAX:=27648);
+#Eng   := SCALE_X(MIN:=#Lo, VALUE:=#Normd, MAX:=#Hi);</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" style="margin-bottom:18px">
+    <h2>通信小工具</h2>
+    <div class="grid2" style="gap:16px">
+      <div>
+        <h3>Modbus RTU CRC16 计算器</h3>
+        <div style="padding:12px;background:var(--panel-2);border-radius:8px;border:1px solid var(--line)">
+          <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:4px">请求帧（HEX，空格分隔）</label>
+          <input id="rtuIn" type="text" value="01 03 00 00 00 02" style="width:100%;padding:8px 10px;border-radius:6px;border:1px solid var(--line);background:#0c0e13;color:var(--text);font-family:Consolas,monospace;font-size:13px">
+          <button class="btn" onclick="crc()" style="width:100%;justify-content:center;margin-top:8px">✅ 生成 CRC16</button>
+          <div style="margin-top:10px;font-family:Consolas,monospace;font-size:13px">
+            <div><span style="color:var(--muted)">CRC 低字节:</span> <code id="crcLo">—</code></div>
+            <div><span style="color:var(--muted)">CRC 高字节:</span> <code id="crcHi">—</code></div>
+            <div><span style="color:var(--muted)">完整帧:</span> <code id="crcFrame" style="color:var(--brand)">—</code></div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <h3>PROFINET IP + 设备名规划</h3>
+        <table class="tbl">
+          <thead><tr><th>设备</th><th>推荐命名（小写+连字符）</th><th>IP 段建议</th></tr></thead>
+          <tbody>
+            <tr><td>CPU Controller</td><td>plc-line-01</td><td>192.168.0.10</td></tr>
+            <tr><td>ET200SP IO 站 1</td><td>et200sp-station-01</td><td>192.168.0.20</td></tr>
+            <tr><td>ET200SP IO 站 2</td><td>et200sp-station-02</td><td>192.168.0.21</td></tr>
+            <tr><td>V90 PN 轴 1</td><td>v90-axis-01</td><td>192.168.0.30</td></tr>
+            <tr><td>G120C 变频 1</td><td>g120c-drive-01</td><td>192.168.0.40</td></tr>
+            <tr><td>HMI TP1200</td><td>hmi-op-01</td><td>192.168.0.50</td></tr>
+            <tr><td>SCALANCE 交换机</td><td>switch-line-01</td><td>192.168.0.1</td></tr>
+          </tbody>
+        </table>
+        <p class="hint" style="margin-top:8px">命名规范：<b>类型-车间或产线-编号</b>。IP 段建议 192.168.0.0/24，网关 192.168.0.1；OPC UA 上位机放 1-9。</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>西门子 S7-1200 / S7-1500 CPU 选型参考</h2>
+    <table class="tbl">
+      <thead><tr><th>型号</th><th>IO</th><th>工作存储</th><th>工艺</th><th>PROFINET</th><th>定位</th></tr></thead>
+      <tbody>
+        <tr><td>CPU 1211C</td><td>6DI/4DO/2AI</td><td>75 KB</td><td>2 轴 PTO</td><td>Controller + Device</td><td>迷你机，小站 1</td></tr>
+        <tr><td>CPU 1212C</td><td>8DI/6DO/2AI</td><td>100 KB</td><td>4 轴</td><td>Controller + Device</td><td>小站 2</td></tr>
+        <tr><td>CPU 1214C</td><td>14DI/10DO/2AI</td><td>100 KB</td><td>4 轴</td><td>Controller + Device</td><td>入门主力</td></tr>
+        <tr><td>CPU 1215C</td><td>14DI/10DO/2AI</td><td>125 KB</td><td>4 轴 + WEB API</td><td>双端口 + Device</td><td>学习/小产线推荐</td></tr>
+        <tr><td>CPU 1217C</td><td>14DI/10DO/4AI</td><td>150 KB</td><td>4 轴 + 高速计数</td><td>双端口</td><td>中阶</td></tr>
+        <tr><td>CPU 1511-1 PN</td><td>—</td><td>150 KB</td><td>4 轴</td><td>2× Controller/Device</td><td>S7-1500 入门</td></tr>
+        <tr><td>CPU 1515-2 PN</td><td>—</td><td>500 KB</td><td>8 轴</td><td>2× Controller</td><td>中型产线主力</td></tr>
+        <tr><td>CPU 1515R-2 PN</td><td>—</td><td>500 KB</td><td>4 轴</td><td>双口软冗余</td><td>产线级软冗余</td></tr>
+      </tbody>
+    </table>
+    <p class="hint" style="margin-top:8px">💡 <b>学习首选：S7-1215C</b>（双 PROFINET 口，支持 WEB，扩展能力好，PLCSIM 仿真齐全）。真实项目按点数选，IO 预留 20% 余量。</p>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <div>© 博途学习站 · 本站内容仅供学习交流使用 · 西门子产品名权属 Siemens AG</div>
+  <div><a href="../community/index.html">← 互动社区</a> · <a href="../index.html">回到首页</a></div>
+</footer>
+
+<script>
+/* ---------- 进制转换 ---------- */
+function conv(){
+  const v = parseInt(document.getElementById('decIn').value)||0;
+  document.getElementById('hexOut').textContent = v.toString(16).toUpperCase() + ' (HEX)';
+  document.getElementById('binOut').textContent = v.toString(2).padStart(16,'0');
+  document.getElementById('wordOut').textContent = (v & 0xFFFF).toString(16).toUpperCase().padStart(4,'0') + ' W#16#';
+  document.getElementById('dwordOut').textContent = (v >>> 0).toString(16).toUpperCase().padStart(8,'0') + ' DW#16#';
+  const intOk = (v >= -32768 && v <= 32767);
+  const dintOk = (v >= -2147483648n && BigInt(v) <= 2147483647n);
+  document.getElementById('intCheck').textContent = (intOk?'✅ INT 可用':'⚠️ 超 INT，改用 DINT') + (dintOk?' / DINT 可用':' / ⚠️ 超 DINT');
+}
+conv();
+
+/* ---------- 工程量换算 ---------- */
+function scale(){
+  const raw = parseFloat(document.getElementById('raw').value)||0;
+  const lo = parseFloat(document.getElementById('rLo').value)||0;
+  const hi = parseFloat(document.getElementById('rHi').value)||0;
+  const norm = (raw - 0) / (27648 - 0);
+  const eng = lo + norm * (hi - lo);
+  document.getElementById('engVal').textContent = eng.toFixed(2);
+}
+scale();
+
+/* ---------- Modbus CRC16 ---------- */
+function crc(){
+  const s = document.getElementById('rtuIn').value.trim().replace(/\s+/g,' ');
+  const bytes = s.split(' ').filter(x=>x).map(x=>parseInt(x,16)&0xFF);
+  let crc = 0xFFFF;
+  for (let i=0;i<bytes.length;i++){
+    crc ^= bytes[i];
+    for (let j=0;j<8;j++){
+      if (crc & 1) crc = (crc >>> 1) ^ 0xA001;
+      else crc >>>= 1;
+    }
+  }
+  const lo = (crc & 0xFF).toString(16).padStart(2,'0').toUpperCase();
+  const hi = ((crc >>> 8) & 0xFF).toString(16).padStart(2,'0').toUpperCase();
+  document.getElementById('crcLo').textContent = lo;
+  document.getElementById('crcHi').textContent = hi;
+  document.getElementById('crcFrame').textContent = s + ' ' + lo + ' ' + hi;
+}
+crc();
+</script>
+</body>
+</html>

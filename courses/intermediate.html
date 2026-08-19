@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>进阶篇 · 博途学习站</title>
+<link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+<nav class="nav">
+<div class="nav-inner">
+  <a href="../index.html" class="logo"><div class="ic">TIA</div><div>博途学习站<span class="sub">From Zero to Hero</span></div></a>
+  <div class="menu">
+    <a href="../index.html">首页</a>
+    <a href="beginner.html" class="t1"><span class="dot"></span>入门篇</a>
+    <a href="intermediate.html" class="active t2"><span class="dot"></span>进阶篇</a>
+    <a href="advanced.html" class="t3"><span class="dot"></span>精通篇</a>
+    <a href="../engineering/index.html" class="eng"><span class="dot"></span>工程化</a>
+    <a href="../lab/index.html">仿真实验室</a>
+    <a href="../resources/index.html">资源下载</a>
+    <a href="../projects/index.html">项目库</a>
+  </div>
+</div>
+</nav>
+
+<main class="wrap">
+
+  <div class="page-title">
+    <div style="flex:1">
+      <div class="bread"><a href="../index.html">首页</a><span class="sep">/</span>进阶篇</div>
+      <h1>② 进阶篇 · 约 1 月架构化</h1>
+      <p class="hint" style="margin-top:6px">目标：从"OB1 一堆线圈"到"结构化编程 + 标准架构"，掌握 FC/FB/DB 块体系、SCL 高级语言、ISA-88 状态机、PROFINET 通信与 HMI 组态。</p>
+    </div>
+    <div style="min-width:160px"><span class="tag ok">● 2 项已配套</span> <span class="tag brand">高级语言主线</span></div>
+  </div>
+
+  <section class="card" style="margin-bottom:18px">
+    <h2>学习进度速览</h2>
+    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:12px">
+      <div style="text-align:center"><div style="font-size:20px;font-weight:700;color:var(--brand);font-family:Consolas,monospace">6</div><div style="font-size:11px;color:var(--muted)">章</div></div>
+      <div style="text-align:center"><div style="font-size:20px;font-weight:700;color:var(--text);font-family:Consolas,monospace">27</div><div style="font-size:11px;color:var(--muted)">核心小节</div></div>
+      <div style="text-align:center"><div style="font-size:20px;font-weight:700;color:var(--ok);font-family:Consolas,monospace">2</div><div style="font-size:11px;color:var(--muted)">可交互 HMI</div></div>
+      <div style="text-align:center"><div style="font-size:20px;font-weight:700;color:var(--warn);font-family:Consolas,monospace">30</div><div style="font-size:11px;color:var(--muted)">天</div></div>
+    </div>
+    <div class="progress"><div style="width:35%"></div></div>
+    <p class="hint" style="margin-top:8px">紫色=高级语言主线；绿色=已配套 SCL 源文件 + 网页版 HMI 仿真，可边学边练。</p>
+  </section>
+
+  <div class="chapters">
+
+    <div class="chapter">
+      <div class="no">01</div>
+      <div>
+        <h3>结构化编程 OB / FC / FB / DB</h3>
+        <div class="desc">OB1 只做调度不写逻辑；FC（纯函数）/ FB（状态函数+背景DB）/ DB（数据）职责分离。OB35 循环中断、OB100 启动 OB、错误 OB（OB82/OB86/OB121）避免停机。</div>
+        <table class="tbl">
+          <thead><tr><th>类型</th><th>有无静态数据</th><th>典型用途</th></tr></thead>
+          <tbody>
+            <tr><td>FC</td><td>无（每次调用临时变量）</td><td>数学计算、字符串处理、纯逻辑判断</td></tr>
+            <tr><td>FB</td><td>有（背景 DB 存储）</td><td>设备封装、PID、状态机、定时逻辑</td></tr>
+            <tr><td>DB</td><td>全局/实例 数据容器</td><td>配方、生产数据、标签共享</td></tr>
+            <tr><td>OB</td><td>—</td><td>执行入口：循环 OB1、启动 OB100、循环中断 OB3x</td></tr>
+          </tbody>
+        </table>
+        <div class="kw" style="margin-top:10px"><span class="tag brand">优化块访问</span><span class="tag">背景 DB</span><span class="tag">全局 DB</span><span class="tag">OB35 循环中断</span></div>
+      </div>
+      <div class="sidebar"><span class="tag">6 天</span><a href="#" class="btn">开始学习</a></div>
+    </div>
+
+    <div class="chapter">
+      <div class="no">02</div>
+      <div>
+        <h3>SCL 结构化文本 <span class="tag ok">●配套</span></h3>
+        <div class="desc">从 LAD 过渡到 SCL：IF/CASE/FOR 控制流、数组、间接寻址、沿信号自写、定时器调用避坑、SCALE_X/NORM_X 标度变换、S7-GRAPH 顺控图形编程。9 节完整大纲，第 7 节「PID 算法封装」已配套完整工程。</div>
+        <pre class="code"><span class="c">// S1. 启保停一行 SCL</span>
+#Motor := (#StartBtn OR #Motor) AND NOT #StopBtn;
+
+<span class="c">// S7. CASE 多档位</span>
+CASE #SpeedLevel OF
+    1 : #Output := 33;
+    2 : #Output := 66;
+    3 : #Output := 100;
+    ELSE #Output := 0;
+END_CASE;
+
+<span class="c">// S3. FOR 循环求和</span>
+FOR #i := 1 TO 8 DO
+    #Sum := #Sum + #Data[#i];
+END_FOR;</pre>
+        <div class="kw" style="margin-top:10px"><span class="tag brand">IF/CASE/FOR</span><span class="tag">沿信号自写</span><span class="tag">数组/寻址</span><span class="tag">定时器避坑</span></div>
+      </div>
+      <div class="sidebar">
+        <span class="tag">8 天</span>
+        <div class="btn-group" style="justify-content:flex-end">
+          <a href="../lab/pid-hmi.html" class="btn ok" title="S7 PID 整定 HMI">🧪 PID HMI</a>
+          <a href="../resources/FB_PID.scl" class="btn">下载 SCL</a>
+        </div>
+        <a href="#" class="btn primary" style="margin-top:6px;width:100%;justify-content:center">开始学习</a>
+      </div>
+    </div>
+
+    <div class="chapter">
+      <div class="no">03</div>
+      <div>
+        <h3>FBD / S7-GRAPH 顺控</h3>
+        <div class="desc">FBD 功能块图（信号流表达 PID/驱动逻辑）；S7-GRAPH 步-转换-动作，专为灌装/装配顺序工艺，图形化顺控配合监视步。</div>
+        <div class="kw"><span class="tag brand">FBD</span><span class="tag brand">S7-GRAPH</span><span class="tag">步 Step</span><span class="tag">转换 Transition</span><span class="tag">动作 Action</span></div>
+      </div>
+      <div class="sidebar"><span class="tag">4 天</span><a href="#" class="btn">开始学习</a></div>
+    </div>
+
+    <div class="chapter">
+      <div class="no">04</div>
+      <div>
+        <h3>ISA-88 程序架构 / 状态机 <span class="tag ok">●配套</span></h3>
+        <div class="desc">ISA-88 批次标准：物理模型（Area→Unit→EquipMod→CtrlMod）+ 程序模型（Procedure→Operation→Phase），SCL CASE OF 驱动 Phase 6 状态机（Idle/Running/Paused/Held/Complete/Aborted），Running 内含加料/升温/保温/出料 4 工艺子步。</div>
+        <pre class="code"><span class="c">// FB_BatchPhase.scl · CASE 状态机片段</span>
+CASE #State OF
+    0:  <span class="c">// Idle</span>
+        IF #CmdStart THEN #NextState := 10; END_IF;
+    10: <span class="c">// Running（工艺子步 CASE 嵌套）</span>
+        IF #CmdAbort THEN #NextState := 99;
+        ELSIF #CmdPause THEN #NextState := 20;
+        ELSE
+            CASE #SubStep OF
+                10: #FeedValve := TRUE;
+                    IF #LevelHi THEN #SubStep := 20; END_IF;
+                20: #Heater := #PIDOutput;
+                    IF #ActualTemp >= #SetTemp THEN #SubStep := 30; END_IF;
+                30: <span class="c">// 保温 + IEC 计时</span>; ...;
+                40: #DrainValve := TRUE;
+                    IF #DrainDone THEN #NextState := 90; END_IF;
+            END_CASE;
+        END_IF;
+    99: <span class="c">// Aborted 异常处理</span>;
+END_CASE;</pre>
+        <div class="kw" style="margin-top:10px"><span class="tag brand">ISA-88</span><span class="tag brand">Phase 状态机</span><span class="tag">一周期延迟</span><span class="tag">命令优先级</span></div>
+      </div>
+      <div class="sidebar">
+        <span class="tag">6 天</span>
+        <div class="btn-group" style="justify-content:flex-end">
+          <a href="../lab/isa88-hmi.html" class="btn ok">🧪 HMI 演示</a>
+          <a href="../resources/FB_BatchPhase.scl" class="btn">下载 SCL</a>
+        </div>
+        <a href="#" class="btn primary" style="margin-top:6px;width:100%;justify-content:center">开始学习</a>
+      </div>
+    </div>
+
+    <div class="chapter">
+      <div class="no">05</div>
+      <div>
+        <h3>PROFINET 通信与 HMI 组态</h3>
+        <div class="desc">PROFINET 基础：IO-Controller/IO-Device、GSDML 导入、ET 200SP 远程 IO 组态、设备名+IP 分配；HMI 画面：I/O 域、按钮指示灯、变量绑定、报警、趋势曲线。</div>
+        <div class="kw"><span class="tag brand">PROFINET</span><span class="tag">GSDML</span><span class="tag">ET 200SP</span><span class="tag">HMI 变量</span><span class="tag">报警记录</span></div>
+      </div>
+      <div class="sidebar"><span class="tag">4 天</span><a href="#" class="btn">开始学习</a></div>
+    </div>
+
+    <div class="chapter">
+      <div class="no">06</div>
+      <div>
+        <h3>模拟量处理与 PID</h3>
+        <div class="desc">2/3/4 线制传感器接线、NORM_X/SCALE_X 工程标度变换、PIW 数字量→工程量；工艺对象 PID_Compact 自整定 vs SCL 手写位置式 PID，调试方法与抗饱和。</div>
+        <div class="kw"><span class="tag brand">NORM_X/SCALE_X</span><span class="tag">PID_Compact</span><span class="tag">自整定</span><span class="tag">抗积分饱和</span></div>
+      </div>
+      <div class="sidebar"><span class="tag">2 天</span><a href="#" class="btn">开始学习</a></div>
+    </div>
+
+  </div>
+
+  <section class="card" style="margin-top:24px">
+    <h2>关键原则 & 避坑</h2>
+    <ul style="color:var(--muted);line-height:2;margin-left:18px">
+      <li><b>按任务选语言：</b>位逻辑类继续用 LAD（可读性+监控方便）；批量运算/PID/解析用 SCL；顺序工艺用 S7-GRAPH。不要混用。</li>
+      <li><b>SCL 定时器避坑：</b>IEC 定时器必须放在主路径（IF 外部），条件不满足时无法复位会乱跳。</li>
+      <li><b>优化块访问默认开启：</b>绝对寻址%DB1.DBW0 已过时，符号寻址 `"DB".Tag` 更安全。</li>
+      <li><b>ISA-88 状态机命令优先级：</b>Abort（最高）> Pause/Hold > 工艺子步。CASE 里先判断命令。</li>
+      <li><b>PROFINET 设备名唯一：</b>拓扑视图里分配设备名和 IP，下载前用"分配设备名称"扫。</li>
+    </ul>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <div>© 博途学习站 · 本站内容仅供学习交流使用 · 西门子产品名权属 Siemens AG</div>
+  <div><a href="beginner.html">← 入门篇</a> · <a href="advanced.html">精通篇 →</a></div>
+</footer>
+</body>
+</html>

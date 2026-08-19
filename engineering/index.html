@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>工程化能力 · 博途学习站</title>
+<link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+<nav class="nav">
+<div class="nav-inner">
+  <a href="../index.html" class="logo"><div class="ic">TIA</div><div>博途学习站<span class="sub">From Zero to Hero</span></div></a>
+  <div class="menu">
+    <a href="../index.html">首页</a>
+    <a href="../courses/beginner.html" class="t1"><span class="dot"></span>入门篇</a>
+    <a href="../courses/intermediate.html" class="t2"><span class="dot"></span>进阶篇</a>
+    <a href="../courses/advanced.html" class="t3"><span class="dot"></span>精通篇</a>
+    <a href="index.html" class="active eng"><span class="dot"></span>工程化</a>
+    <a href="../lab/index.html">仿真实验室</a>
+    <a href="../resources/index.html">资源下载</a>
+    <a href="../projects/index.html">项目库</a>
+  </div>
+</div>
+</nav>
+
+<main class="wrap">
+  <div class="page-title">
+    <div style="flex:1">
+      <div class="bread"><a href="../index.html">首页</a><span class="sep">/</span>工程化能力</div>
+      <h1>工程化能力 <span class="tag new">NEW</span> · 贯穿三阶</h1>
+      <p class="hint" style="margin-top:6px">"会写程序"到"能交付项目"之间的关键跨越：5 个工程化模块横向赋能三阶主线。</p>
+    </div>
+    <span class="tag brand">实战交付必备</span>
+  </div>
+
+  <div class="eng" style="margin-bottom:22px">
+    <a href="#udt" class="eng-card"><div class="ic">🧩</div><div class="nm">UDT / 程序库</div><div class="sb">多实例·软件单元</div></a>
+    <a href="#规范" class="eng-card"><div class="ic">📐</div><div class="nm">项目规范</div><div class="sb">命名·编程指南</div></a>
+    <a href="#vci" class="eng-card"><div class="ic">🔀</div><div class="nm">版本管理</div><div class="sb">VCI · Git · Copilot</div></a>
+    <a href="#vd" class="eng-card"><div class="ic">🎮</div><div class="nm">虚拟调试</div><div class="sb">PLCSIM Adv + SIMIT</div></a>
+    <a href="#sec" class="eng-card"><div class="ic">🔐</div><div class="nm">安全编程</div><div class="sb">Know-How · 访问控制</div></a>
+  </div>
+
+  <div id="udt" class="card" style="margin-bottom:16px">
+    <h2>🧩 UDT / 程序库 · 多实例 / 软件单元</h2>
+    <p class="hint">UDT（PLC 数据类型）把设备属性打包为结构体，配合 FB 多实例、库工程、软件单元（Software Unit）打造项目通用标准块，换项目直接"复制粘贴"。</p>
+    <div class="grid2" style="margin-top:14px">
+      <div>
+        <h3>UDT 示例：电机状态结构</h3>
+<pre class="code"><span class="c">// UDT_Motor（自定义数据类型）</span>
+<span class="k">STRUCT</span>
+    RunCmd    : <span class="t">Bool</span>;     <span class="c">// 启动命令</span>
+    Feedback  : <span class="t">Bool</span>;     <span class="c">// 接触器反馈</span>
+    Overload  : <span class="t">Bool</span>;     <span class="c">// 热过载报警</span>
+    Current   : <span class="t">Real</span>;     <span class="c">// 运行电流 A</span>
+    RunSecs   : <span class="t">DInt</span>;     <span class="c">// 累计运行秒</span>
+    LastFault : <span class="t">Word</span>;     <span class="c">// 上次故障码</span>
+<span class="k">END_STRUCT</span>;
+
+<span class="c">// DB 中批量定义</span>
+"DB_Devices".Conveyor_A : <span class="t">UDT_Motor</span>;
+"DB_Devices".Conveyor_B : <span class="t">UDT_Motor</span>;</pre>
+      </div>
+      <div>
+        <h3>FB 多实例 & 软件单元</h3>
+<pre class="code"><span class="c">// FB_Motor（一个 FB 管所有电机）</span>
+#Status := #Device; <span class="c">// 传接口</span>
+IF #Status.Overload THEN
+    #Alarm := TRUE; #Status.RunCmd := FALSE;
+END_IF;
+
+<span class="c">// OB1 中多实例调用</span>
+"FB_Motor_DB1"(Device := "DB_Devices".Conveyor_A);
+"FB_Motor_DB2"(Device := "DB_Devices".Conveyor_B);
+
+<span class="c">// 软件单元（TIA V18+）</span>
+<span class="c">// → 库文件夹右键 → 创建软件单元</span>
+<span class="c">// → 打包 FB + UDT + DB，一键导入新工程</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <div id="规范" class="card" style="margin-bottom:16px">
+    <h2>📐 项目规范 · 命名 / 编程 / 交付</h2>
+    <table class="tbl">
+      <thead><tr><th>分类</th><th>规范</th><th>示例</th></tr></thead>
+      <tbody>
+        <tr><td>DB</td><td>DB_用途_对象</td><td>DB_Params_Heater、DB_Status_Production</td></tr>
+        <tr><td>FB</td><td>FB_区域_功能</td><td>FB_Mix_Temperature、FB_Conveyor_Logic</td></tr>
+        <tr><td>FC</td><td>FC_区域_功能</td><td>FC_Calc_ProductionRate</td></tr>
+        <tr><td>UDT</td><td>UDT_对象</td><td>UDT_Motor、UDT_Valve、UDT_Recipe</td></tr>
+        <tr><td>Tag</td><td>gArea_Device_Signal</td><td>gMix_Tank101_LevelHi</td></tr>
+        <tr><td>HMI 画面</td><td>Screen_区域_功能</td><td>Screen_Recipe_Manage、Screen_Alarm_List</td></tr>
+        <tr><td>报警</td><td>ALM_区域_设备_条件</td><td>ALM_Mix_Tank101_TempHi</td></tr>
+      </tbody>
+    </table>
+    <p class="hint" style="margin-top:10px">参考：《SIMATIC S7-1200/1500 编程指南》西门子官方文档。每个程序段加注释（//），变量名自带语义，尽量不用 M 区。</p>
+  </div>
+
+  <div id="vci" class="card" style="margin-bottom:16px">
+    <h2>🔀 版本管理 VCI / Git / AI Copilot（TIA V20+）</h2>
+    <div class="grid2">
+      <div>
+        <h3>VCI 导出 Git 流程</h3>
+<pre class="code">1. TIA V20+：项目 → 版本控制 → 导出到 VCS
+2. 选导出路径 → 生成文件树（每个 CPU 一个文件夹）
+3. 添加 .gitignore（过滤 *.bak、*.log、临时目录）
+4. git init / git remote add origin <repo>
+5. git add -A → git commit -m "init project v1.0" → git push
+
+日常提交：导出 → git diff 审查 → commit → push
+合并冲突：优先用 TIA 导入两端版本再手动解决。</pre>
+      </div>
+      <div>
+        <h3>AI Copilot（V20/V21）</h3>
+        <p class="hint">TIA 内置 AI Copilot 支持 SCL 代码生成、块注释、解释 LAD 段、调用系统块模板。</p>
+        <ul style="color:var(--muted);line-height:1.9;margin:10px 0 0 18px">
+          <li>新建 SCL 块 → 在 Copilot 栏输入「写一个位置式 PID，含抗积分饱和」</li>
+          <li>选中现有 LAD → 让 Copilot 翻译成中文解释与 SCL 对照</li>
+          <li>「生成 UDT 包含一个阀门的 8 个常见字段」</li>
+          <li>注意：生成代码必须人工逐条审查，禁止直接下载。</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div id="vd" class="card" style="margin-bottom:16px">
+    <h2>🎮 虚拟调试 PLCSIM Advanced + SIMIT + NX MCD</h2>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:10px">
+      <div style="padding:14px;background:var(--panel-2);border-radius:8px;border:1px solid var(--line)">
+        <b style="color:var(--cyan)">Step 1 · PLCSIM Adv</b>
+        <p class="hint" style="margin-top:6px">虚拟 PLC，可仿真 PROFINET 网络、OPC UA、通信伙伴，支持 TIA StartDrive 驱动仿真。下载编译后直接加载。</p>
+      </div>
+      <div style="padding:14px;background:var(--panel-2);border-radius:8px;border:1px solid var(--line)">
+        <b style="color:var(--brand)">Step 2 · SIMIT 对象仿真</b>
+        <p class="hint" style="margin-top:6px">构建被控对象模型（电机、气缸、阀门、传感器），与 PLCSIM 信号对接，实时模拟物理过程。代替真实设备测试 80% 的控制逻辑。</p>
+      </div>
+      <div style="padding:14px;background:var(--panel-2);border-radius:8px;border:1px solid var(--line)">
+        <b style="color:var(--ok)">Step 3 · NX MCD 机电联调</b>
+        <p class="hint" style="margin-top:6px">把 NX 3D 机械装配导入 MCD，分配刚体/铰链/运动副，对接 SIMIT 与 PLC，实现机电一体化虚拟调试——现场只装一次。</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="sec" class="card">
+    <h2>🔐 安全编程 · Know-How / 访问控制</h2>
+    <div class="grid2">
+      <div>
+        <h3>块级加密 Know-How Protect</h3>
+        <pre class="code">右键 FB/FC → 专有技术保护
+→ 设置密码（英文数字 8+ 位，务必备份密码表）
+→ 下载后 CPU 中代码以乱码显示，只暴露接口
+→ 打开需输入密码。支持批量导出带保护的库。
+
+⚠️ 注意：解密需要密码，丢失密码=块不可用。
+核心标准库建议加密；客户可修改的参数 DB 不加密。</pre>
+      </div>
+      <div>
+        <h3>项目用户管理 + 访问控制</h3>
+        <pre class="code">项目树 → 用户管理 → 添加角色
+→ Viewer（只读）/ Operator（可操作 HMI）
+→ Engineer（可下载/改逻辑）/ Admin（全部权限）
+→ 块级权限：部分 FB 仅 Engineer 以上可见
+
+PLC 硬件属性 → 保护
+→ 访问级别 1~4：
+   1. 无保护
+   2. 读/写密码
+   3. 下载+在线监控密码
+   4. 完全访问 + HMI 读写密码
+激活后先测试密码是否正确再投入。</pre>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer class="footer">
+  <div>© 博途学习站 · 本站内容仅供学习交流使用 · 西门子产品名权属 Siemens AG</div>
+  <div><a href="../courses/advanced.html">← 精通篇</a> · <a href="../lab/index.html">仿真实验室 →</a></div>
+</footer>
+</body>
+</html>

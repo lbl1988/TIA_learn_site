@@ -1,0 +1,190 @@
+FUNCTION_BLOCK "FB_BatchPhase"
+{ S7_Optimized_Access := 'TRUE' }
+VERSION: 1.0
+// ===================================================
+// FB_BatchPhase —— ISA-88 反应釜批次 Phase 状态机
+// 博途学习站 · 进阶篇 ISA-88 课程配套工程
+// 适用：S7-1200 / S7-1500，TIA Portal V15+
+// 状态：0=Idle 10=Running 20=Paused 30=Held 90=Complete 99=Aborted
+// 工艺：加料→升温→保温→出料（Running 内 4 个子步）
+// 特性：命令优先级（Abort 最高）/ 暂停与保持区分 / 一周期状态延迟
+// 导入：程序块右键 → 从源生成块 → 选本文件
+// ===================================================
+
+   VAR_INPUT
+      // —— 操作命令 ——
+      CmdStart   : Bool;             // 启动（Idle→Running）
+      CmdPause   : Bool;             // 暂停（Running→Paused，关设备留状态）
+      CmdResume  : Bool;             // 恢复（Paused→Running）
+      CmdHold    : Bool;             // 保持（Running→Held，设备不停）
+      CmdUnhold  : Bool;             // 解除保持（Held→Running）
+      CmdAbort   : Bool;             // 中止（任意→Aborted，最高优先级）
+      CmdReset   : Bool;             // 复位（Aborted→Idle）
+      // —— 工艺反馈信号 ——
+      LevelHi    : Bool;             // 料位到（加料完成）
+      DrainDone  : Bool;             // 排料完成
+      ActualTemp : Real;             // 实际温度
+      SetTemp    : Real := 80.0;     // 保温温度
+      HoldTime   : Time := T#60s;    // 保温时长
+      PIDOutput  : Real;             // 加热 PID 输出 0-100%（接 FB_PID.Output）
+   END_VAR
+
+   VAR_OUTPUT
+      PhaseState  : Int;             // 当前状态号（HMI 据此显示中文）
+      SubStep     : Int;            // Running 内子步号 10/20/30/40
+      FeedValve   : Bool;           // 进料阀
+      DrainValve  : Bool;           // 排料阀
+      Agitator    : Bool;           // 搅拌电机
+      Heater      : Real;           // 加热输出 0-100%
+      Done        : Bool;           // 批次完成
+      Alarm       : Bool;           // 异常报警
+   END_VAR
+
+   VAR
+      State       : Int := 0;        // 当前状态寄存器
+      NextState   : Int := 0;        // 下一状态（本周期决定，下周期生效）
+   END_VAR
+
+BEGIN
+// ---------------------------------------------------
+// 0. 应用上一周期决定的状态跳转（一周期延迟）
+// ---------------------------------------------------
+#State := #NextState;
+
+// ---------------------------------------------------
+// 1. 状态机主体：CASE 驱动，命令优先
+// ---------------------------------------------------
+CASE #State OF
+
+    // ============ Idle 空闲 ============
+    0:
+        #FeedValve  := FALSE;
+        #DrainValve := FALSE;
+        #Agitator   := FALSE;
+        #Heater     := 0.0;
+        #Done       := FALSE;
+        #Alarm      := FALSE;
+        IF #CmdStart THEN
+            #NextState := 10;            // → Running
+            #SubStep   := 10;             // 从加料子步开始
+        END_IF;
+
+    // ============ Running 运行中（含 4 工艺子步）============
+    10:
+        // 命令优先判断（Abort 最高）
+        IF #CmdAbort THEN
+            #NextState := 99;
+        ELSIF #CmdPause THEN
+            #NextState := 20;
+        ELSIF #CmdHold THEN
+            #NextState := 30;
+        ELSE
+            // 无命令则执行工艺子步
+            CASE #SubStep OF
+                10: // —— 加料：开进料阀，关搅拌/加热 ——
+                    #FeedValve := TRUE;
+                    #Agitator  := FALSE;
+                    #Heater    := 0.0;
+                    IF #LevelHi THEN
+                        #SubStep := 20;  // 料满 → 升温
+                    END_IF;
+
+                20: // —— 升温：关进料，开搅拌，加热=PID ——
+                    #FeedValve := FALSE;
+                    #Agitator  := TRUE;
+                    #Heater    := #PIDOutput;
+                    IF #ActualTemp >= #SetTemp THEN
+                        #SubStep := 30;  // 到温 → 保温
+                    END_IF;
+
+                30: // —— 保温：维持 PID 加热 + 倒计时 ——
+                    #Heater   := #PIDOutput;
+                    #Agitator := TRUE;
+                    // IEC 定时器：主路径调用，勿入 IF
+                    "Timer_Hold"(IN := TRUE, PT := #HoldTime);
+                    IF "Timer_Hold".Q THEN
+                        "Timer_Hold"(IN := FALSE);
+                        #SubStep := 40;  // 计时到 → 出料
+                    END_IF;
+
+                40: // —— 出料：开排料阀，关加热/搅拌 ——
+                    #DrainValve := TRUE;
+                    #Heater     := 0.0;
+                    #Agitator   := FALSE;
+                    IF #DrainDone THEN
+                        #NextState := 90;  // 排完 → 完成
+                    END_IF;
+            END_CASE;
+        END_IF;
+
+    // ============ Paused 暂停（关设备，保留进度）============
+    20:
+        #FeedValve  := FALSE;
+        #Heater     := 0.0;
+        #Agitator   := FALSE;
+        #DrainValve := FALSE;
+        IF #CmdAbort THEN
+            #NextState := 99;
+        ELSIF #CmdResume THEN
+            #NextState := 10;  // 恢复到 Running，继续原子步
+        END_IF;
+
+    // ============ Held 保持（设备不停，仅冻结流程）============
+    30:
+        // 不改输出：维持上一周期设备状态（与 Paused 的关键区别）
+        IF #CmdAbort THEN
+            #NextState := 99;
+        ELSIF #CmdUnhold THEN
+            #NextState := 10;
+        END_IF;
+
+    // ============ Complete 完成 ============
+    90:
+        #FeedValve  := FALSE;
+        #DrainValve := FALSE;
+        #Agitator   := FALSE;
+        #Heater     := 0.0;
+        #Done       := TRUE;
+        #NextState  := 0;             // 回 Idle 等下一批
+
+    // ============ Aborted 中止（异常处理）============
+    99:
+        #FeedValve  := FALSE;
+        #DrainValve := FALSE;
+        #Agitator   := FALSE;
+        #Heater     := 0.0;
+        #Alarm      := TRUE;
+        IF #CmdReset THEN
+            #Alarm    := FALSE;
+            #SubStep  := 10;          // 复位子步
+            #NextState := 0;
+        END_IF;
+
+END_CASE;
+
+// ---------------------------------------------------
+// 2. 输出映射：把内部寄存器送到 HMI 可读的输出
+// ---------------------------------------------------
+#PhaseState := #State;
+
+END_FUNCTION_BLOCK
+
+
+// ===================================================
+// 调用说明（导入后可删）
+// ---------------------------------------------------
+// 1. 在 OB1 调用（批次通常非实时，放 OB1 即可）：
+//    "Batch_Instance"(CmdStart   := "HMI".Start,
+//                     CmdAbort   := "HMI".Abort,
+//                     LevelHi    := "DI".LevelHi,
+//                     ActualTemp := "DB_Temp".Value,
+//                     PIDOutput  := "FB_PID_Instance".Output,
+//                     SetTemp    := 80.0, HoldTime := T#60s);
+//    "DO".FeedValve  := "Batch_Instance".FeedValve;
+//    "DO".Agitator   := "Batch_Instance".Agitator;
+//    "AQ".Heater     := "Batch_Instance".Heater;
+//
+// 2. 命令用上升沿触发（HMI 按钮按一下），避免长按重复跳转。
+// 3. PIDOutput 在非升温/保温子步会自动被忽略（Heater 被赋 0）。
+// 4. HMI 读 PhaseState 显示中文：0空闲 10运行 20暂停 30保持 90完成 99中止。
+// ===================================================

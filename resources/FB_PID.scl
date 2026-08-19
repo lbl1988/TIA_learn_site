@@ -1,0 +1,155 @@
+FUNCTION_BLOCK "FB_PID"
+{ S7_Optimized_Access := 'TRUE' }
+VERSION: 1.0
+// ===================================================
+// FB_PID —— 位置式 PID 温度控制器（SCL 实现）
+// 博途学习站 · 进阶篇 S7 课程配套工程
+// 适用：S7-1200 / S7-1500，TIA Portal V15 及以上
+// 算法：位置式  Out = Kp·e + Σ(Ki·e·Ts) + Kd·Δe/Ts
+// 特性：抗积分饱和 / 输出限幅 / 手自动无扰动切换 / 高低报警
+// 导入：程序块文件夹右键 → 从源生成块 → 选本文件
+// ===================================================
+
+   VAR_INPUT
+      Enable       : Bool;             // PID 总使能，FALSE 时输出归零并复位
+      Setpoint     : Real;             // 设定值（工程量，如 80.0 = 80℃）
+      ActualValue  : Real;             // 实际测量值（已标度后的工程量）
+      Kp           : Real := 2.0;      // 比例系数
+      Ki           : Real := 0.1;      // 积分系数（按秒）
+      Kd           : Real := 0.5;      // 微分系数
+      Ts           : Real := 1.0;      // 采样周期（秒），须与调用块周期一致
+      OutMax       : Real := 100.0;    // 输出上限（%）
+      OutMin       : Real := 0.0;      // 输出下限（%）
+      AlarmHiSP    : Real := 95.0;     // 高报警阈值（工程量）
+      AlarmLoSP    : Real := 5.0;      // 低报警阈值（工程量）
+      ManualEnable : Bool;             // 手动模式使能
+      ManualOut    : Real;             // 手动输出值（%）
+   END_VAR
+
+   VAR_OUTPUT
+      Output       : Real;             // PID 输出 0~100%
+      Error        : Real;             // 当前误差 = 设定 − 实际
+      IntegralTerm : Real;             // 积分累积项（调试/监控用）
+      AlarmHi      : Bool;             // 实际值越上限
+      AlarmLo      : Bool;             // 实际值越下限
+      AutoMode     : Bool;             // TRUE = 自动模式运行中
+      Clamped      : Bool;             // TRUE = 输出正在被限幅（饱和）
+   END_VAR
+
+   VAR
+      Integral      : Real;            // 积分累积
+      PrevError     : Real;            // 上一周期误差
+      DerivTerm     : Real;            // 微分项
+      FirstCycle    : Bool := TRUE;    // 首周期标志（启动后第一次）
+   END_VAR
+
+BEGIN
+// ---------------------------------------------------
+// 1. 模式判断：自动 = 使能 且 非手动
+// ---------------------------------------------------
+#AutoMode := #Enable AND NOT #ManualEnable;
+
+// ---------------------------------------------------
+// 2. 未使能：复位全部内部状态，输出归零
+// ---------------------------------------------------
+IF NOT #Enable THEN
+    #Output       := 0.0;
+    #Integral     := 0.0;
+    #PrevError    := 0.0;
+    #DerivTerm    := 0.0;
+    #Error        := 0.0;
+    #IntegralTerm := 0.0;
+    #Clamped      := FALSE;
+    #FirstCycle   := TRUE;             // 下次启动时重新初始化
+ELSE
+    // -----------------------------------------------
+    // 3. 计算误差（设定 − 实际）
+    // -----------------------------------------------
+    #Error := #Setpoint - #ActualValue;
+
+    // -----------------------------------------------
+    // 4. 首周期初始化：让上次误差 = 本次误差，避免微分首拍突跳
+    // -----------------------------------------------
+    IF #FirstCycle THEN
+        #PrevError  := #Error;
+        #FirstCycle := FALSE;
+    END_IF;
+
+    // -----------------------------------------------
+    // 5. 手动 / 自动 分支
+    // -----------------------------------------------
+    IF #ManualEnable THEN
+        // ============ 手动模式 ============
+        // 直接输出手动值并限幅
+        #Output := LIMIT(MIN := #OutMin, IN := #ManualOut, MAX := #OutMax);
+        // 积分跟踪当前输出，保证切回自动瞬间无突变（无扰动切换）
+        #Integral  := #Output - #Kp * #Error;
+        #DerivTerm := 0.0;
+        #PrevError := #Error;
+        #Clamped   := FALSE;
+    ELSE
+        // ============ 自动模式 ============
+        // 6. 微分项 = (本次误差 − 上次误差) × Kd ÷ 周期
+        #DerivTerm := (#Error - #PrevError) * #Kd / #Ts;
+
+        // 7. 积分项累加 + 抗饱和：
+        //    输出已到上限且误差仍为正(欠量)，或已到下限且误差仍为负(过量)，则暂停积分
+        IF NOT #Clamped
+           OR ( #Clamped AND (#Output >= #OutMax) AND (#Error > 0.0) )
+           OR ( #Clamped AND (#Output <= #OutMin) AND (#Error < 0.0) ) THEN
+            #Integral := #Integral + #Error * #Ki * #Ts;
+        END_IF;
+
+        // 8. 位置式输出 = 比例项 + 积分项 + 微分项
+        #Output := #Kp * #Error + #Integral + #DerivTerm;
+
+        // 9. 输出限幅，并置饱和标志
+        #Clamped := FALSE;
+        IF #Output > #OutMax THEN
+            #Output  := #OutMax;
+            #Clamped := TRUE;
+        ELSIF #Output < #OutMin THEN
+            #Output  := #OutMin;
+            #Clamped := TRUE;
+        END_IF;
+
+        // 10. 积分兜底限幅，防止长期累积导致数值溢出
+        #Integral := LIMIT(MIN := #OutMin * 5.0, IN := #Integral, MAX := #OutMax * 5.0);
+
+        // 11. 保存本周期误差，供下一周期微分使用
+        #PrevError := #Error;
+    END_IF;
+END_IF;
+
+// ---------------------------------------------------
+// 12. 报警输出（与模式无关，始终监控实际值）
+// ---------------------------------------------------
+#AlarmHi := (#ActualValue >= #AlarmHiSP);
+#AlarmLo := (#ActualValue <= #AlarmLoSP);
+
+// ---------------------------------------------------
+// 13. 监控输出：把内部积分项暴露给 HMI/趋势图
+// ---------------------------------------------------
+#IntegralTerm := #Integral;
+
+END_FUNCTION_BLOCK
+
+
+// ===================================================
+// 使用说明（非程序，导入后可删除）
+// ---------------------------------------------------
+// 1. 调用建议：在 OB35（循环中断 100~1000ms）中调用本 FB，
+//    OB 周期需与 Ts 一致，否则微分/积分时间不准。
+// 2. 调用方式（在 OB35 中）：
+//      "FB_PID_Instance"(Enable       := TRUE,
+//                        Setpoint     := 80.0,
+//                        ActualValue  := "DB_Temp".Value,
+//                        ManualEnable := FALSE,
+//                        ManualOut    := 0.0);
+//      "DB_Heater".Duty := "FB_PID_Instance".Output;
+// 3. 整定口诀：先 P 后 I 再 D。
+//    Ki 过大→振荡，Kd 过大→高频抖动，先归零再逐步加。
+// 4. 仿真：PLCSIM + 用一个一阶惯性问题对象（Ts 内
+//    ActualValue += (Output-ActualValue)*0.05）即可观
+//    察到 PID 响应曲线。
+// ===================================================

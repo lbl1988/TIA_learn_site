@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>资源下载 · 博途学习站</title>
+<link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+<nav class="nav">
+<div class="nav-inner">
+  <a href="../index.html" class="logo"><div class="ic">TIA</div><div>博途学习站<span class="sub">From Zero to Hero</span></div></a>
+  <div class="menu">
+    <a href="../index.html">首页</a>
+    <a href="../courses/beginner.html" class="t1"><span class="dot"></span>入门篇</a>
+    <a href="../courses/intermediate.html" class="t2"><span class="dot"></span>进阶篇</a>
+    <a href="../courses/advanced.html" class="t3"><span class="dot"></span>精通篇</a>
+    <a href="../engineering/index.html" class="eng"><span class="dot"></span>工程化</a>
+    <a href="../lab/index.html">仿真实验室</a>
+    <a href="index.html" class="active">资源下载</a>
+    <a href="../projects/index.html">项目库</a>
+  </div>
+</div>
+</nav>
+
+<main class="wrap">
+  <div class="page-title">
+    <div style="flex:1">
+      <div class="bread"><a href="../index.html">首页</a><span class="sep">/</span>资源下载</div>
+      <h1>📦 资源下载中心</h1>
+      <p class="hint" style="margin-top:6px">配套可导入博途的 SCL 源文件、速查表、项目模板、官方手册索引。</p>
+    </div>
+  </div>
+
+  <section class="card">
+    <h2>PLC 源文件（SCL · 可导入博途）</h2>
+    <div class="grid2" style="gap:14px">
+      <div style="padding:18px;background:var(--panel-2);border-radius:10px;border:1px solid var(--line)">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+          <span class="tag ok">● 配套</span>
+          <b>FB_PID.scl</b>
+          <span class="tag brand">进阶篇 S7</span>
+        </div>
+        <p class="hint">位置式 PID 功能块（1.0 版）：抗积分饱和、手自动无扰动切换、首拍防突跳、高低报警输出。S7-1200/1500 + V15+ 直接导入。</p>
+        <table class="tbl" style="margin:10px 0">
+          <tr><th style="width:120px">参数</th><th>说明</th></tr>
+          <tr><td>输入</td><td>使能 · 设定值 · 实际值 · Kp/Ki/Kd/Ts · 手自动切换 · 手动输出</td></tr>
+          <tr><td>输出</td><td>0-100% 输出 · 误差 · 积分项 · 高低报警 · 饱和标志</td></tr>
+          <tr><td>推荐调用</td><td>OB35 循环中断调用，Ts 与 OB 周期一致</td></tr>
+        </table>
+        <div class="btn-group">
+          <a href="FB_PID.scl" class="btn ok" download>⬇ 下载 FB_PID.scl</a>
+          <a href="../lab/pid-hmi.html" class="btn">🧪 在线仿真</a>
+        </div>
+      </div>
+
+      <div style="padding:18px;background:var(--panel-2);border-radius:10px;border:1px solid var(--line)">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+          <span class="tag ok">● 配套</span>
+          <b>FB_BatchPhase.scl</b>
+          <span class="tag brand">进阶篇 ISA-88</span>
+        </div>
+        <p class="hint">ISA-88 批次 Phase 状态机 FB：6 状态 Idle/Running/Paused/Held/Complete/Aborted，Running 内含加料→升温→保温→出料 4 工艺子步。命令优先级 Abort 最高。</p>
+        <table class="tbl" style="margin:10px 0">
+          <tr><th style="width:120px">参数</th><th>说明</th></tr>
+          <tr><td>命令</td><td>Start/Pause/Resume/Hold/Unhold/Abort/Reset（上升沿触发）</td></tr>
+          <tr><td>设备</td><td>进料阀 / 搅拌 / 加热(0-100) / 排料阀</td></tr>
+          <tr><td>状态</td><td>PhaseState(0/10/20/30/90/99) · SubStep · Done · Alarm</td></tr>
+        </table>
+        <div class="btn-group">
+          <a href="FB_BatchPhase.scl" class="btn ok" download>⬇ 下载 FB_BatchPhase.scl</a>
+          <a href="../lab/isa88-hmi.html" class="btn">🧪 在线仿真</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" style="margin-top:18px">
+    <h2>速查表 & 工具</h2>
+    <div class="grid2" style="gap:14px">
+      <div style="padding:16px;background:var(--panel-2);border-radius:10px;border:1px solid var(--line)">
+        <h3 style="margin-bottom:6px">TIA Portal 快捷键速查</h3>
+<table class="tbl">
+<tr><th>快捷键</th><th>作用</th></tr>
+<tr><td><code>Ctrl + K</code></td><td>全局搜索（块/变量/指令）</td></tr>
+<tr><td><code>F11</code></td><td>编译当前块</td></tr>
+<tr><td><code>Ctrl + B</code></td><td>编译全部</td></tr>
+<tr><td><code>Ctrl + L</code></td><td>开始在线（连接 CPU）</td></tr>
+<tr><td><code>Ctrl + D</code></td><td>下载到设备</td></tr>
+<tr><td><code>Ctrl + Space</code></td><td>SCL 自动补全</td></tr>
+<tr><td><code>Ctrl + Shift + U</code></td><td>上载自设备</td></tr>
+<tr><td><code>F9</code></td><td>切换断点（调试）</td></tr>
+</table>
+      </div>
+      <div style="padding:16px;background:var(--panel-2);border-radius:10px;border:1px solid var(--line)">
+        <h3 style="margin-bottom:6px">常用指令速查（LAD & SCL）</h3>
+<table class="tbl">
+<tr><th>指令</th><th>LAD</th><th>SCL</th></tr>
+<tr><td>通电延时</td><td>TON</td><td>"T"(IN, PT) → .Q</td></tr>
+<tr><td>断电延时</td><td>TOF</td><td>"T"(IN, PT) → .Q</td></tr>
+<tr><td>加计数</td><td>CTU</td><td>"C"(CU, R, PV) → .CV</td></tr>
+<tr><td>模拟量标度</td><td>NORM_X + SCALE_X</td><td>NORM_X(,VALUE,) + SCALE_X</td></tr>
+<tr><td>限幅</td><td>LIMIT 框</td><td>LIMIT(MIN:=,IN:=,MAX:=)</td></tr>
+<tr><td>沿触发</td><td>R_TRIG / F_TRIG</td><td>Rising := In AND NOT InLast</td></tr>
+<tr><td>传送</td><td>MOVE 框</td><td>Dest := Src;</td></tr>
+</table>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" style="margin-top:18px">
+    <h2>官方资源索引</h2>
+    <table class="tbl">
+      <thead><tr><th>资源</th><th>链接</th><th>说明</th></tr></thead>
+      <tbody>
+        <tr><td>S7-1200 学习路径主题页</td><td><a href="https://www.ad.siemens.com.cn/topicportal/index_46.html" target="_blank">访问</a></td><td>官方系统路径：硬件/编程/通信/高级功能</td></tr>
+        <tr><td>1847 西门子学习平台</td><td><a href="https://1847.siemens.com.cn/" target="_blank">访问</a></td><td>官方视频课程：SCL 小实例、沿指令等</td></tr>
+        <tr><td>工业支持中心</td><td><a href="https://support.industry.siemens.com/cs/cn/zh/" target="_blank">访问</a></td><td>手册下载、操作指南、找答案</td></tr>
+        <tr><td>TRACE 功能指南</td><td><a href="https://www.ad.siemens.com.cn/productportal/prods/s7-1200_plc_easy_plus/08-Function/18-Trace.html" target="_blank">访问</a></td><td>轨迹采样、触发模式、逻辑分析器</td></tr>
+        <tr><td>MRP 介质冗余</td><td><a href="https://www.ad.siemens.com.cn/productportal/Prods/S7-1200_PLC_EASY_PLUS/11-Comm/02-Bus/02-Profinet/05-MRP.htm" target="_blank">访问</a></td><td>环网配置+诊断</td></tr>
+        <tr><td>TIA University</td><td><a href="https://www.siemens.com/fi-fi/training/tia-university/" target="_blank">访问</a></td><td>官方基础视频系列</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="card" style="margin-top:18px">
+    <h2>导入博途步骤（3 步）</h2>
+<pre class="code">1. 项目树 →  程序块 文件夹 → 右键 → <b>从源生成块</b>
+2. 选择 .scl 文件 → 自动生成 FB / FC
+3. 在 OB1 或 OB35 中调用，生成背景 DB。
+   —— 若编译失败：确认固件版本 ≥ V15，优化块访问默认开启。</pre>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <div>© 博途学习站 · 本站内容仅供学习交流使用 · 西门子产品名权属 Siemens AG</div>
+  <div><a href="../lab/index.html">← 仿真实验室</a> · <a href="../projects/index.html">实战项目库 →</a></div>
+</footer>
+</body>
+</html>

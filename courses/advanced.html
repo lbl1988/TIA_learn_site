@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>精通篇 · 博途学习站</title>
+<link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+<nav class="nav">
+<div class="nav-inner">
+  <a href="../index.html" class="logo"><div class="ic">TIA</div><div>博途学习站<span class="sub">From Zero to Hero</span></div></a>
+  <div class="menu">
+    <a href="../index.html">首页</a>
+    <a href="beginner.html" class="t1"><span class="dot"></span>入门篇</a>
+    <a href="intermediate.html" class="t2"><span class="dot"></span>进阶篇</a>
+    <a href="advanced.html" class="active t3"><span class="dot"></span>精通篇</a>
+    <a href="../engineering/index.html" class="eng"><span class="dot"></span>工程化</a>
+    <a href="../lab/index.html">仿真实验室</a>
+    <a href="../resources/index.html">资源下载</a>
+    <a href="../projects/index.html">项目库</a>
+  </div>
+</div>
+</nav>
+
+<main class="wrap">
+
+  <div class="page-title">
+    <div style="flex:1">
+      <div class="bread"><a href="../index.html">首页</a><span class="sep">/</span>精通篇</div>
+      <h1>③ 精通篇 · 约 2 月+ 攻高级</h1>
+      <p class="hint" style="margin-top:6px">目标：掌握产线级高级功能——运动控制伺服、功能安全、SCADA、冗余网络、OPC UA、TRACE 故障黑匣子。适合有 2-3 年项目经验的工程师冲刺精通。</p>
+    </div>
+    <div style="min-width:160px"><span class="tag warn">产线级</span> <span class="tag cyan">S7-1500 优先</span></div>
+  </div>
+
+  <section class="card" style="margin-bottom:18px">
+    <h2>学习进度速览</h2>
+    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:12px">
+      <div style="text-align:center"><div style="font-size:20px;font-weight:700;color:var(--ok);font-family:Consolas,monospace">6</div><div style="font-size:11px;color:var(--muted)">章</div></div>
+      <div style="text-align:center"><div style="font-size:20px;font-weight:700;color:var(--text);font-family:Consolas,monospace">24</div><div style="font-size:11px;color:var(--muted)">核心小节</div></div>
+      <div style="text-align:center"><div style="font-size:20px;font-weight:700;color:var(--cyan);font-family:Consolas,monospace">3</div><div style="font-size:11px;color:var(--muted)">综合项目</div></div>
+      <div style="text-align:center"><div style="font-size:20px;font-weight:700;color:var(--warn);font-family:Consolas,monospace">60+</div><div style="font-size:11px;color:var(--muted)">天</div></div>
+    </div>
+    <div class="progress"><div style="width:0%"></div></div>
+    <p class="hint" style="margin-top:8px">大部分主题需要配合真实硬件或 PLCSIM Advanced 完成；S7-1500T 运动控制推荐有 CPU 再练。</p>
+  </section>
+
+  <div class="chapters">
+
+    <div class="chapter">
+      <div class="no">01</div>
+      <div>
+        <h3>运动控制与伺服 V90</h3>
+        <div class="desc">S7-1200 轴工艺对象 TO_Positioning/TO_SpeedAxis，PROFIdrive 标准报文 1/2/3/105，V90 PN 组态，回原点（3种模式）、绝对定位、相对定位、速度设定、限力矩、位置触发（TO_OutputCam）。进阶含 S7-1500T 电子凸轮 / 同步 / 飞剪。</div>
+        <div class="kw"><span class="tag ok">V90 PN</span><span class="tag ok">PROFIdrive</span><span class="tag ok">工艺对象 TO</span><span class="tag">报文 1/3/105</span><span class="tag">回原点 3 模式</span><span class="tag">电子凸轮</span></div>
+      </div>
+      <div class="sidebar"><span class="tag">15 天</span><a href="#" class="btn">开始学习</a></div>
+    </div>
+
+    <div class="chapter">
+      <div class="no">02</div>
+      <div>
+        <h3>安全 PLC 功能安全</h3>
+        <div class="desc">S7-1200F / S7-1500F 功能安全程序结构：F-CPU、F-Runtime、F-I/O 模块组态、安全逻辑块 F_ESTOP/F_MUTE/F_DIS/F_TON/TOF、安全等级 SIL2 / SIL3、急停 / 安全门 / 光栅接线与 F 程序实现。</div>
+        <div class="kw"><span class="tag ok">F-CPU</span><span class="tag ok">F-Runtime</span><span class="tag ok">F-I/O</span><span class="tag">F_ 安全指令集</span><span class="tag warn">SIL 等级</span><span class="tag">安全验证</span></div>
+      </div>
+      <div class="sidebar"><span class="tag">12 天</span><a href="#" class="btn">开始学习</a></div>
+    </div>
+
+    <div class="chapter">
+      <div class="no">03</div>
+      <div>
+        <h3>WinCC SCADA 系统</h3>
+        <div class="desc">WinCC 系统开发：单机项目架构、变量记录（归档配置 + 压缩 + 备份）、报警记录（16 类报警级别 + HMI 报警线）、报表系统（班次报表/报警报表）、VBS/C-Script 脚本、用户权限与审计，含 WinCC Unified V18+。</div>
+        <div class="kw"><span class="tag ok">变量记录</span><span class="tag ok">报警</span><span class="tag ok">报表</span><span class="tag">脚本</span><span class="tag">用户/审计</span><span class="tag">WinCC Unified</span></div>
+      </div>
+      <div class="sidebar"><span class="tag">15 天</span><a href="#" class="btn">开始学习</a></div>
+    </div>
+
+    <div class="chapter">
+      <div class="no">04</div>
+      <div>
+        <h3>诊断与冗余 R/H · MRP</h3>
+        <div class="desc">诊断体系：诊断缓冲区（Diagnostic Buffer）、在线诊断视图、LED 指示灯含义、模块诊断报警 OB（OB82/OB83/OB86/OB122）；冗余体系：S7-1500 R（软冗余 MRP 环网 300ms 切换）/ S7-1500 H（硬冗余 Sync Module 50ms）+ S1/S2/R1 IO 冗余模式，MRP 介质冗余协议组态。</div>
+        <table class="tbl">
+          <thead><tr><th>项目</th><th>S7-1500 R 软冗余</th><th>S7-1500 H 硬冗余</th></tr></thead>
+          <tbody>
+            <tr><td>同步方式</td><td>PROFINET 环 MRP</td><td>Sync Module SFP (光纤/电缆)</td></tr>
+            <tr><td>切换时间</td><td>~300 ms</td><td>~50 ms</td></tr>
+            <tr><td>最大距离</td><td>MRP 限制</td><td>10m/10km (多模/单模)</td></tr>
+            <tr><td>安全型</td><td>—</td><td>S7-1518HF</td></tr>
+            <tr><td>IO 冗余模式</td><td>S2</td><td>R1 (双端口双连接)</td></tr>
+          </tbody>
+        </table>
+        <div class="kw" style="margin-top:10px"><span class="tag ok">MRP</span><span class="tag ok">S7-1500R</span><span class="tag ok">S7-1500H</span><span class="tag">S1/S2/R1</span><span class="tag">诊断缓冲区</span></div>
+      </div>
+      <div class="sidebar"><span class="tag">10 天</span><a href="#" class="btn">开始学习</a></div>
+    </div>
+
+    <div class="chapter">
+      <div class="no">05</div>
+      <div>
+        <h3>工业物联网 OPC UA</h3>
+        <div class="desc">OPC UA 服务器：S7-1200/1500 内置 OPC UA Server 激活、安全策略、可读/写 Tag 模型化、方法/事件、证书管理；OPC UA 客户端调用与订阅；对接 IT 系统时序数据采集链路（OPC UA → InfluxDB → Grafana）。</div>
+        <div class="kw"><span class="tag ok">OPC UA Server</span><span class="tag ok">订阅模式</span><span class="tag warn">安全策略</span><span class="tag">信息模型</span><span class="tag">InfluxDB</span><span class="tag">时序数据库</span></div>
+      </div>
+      <div class="sidebar"><span class="tag">8 天</span><a href="#" class="btn">开始学习</a></div>
+    </div>
+
+    <div class="chapter">
+      <div class="no">06</div>
+      <div>
+        <h3>TRACE 轨迹与数据采集</h3>
+        <div class="desc">TIA Portal 内置 TRACE 功能：变量触发采样 + 逻辑分析器，S7-1200 2 条 TRACE 配置/ 16 信号、S7-1500 更多；三种触发模式（立即记录 / 变量触发 / 无触发器监视）；采样周期与 OB 同步；记录保存到存储卡、导入离线对比。故障"黑匣子"必备技能。</div>
+        <pre class="code"><span class="c">// TRACE 配置步骤摘要</span>
+<span class="t">1.</span> 项目树 → CPU → <span class="k">轨迹</span> → 添加新 Trace
+<span class="t">2.</span> 信号 <span class="c">// 最多 16 个：位/整数/实数/时间</span>
+<span class="t">3.</span> 采样 OB：OB1 循环 或 OB35 中断；采样频率 N
+<span class="t">4.</span> 触发：立即 / 变量触发 (Err = 1) / 无触发器监视
+<span class="t">5.</span> 下载 → 激活 → 触发后上传 → 保存记录
+<span class="t">6.</span> 组合测量：不同记录信号叠加对比分析</pre>
+        <div class="kw" style="margin-top:10px"><span class="tag ok">逻辑分析器</span><span class="tag ok">触发采样</span><span class="tag">存储卡</span><span class="tag">组合测量</span><span class="tag">故障黑匣子</span></div>
+      </div>
+      <div class="sidebar"><span class="tag">5 天</span><a href="#" class="btn">开始学习</a></div>
+    </div>
+
+  </div>
+
+  <section class="card" style="margin-top:24px">
+    <h2>综合毕业项目</h2>
+    <div class="grid2">
+      <div style="padding:16px;background:var(--panel-2);border-radius:10px;border:1px solid var(--line)">
+        <b style="color:var(--ok)">项目 A · 产线控制</b>
+        <p class="hint" style="margin-top:6px">S7-1500 + 2 台 V90 伺服 + ET 200SP 远程 IO + TP1200 HMI：上料→搬运→定位→检测→出料。集成 ISA-88 状态机 + TRACE 追踪 + OPC UA 上传 MES。</p>
+      </div>
+      <div style="padding:16px;background:var(--panel-2);border-radius:10px;border:1px solid var(--line)">
+        <b style="color:var(--ok)">项目 B · 冗余系统</b>
+        <p class="hint" style="margin-top:6px">S7-1515R 软冗余（MRP 环网）+ SCALANCE X 交换机 + S2 冗余 IO。模拟单链路/单 CPU 故障，验证 300ms 切换不中断运行。</p>
+      </div>
+      <div style="padding:16px;background:var(--panel-2);border-radius:10px;border:1px solid var(--line)">
+        <b style="color:var(--ok)">项目 C · SCADA + 安全</b>
+        <p class="hint" style="margin-top:6px">F-CPU 急停/安全门程序 + WinCC SCADA 变量记录/报警/报表 + 用户审计追溯。符合 SIL3 安全验证记录。</p>
+      </div>
+      <div style="padding:16px;background:var(--panel-2);border-radius:10px;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--muted);font-style:italic">
+        更多项目持续补充中…
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <div>© 博途学习站 · 本站内容仅供学习交流使用 · 西门子产品名权属 Siemens AG</div>
+  <div><a href="intermediate.html">← 进阶篇</a> · <a href="../engineering/index.html">工程化能力 →</a></div>
+</footer>
+</body>
+</html>
