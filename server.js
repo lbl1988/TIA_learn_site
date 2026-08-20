@@ -139,6 +139,32 @@ authRouter.get('/me', authRequired, (req, res) => {
   res.json({ user: req.user });
 });
 
+// POST /api/auth/reset-password —— 忘记密码重置（通过用户名+邮箱验证）
+authRouter.post('/reset-password', (req, res) => {
+  const { username, email, newPassword } = req.body || {};
+  if (!username || !newPassword) return res.status(400).json({ error: '参数错误', detail: '用户名与新密码必填' });
+  if (newPassword.length < 6) return res.status(400).json({ error: '参数错误', detail: '新密码至少 6 位' });
+
+  const user = db.prepare('SELECT * FROM users WHERE username = ?').get(username);
+  if (!user) return res.status(404).json({ error: '用户不存在', detail: '请检查用户名拼写' });
+
+  // 如果用户注册时填写了邮箱，必须匹配邮箱才能重置
+  if (user.email) {
+    if (!email || email !== user.email) {
+      return res.status(403).json({ error: '邮箱不匹配', detail: '该账号绑定了邮箱，请输入注册时的邮箱' });
+    }
+  } else {
+    // 没绑定邮箱的用户，通过用户名即可重置（学习站简化方案）
+    if (email) return res.status(403).json({ error: '该账号未绑定邮箱', detail: '请留空邮箱字段' });
+  }
+
+  const password_hash = bcrypt.hashSync(newPassword, 10);
+  db.prepare('UPDATE users SET password_hash = ? WHERE id = ?').run(password_hash, user.id);
+  const safeUser = { id: user.id, username: user.username, email: user.email, created_at: user.created_at };
+  const token = jwt.sign({ sub: user.id, username: user.username }, JWT_SECRET, { expiresIn: JWT_EXPIRES });
+  res.json({ user: safeUser, token, message: '密码重置成功' });
+});
+
 app.use('/api/auth', authRouter);
 
 // ============================================================

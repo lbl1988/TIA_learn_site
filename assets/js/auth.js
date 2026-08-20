@@ -37,6 +37,8 @@
 .tia-modal .tm-tabs { display:flex; gap:0; padding:0 20px; border-bottom:1px solid var(--line); }
 .tia-modal .tm-tab { background:transparent; border:none; padding:10px 14px; color:var(--muted); cursor:pointer; font-size:13px; border-bottom:2px solid transparent; }
 .tia-modal .tm-tab.active { color:var(--brand); border-bottom-color:var(--brand); }
+.tia-modal .tm-tab.forgot-link { margin-left:auto; color:var(--muted); font-size:12px; border-bottom:none; }
+.tia-modal .tm-tab.forgot-link.active { color:var(--brand); }
 .tia-modal .tm-body { padding:20px; }
 .tia-modal .field { margin-bottom:12px; }
 .tia-modal .field label { display:block; font-size:12px; color:var(--muted); margin-bottom:6px; }
@@ -96,6 +98,7 @@
     <div class="tm-tabs">
       <button class="tm-tab active" data-tab="login">登录</button>
       <button class="tm-tab" data-tab="register">注册</button>
+      <button class="tm-tab forgot-link" data-tab="forgot">忘记密码</button>
     </div>
     <div class="tm-body">
       <div class="tm-err" id="tm-err"></div>
@@ -104,15 +107,24 @@
         <div class="field"><label>用户名 / 邮箱</label><input type="text" name="username" autocomplete="username" required></div>
         <div class="field"><label>密码</label><input type="password" name="password" autocomplete="current-password" required></div>
         <button class="tm-submit" type="submit">登 录</button>
-        <div class="tm-hint">还没有账号？<button type="button" data-tab-switch="register">立即注册</button></div>
+        <div class="tm-hint">还没有账号？<button type="button" data-tab-switch="register">立即注册</button>　·　<button type="button" data-tab-switch="forgot">忘记密码</button></div>
       </form>
       <!-- 注册 -->
       <form id="tm-register" data-tab="register" style="display:none">
         <div class="field"><label>用户名 (2-32 字符)</label><input type="text" name="username" autocomplete="username" required minlength="2" maxlength="32"></div>
-        <div class="field"><label>邮箱（可选）</label><input type="email" name="email" autocomplete="email"></div>
+        <div class="field"><label>邮箱（可选，用于找回密码）</label><input type="email" name="email" autocomplete="email"></div>
         <div class="field"><label>密码（≥6 位）</label><input type="password" name="password" autocomplete="new-password" required minlength="6"></div>
         <button class="tm-submit" type="submit">创建账号</button>
         <div class="tm-hint">已有账号？<button type="button" data-tab-switch="login">去登录</button></div>
+      </form>
+      <!-- 忘记密码 -->
+      <form id="tm-forgot" data-tab="forgot" style="display:none">
+        <div class="field"><label>用户名</label><input type="text" name="username" autocomplete="username" required></div>
+        <div class="field"><label>注册邮箱（注册时填了邮箱则必填）</label><input type="email" name="email" autocomplete="email" placeholder="未绑定邮箱则留空"></div>
+        <div class="field"><label>新密码（≥6 位）</label><input type="password" name="newPassword" autocomplete="new-password" required minlength="6"></div>
+        <div class="field"><label>确认新密码</label><input type="password" name="confirmPassword" autocomplete="new-password" required minlength="6"></div>
+        <button class="tm-submit" type="submit">重置密码</button>
+        <div class="tm-hint">想起来了？<button type="button" data-tab-switch="login">去登录</button></div>
       </form>
     </div>
   </div>
@@ -130,13 +142,14 @@
 
     modal.querySelector('#tm-login').addEventListener('submit', onLoginSubmit);
     modal.querySelector('#tm-register').addEventListener('submit', onRegisterSubmit);
+    modal.querySelector('#tm-forgot').addEventListener('submit', onForgotSubmit);
   }
 
   function switchTab(tab) {
     const mask = qs('#tiaAuthModal');
     mask.querySelectorAll('.tm-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
     mask.querySelectorAll('form[data-tab]').forEach(f => { f.style.display = f.dataset.tab === tab ? '' : 'none'; });
-    qs('#tm-title').textContent = tab === 'login' ? '登录' : '注册新账号';
+    qs('#tm-title').textContent = tab === 'login' ? '登录' : tab === 'register' ? '注册新账号' : '重置密码';
     qs('#tm-err').classList.remove('show');
     const input = mask.querySelector(`form[data-tab="${tab}"] input`);
     if (input) setTimeout(() => input.focus(), 50);
@@ -188,7 +201,7 @@
     e.currentTarget.querySelector('.tm-submit').disabled = true;
     const { ok, data } = await apiRequest('/api/auth/login', { method: 'POST', body: payload });
     e.currentTarget.querySelector('.tm-submit').disabled = false;
-    if (!ok) return setErr(data?.error || data?.detail || '登录失败');
+    if (!ok) return setErr((data?.error ? data.error + (data?.detail ? '：' + data.detail : '') : '') || '登录失败，请检查用户名和密码');
     persistToken(data.token);
     state.user = data.user;
     emitChange();
@@ -211,13 +224,37 @@
     e.currentTarget.querySelector('.tm-submit').disabled = true;
     const { ok, data } = await apiRequest('/api/auth/register', { method: 'POST', body: payload });
     e.currentTarget.querySelector('.tm-submit').disabled = false;
-    if (!ok) return setErr(data?.error + (data?.detail ? '：' + data.detail : '') || '注册失败');
+    if (!ok) return setErr((data?.error ? data.error + (data?.detail ? '：' + data.detail : '') : '') || '注册失败，请检查输入');
     persistToken(data.token);
     state.user = data.user;
     emitChange();
     renderAuthWidget();
     hideModal();
     toast('账号已创建，开始学习吧！', 'ok');
+    window.dispatchEvent(new CustomEvent('tia:notes:refresh'));
+  }
+
+  // ================ 5b. 忘记密码提交 ================
+  async function onForgotSubmit(e) {
+    e.preventDefault(); setErr(null);
+    const fd = new FormData(e.currentTarget);
+    const username = (fd.get('username') || '').toString().trim();
+    const email = (fd.get('email') || '').toString().trim() || null;
+    const newPassword = (fd.get('newPassword') || '').toString();
+    const confirmPassword = (fd.get('confirmPassword') || '').toString();
+    if (!username) return setErr('请输入用户名');
+    if (newPassword.length < 6) return setErr('新密码至少 6 位');
+    if (newPassword !== confirmPassword) return setErr('两次输入的密码不一致');
+    e.currentTarget.querySelector('.tm-submit').disabled = true;
+    const { ok, data } = await apiRequest('/api/auth/reset-password', { method: 'POST', body: { username, email, newPassword } });
+    e.currentTarget.querySelector('.tm-submit').disabled = false;
+    if (!ok) return setErr((data?.error ? data.error + (data?.detail ? '：' + data.detail : '') : '') || '重置失败');
+    persistToken(data.token);
+    state.user = data.user;
+    emitChange();
+    renderAuthWidget();
+    hideModal();
+    toast('密码已重置，欢迎回来！', 'ok');
     window.dispatchEvent(new CustomEvent('tia:notes:refresh'));
   }
 
