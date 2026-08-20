@@ -196,11 +196,12 @@
   // ================ 5. 登录/注册提交 ================
   async function onLoginSubmit(e) {
     e.preventDefault(); setErr(null);
-    const fd = new FormData(e.currentTarget);
+    const form = e.currentTarget;
+    const fd = new FormData(form);
     const payload = { username: (fd.get('username') || '').toString().trim(), password: (fd.get('password') || '').toString() };
-    e.currentTarget.querySelector('.tm-submit').disabled = true;
+    form.querySelector('.tm-submit').disabled = true;
     const { ok, data } = await apiRequest('/api/auth/login', { method: 'POST', body: payload });
-    e.currentTarget.querySelector('.tm-submit').disabled = false;
+    form.querySelector('.tm-submit').disabled = false;
     if (!ok) return setErr((data?.error ? data.error + (data?.detail ? '：' + data.detail : '') : '') || '登录失败，请检查用户名和密码');
     persistToken(data.token);
     state.user = data.user;
@@ -213,7 +214,8 @@
 
   async function onRegisterSubmit(e) {
     e.preventDefault(); setErr(null);
-    const fd = new FormData(e.currentTarget);
+    const form = e.currentTarget;
+    const fd = new FormData(form);
     const payload = {
       username: (fd.get('username') || '').toString().trim(),
       email:    (fd.get('email')    || '').toString().trim() || null,
@@ -221,9 +223,9 @@
     };
     if (payload.username.length < 2) return setErr('用户名长度 2-32 字符');
     if (payload.password.length < 6) return setErr('密码至少 6 位');
-    e.currentTarget.querySelector('.tm-submit').disabled = true;
+    form.querySelector('.tm-submit').disabled = true;
     const { ok, data } = await apiRequest('/api/auth/register', { method: 'POST', body: payload });
-    e.currentTarget.querySelector('.tm-submit').disabled = false;
+    form.querySelector('.tm-submit').disabled = false;
     if (!ok) return setErr((data?.error ? data.error + (data?.detail ? '：' + data.detail : '') : '') || '注册失败，请检查输入');
     persistToken(data.token);
     state.user = data.user;
@@ -237,7 +239,8 @@
   // ================ 5b. 忘记密码提交 ================
   async function onForgotSubmit(e) {
     e.preventDefault(); setErr(null);
-    const fd = new FormData(e.currentTarget);
+    const form = e.currentTarget;
+    const fd = new FormData(form);
     const username = (fd.get('username') || '').toString().trim();
     const email = (fd.get('email') || '').toString().trim() || null;
     const newPassword = (fd.get('newPassword') || '').toString();
@@ -245,9 +248,9 @@
     if (!username) return setErr('请输入用户名');
     if (newPassword.length < 6) return setErr('新密码至少 6 位');
     if (newPassword !== confirmPassword) return setErr('两次输入的密码不一致');
-    e.currentTarget.querySelector('.tm-submit').disabled = true;
+    form.querySelector('.tm-submit').disabled = true;
     const { ok, data } = await apiRequest('/api/auth/reset-password', { method: 'POST', body: { username, email, newPassword } });
-    e.currentTarget.querySelector('.tm-submit').disabled = false;
+    form.querySelector('.tm-submit').disabled = false;
     if (!ok) return setErr((data?.error ? data.error + (data?.detail ? '：' + data.detail : '') : '') || '重置失败');
     persistToken(data.token);
     state.user = data.user;
