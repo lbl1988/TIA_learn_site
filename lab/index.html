@@ -5,25 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>仿真实验室 · 博途学习站</title>
 <link rel="stylesheet" href="../assets/css/style.css">
-<style>
-.vid-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.vid-card{background:var(--panel-2);border:1px solid var(--line);border-radius:10px;overflow:hidden;display:flex;flex-direction:column;transition:.18s}
-.vid-card:hover{border-color:var(--brand);transform:translateY(-2px)}
-.vid-frame{position:relative;padding-top:56.25%;background:#000}
-.vid-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
-.vid-body{padding:10px 12px;display:flex;flex-direction:column;gap:5px;flex:1}
-.vid-title{font-size:13px;font-weight:600;color:var(--text);line-height:1.5}
-.vid-author{font-size:11px;color:var(--muted)}
-.vid-author b{color:var(--brand)}
-.vid-desc{font-size:11.5px;color:var(--muted);line-height:1.6}
-.vid-official{background:linear-gradient(135deg,#22d3ee12,#7c5cff12);border:1px dashed #22d3ee55;border-radius:10px;padding:12px 14px;margin-top:12px}
-.vid-official h4{font-size:12.5px;color:var(--cyan);margin-bottom:6px}
-.vid-official ul{list-style:none;display:flex;flex-direction:column;gap:5px}
-.vid-official li{font-size:12px;color:var(--muted);padding-left:16px;position:relative;line-height:1.6}
-.vid-official li::before{content:"▶";position:absolute;left:0;color:var(--cyan);font-size:9px}
-.vid-official a{color:var(--text)}
-@media(max-width:768px){.vid-grid{grid-template-columns:1fr}}
-</style>
 </head>
 <body>
 <nav class="nav">
@@ -45,78 +26,78 @@
 
 <main class="wrap">
   <div class="page-title">
-    <div style="flex:1">
+    <div class="flex-1">
       <div class="bread"><a href="../index.html">首页</a><span class="sep">/</span>仿真实验室</div>
       <h1>🧪 仿真实验室</h1>
-      <p class="hint" style="margin-top:6px">无硬件也能学博途：配套 HMI 仿真器直接在浏览器内运行，算法与 PLC SCL 源文件 1:1 对齐。</p>
+      <p class="hint mt-6">无硬件也能学博途：配套 HMI 仿真器直接在浏览器内运行，算法与 PLC SCL 源文件 1:1 对齐。</p>
     </div>
     <span class="tag ok">● 2 个已上线</span>
   </div>
 
   <div class="card">
     <h2>可交互仿真</h2>
-    <div class="grid2" style="gap:18px;margin-top:10px">
+    <div class="grid2 gap-18 mt-10">
 
-      <div style="background:var(--panel-2);border:1px solid #22c55e55;border-radius:12px;overflow:hidden">
-        <div style="padding:18px;background:linear-gradient(135deg,#22c55e15,#7c5cff15);border-bottom:1px solid var(--line)">
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+      <div class="lab-card-live">
+        <div class="lab-card-head grad-ok">
+          <div class="flex-center gap-10 mb-8">
             <span class="tag ok">● 配套</span>
             <span class="tag brand">进阶篇 · S7</span>
           </div>
-          <h3 style="font-size:17px;margin:6px 0 4px">S7 PID 温度控制 HMI</h3>
+          <h3 class="lab-h3">S7 PID 温度控制 HMI</h3>
           <p class="hint">位置式 PID 整定：抗积分饱和·手自动无扰动切换·首拍防突跳。改 Kp/Ki/Kd 实时看响应曲线。</p>
         </div>
-        <div style="padding:14px">
-          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px">
-            <div style="text-align:center;padding:8px;background:var(--panel-3);border-radius:6px"><div style="font-size:19px;font-weight:700;color:var(--warn);font-family:Consolas,monospace">3</div><div class="hint">参数 Kp/Ki/Kd</div></div>
-            <div style="text-align:center;padding:8px;background:var(--panel-3);border-radius:6px"><div style="font-size:19px;font-weight:700;color:var(--cyan);font-family:Consolas,monospace">6</div><div class="hint">状态数</div></div>
-            <div style="text-align:center;padding:8px;background:var(--panel-3);border-radius:6px"><div style="font-size:19px;font-weight:700;color:var(--ok);font-family:Consolas,monospace">100ms</div><div class="hint">刷新周期</div></div>
+        <div class="lab-card-body">
+          <div class="stats-grid">
+            <div class="stat-card"><div class="stat-num warn">3</div><div class="hint">参数 Kp/Ki/Kd</div></div>
+            <div class="stat-card"><div class="stat-num cyan">6</div><div class="hint">状态数</div></div>
+            <div class="stat-card"><div class="stat-num ok">100ms</div><div class="hint">刷新周期</div></div>
           </div>
           <div class="btn-group">
-            <a href="pid-hmi.html" class="btn ok" style="flex:1;justify-content:center">🧪 启动模拟器</a>
+            <a href="pid-hmi.html" class="btn ok btn-block">🧪 启动模拟器</a>
             <a href="../resources/FB_PID.scl" class="btn">📄 对应 SCL 源</a>
           </div>
         </div>
       </div>
 
-      <div style="background:var(--panel-2);border:1px solid #22c55e55;border-radius:12px;overflow:hidden">
-        <div style="padding:18px;background:linear-gradient(135deg,#7c5cff15,#22d3ee15);border-bottom:1px solid var(--line)">
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+      <div class="lab-card-live">
+        <div class="lab-card-head grad-brand">
+          <div class="flex-center gap-10 mb-8">
             <span class="tag ok">● 配套</span>
             <span class="tag brand">进阶篇 · ISA-88</span>
           </div>
-          <h3 style="font-size:17px;margin:6px 0 4px">ISA-88 批次状态机 HMI</h3>
+          <h3 class="lab-h3">ISA-88 批次状态机 HMI</h3>
           <p class="hint">6 状态 Phase 机 + 加料/升温/保温/出料 4 子步，命令按钮触发状态流转，设备图标与报警联动。</p>
         </div>
-        <div style="padding:14px">
-          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px">
-            <div style="text-align:center;padding:8px;background:var(--panel-3);border-radius:6px"><div style="font-size:19px;font-weight:700;color:var(--brand);font-family:Consolas,monospace">6</div><div class="hint">状态</div></div>
-            <div style="text-align:center;padding:8px;background:var(--panel-3);border-radius:6px"><div style="font-size:19px;font-weight:700;color:var(--cyan);font-family:Consolas,monospace">4</div><div class="hint">工艺子步</div></div>
-            <div style="text-align:center;padding:8px;background:var(--panel-3);border-radius:6px"><div style="font-size:19px;font-weight:700;color:var(--warn);font-family:Consolas,monospace">100ms</div><div class="hint">刷新周期</div></div>
+        <div class="lab-card-body">
+          <div class="stats-grid">
+            <div class="stat-card"><div class="stat-num brand">6</div><div class="hint">状态</div></div>
+            <div class="stat-card"><div class="stat-num cyan">4</div><div class="hint">工艺子步</div></div>
+            <div class="stat-card"><div class="stat-num warn">100ms</div><div class="hint">刷新周期</div></div>
           </div>
           <div class="btn-group">
-            <a href="isa88-hmi.html" class="btn ok" style="flex:1;justify-content:center">🧪 启动模拟器</a>
+            <a href="isa88-hmi.html" class="btn ok btn-block">🧪 启动模拟器</a>
             <a href="../resources/FB_BatchPhase.scl" class="btn">📄 对应 SCL 源</a>
           </div>
         </div>
       </div>
 
-      <div style="background:var(--panel-2);border:1px dashed var(--line);border-radius:12px;padding:18px;opacity:.75">
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px"><span class="tag">建设中</span><span class="tag cyan">入门篇</span></div>
-        <h3 style="font-size:17px;margin:6px 0 4px">LAD 点灯仿真</h3>
+      <div class="lab-card-todo">
+        <div class="flex-center gap-10 mb-8"><span class="tag">建设中</span><span class="tag cyan">入门篇</span></div>
+        <h3 class="lab-h3">LAD 点灯仿真</h3>
         <p class="hint">入门篇配套：启保停/正反转/星三角/顺序启动。拖放触点线圈搭建梯形图，模拟 PLCSIM 运行。</p>
       </div>
 
-      <div style="background:var(--panel-2);border:1px dashed var(--line);border-radius:12px;padding:18px;opacity:.75">
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px"><span class="tag">建设中</span><span class="tag warn">精通篇</span></div>
-        <h3 style="font-size:17px;margin:6px 0 4px">V90 伺服运动控制</h3>
+      <div class="lab-card-todo">
+        <div class="flex-center gap-10 mb-8"><span class="tag">建设中</span><span class="tag warn">精通篇</span></div>
+        <h3 class="lab-h3">V90 伺服运动控制</h3>
         <p class="hint">精通篇配套：回原点/绝对定位/相对定位/速度设定。位置/速度曲线实时可视化。</p>
       </div>
 
     </div>
   </div>
 
-  <section class="card" style="margin-top:18px">
+  <section class="card mt-18">
     <h2>仿真与博途对应</h2>
     <p class="hint">每个网页仿真器的内部算法与对应 PLC SCL 源文件完全一致。<b style="color:var(--ok)">绿色配套</b> 表示两端代码 1:1 对齐，照着网页逻辑即可写出博途程序。</p>
     <table class="tbl">
@@ -130,9 +111,9 @@
   </section>
 
   <!-- 配套视频教学：仿真与调试 -->
-  <section class="card" style="margin-top:18px">
+  <section class="card mt-18">
     <h2>🎬 配套视频教学 · 仿真与联合调试</h2>
-    <p class="hint" style="margin-bottom:12px">无硬件学博途的核心：PLCSIM 仿真 + WinCC 联合调试。对应 <a href="../videos/index.html" style="color:var(--brand)">视频板块</a>。</p>
+    <p class="hint mb-12">无硬件学博途的核心：PLCSIM 仿真 + WinCC 联合调试。对应 <a href="../videos/index.html" style="color:var(--brand)">视频板块</a>。</p>
     <div class="vid-grid">
 
       <div class="vid-card">

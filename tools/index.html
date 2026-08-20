@@ -25,54 +25,54 @@
 
 <main class="wrap">
   <div class="page-title">
-    <div style="flex:1">
+    <div class="flex-1">
       <div class="bread"><a href="../index.html">首页</a><span class="sep">/</span>工具箱</div>
       <h1>🛠 工程师工具箱</h1>
-      <p class="hint" style="margin-top:6px">选型查询、进制/数据转换、IP 规划、Modbus CRC 计算、PROFINET 设备命名等实用小工具。</p>
+      <p class="hint mt-6">选型查询、进制/数据转换、IP 规划、Modbus CRC 计算、PROFINET 设备命名等实用小工具。</p>
     </div>
   </div>
 
-  <section class="card" style="margin-bottom:18px">
+  <section class="card mb-18">
     <h2>进制 / 数据转换 <span class="tag cyan">在线工具</span></h2>
-    <div class="grid2" style="gap:16px">
+    <div class="grid2 gap-16">
       <div>
         <h3>DEC ↔ HEX ↔ BIN ↔ REAL 四合一</h3>
-        <div style="padding:12px;background:var(--panel-2);border-radius:8px;border:1px solid var(--line)">
-          <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:4px">输入（十进制）</label>
-          <input id="decIn" type="number" value="123" style="width:100%;padding:8px 10px;border-radius:6px;border:1px solid var(--line);background:#0c0e13;color:var(--text);font-family:Consolas,monospace;font-size:13px">
-          <div style="margin-top:10px">
-            <button class="btn" onclick="conv()" style="width:100%;justify-content:center">🔄 转换</button>
+        <div class="tool-box">
+          <label class="form-label">输入（十进制）</label>
+          <input id="decIn" type="number" value="123" class="form-input">
+          <div class="mt-10">
+            <button class="btn btn-block" onclick="conv()">🔄 转换</button>
           </div>
-          <div style="margin-top:10px;font-family:Consolas,monospace;font-size:13px">
-            <div><span style="color:var(--muted)">HEX:</span> <code id="hexOut">—</code></div>
-            <div><span style="color:var(--muted)">BIN:</span> <code id="binOut">—</code></div>
-            <div><span style="color:var(--muted)">WORD (16位):</span> <code id="wordOut">—</code></div>
-            <div><span style="color:var(--muted)">DWORD (32位):</span> <code id="dwordOut">—</code></div>
-            <div><span style="color:var(--muted)">INT 范围检查:</span> <code id="intCheck">—</code></div>
+          <div class="mono mt-10">
+            <div><span class="muted">HEX:</span> <code id="hexOut">—</code></div>
+            <div><span class="muted">BIN:</span> <code id="binOut">—</code></div>
+            <div><span class="muted">WORD (16位):</span> <code id="wordOut">—</code></div>
+            <div><span class="muted">DWORD (32位):</span> <code id="dwordOut">—</code></div>
+            <div><span class="muted">INT 范围检查:</span> <code id="intCheck">—</code></div>
           </div>
         </div>
       </div>
       <div>
         <h3>4-20mA / 0-10V 工程量换算</h3>
-        <div style="padding:12px;background:var(--panel-2);border-radius:8px;border:1px solid var(--line)">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-            <div><label style="font-size:12px;color:var(--muted)">信号类型</label>
-              <select id="sig" style="width:100%;padding:8px;border-radius:6px;border:1px solid var(--line);background:#0c0e13;color:var(--text)">
+        <div class="tool-box">
+          <div class="form-grid">
+            <div><label class="form-label">信号类型</label>
+              <select id="sig" class="form-select">
                 <option value="4-20">4-20 mA</option>
                 <option value="0-10">0-10 V</option>
                 <option value="0-5">0-5 V</option>
                 <option value="0-27648">0-27648 原始值</option>
               </select>
             </div>
-            <div><label style="font-size:12px;color:var(--muted)">测量量程上限</label><input id="rHi" type="number" value="100" style="width:100%;padding:8px;border-radius:6px;border:1px solid var(--line);background:#0c0e13;color:var(--text);font-family:Consolas,monospace"></div>
-            <div><label style="font-size:12px;color:var(--muted)">测量量程下限</label><input id="rLo" type="number" value="0" style="width:100%;padding:8px;border-radius:6px;border:1px solid var(--line);background:#0c0e13;color:var(--text);font-family:Consolas,monospace"></div>
-            <div><label style="font-size:12px;color:var(--muted)">原始值（0-27648）</label><input id="raw" type="number" value="13824" style="width:100%;padding:8px;border-radius:6px;border:1px solid var(--line);background:#0c0e13;color:var(--text);font-family:Consolas,monospace"></div>
+            <div><label class="form-label">测量量程上限</label><input id="rHi" type="number" value="100" class="form-input"></div>
+            <div><label class="form-label">测量量程下限</label><input id="rLo" type="number" value="0" class="form-input"></div>
+            <div><label class="form-label">原始值（0-27648）</label><input id="raw" type="number" value="13824" class="form-input"></div>
           </div>
-          <button class="btn" onclick="scale()" style="width:100%;justify-content:center;margin-top:8px">📐 计算工程量</button>
-          <div style="margin-top:10px;font-family:Consolas,monospace;font-size:13px">
-            <div><span style="color:var(--muted)">工程量值:</span> <code id="engVal" style="color:var(--ok);font-size:15px">—</code></div>
-            <div><span style="color:var(--muted)">换算公式 SCL:</span>
-<pre style="background:#0c0e13;border:1px solid var(--line);border-radius:6px;padding:8px;margin-top:6px;font-size:11px;overflow-x:auto">#Normd := NORM_X(MIN:=0, VALUE:=#Raw, MAX:=27648);
+          <button class="btn btn-block mt-8" onclick="scale()">📐 计算工程量</button>
+          <div class="mono mt-10">
+            <div><span class="muted">工程量值:</span> <code id="engVal" class="text-ok fs-15">—</code></div>
+            <div><span class="muted">换算公式 SCL:</span>
+<pre class="code-block">#Normd := NORM_X(MIN:=0, VALUE:=#Raw, MAX:=27648);
 #Eng   := SCALE_X(MIN:=#Lo, VALUE:=#Normd, MAX:=#Hi);</pre>
             </div>
           </div>
@@ -81,19 +81,19 @@
     </div>
   </section>
 
-  <section class="card" style="margin-bottom:18px">
+  <section class="card mb-18">
     <h2>通信小工具</h2>
-    <div class="grid2" style="gap:16px">
+    <div class="grid2 gap-16">
       <div>
         <h3>Modbus RTU CRC16 计算器</h3>
-        <div style="padding:12px;background:var(--panel-2);border-radius:8px;border:1px solid var(--line)">
-          <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:4px">请求帧（HEX，空格分隔）</label>
-          <input id="rtuIn" type="text" value="01 03 00 00 00 02" style="width:100%;padding:8px 10px;border-radius:6px;border:1px solid var(--line);background:#0c0e13;color:var(--text);font-family:Consolas,monospace;font-size:13px">
-          <button class="btn" onclick="crc()" style="width:100%;justify-content:center;margin-top:8px">✅ 生成 CRC16</button>
-          <div style="margin-top:10px;font-family:Consolas,monospace;font-size:13px">
-            <div><span style="color:var(--muted)">CRC 低字节:</span> <code id="crcLo">—</code></div>
-            <div><span style="color:var(--muted)">CRC 高字节:</span> <code id="crcHi">—</code></div>
-            <div><span style="color:var(--muted)">完整帧:</span> <code id="crcFrame" style="color:var(--brand)">—</code></div>
+        <div class="tool-box">
+          <label class="form-label">请求帧（HEX，空格分隔）</label>
+          <input id="rtuIn" type="text" value="01 03 00 00 00 02" class="form-input">
+          <button class="btn btn-block mt-8" onclick="crc()">✅ 生成 CRC16</button>
+          <div class="mono mt-10">
+            <div><span class="muted">CRC 低字节:</span> <code id="crcLo">—</code></div>
+            <div><span class="muted">CRC 高字节:</span> <code id="crcHi">—</code></div>
+            <div><span class="muted">完整帧:</span> <code id="crcFrame" class="text-brand">—</code></div>
           </div>
         </div>
       </div>
@@ -111,7 +111,7 @@
             <tr><td>SCALANCE 交换机</td><td>switch-line-01</td><td>192.168.0.1</td></tr>
           </tbody>
         </table>
-        <p class="hint" style="margin-top:8px">命名规范：<b>类型-车间或产线-编号</b>。IP 段建议 192.168.0.0/24，网关 192.168.0.1；OPC UA 上位机放 1-9。</p>
+        <p class="hint mt-8">命名规范：<b>类型-车间或产线-编号</b>。IP 段建议 192.168.0.0/24，网关 192.168.0.1；OPC UA 上位机放 1-9。</p>
       </div>
     </div>
   </section>
@@ -131,7 +131,7 @@
         <tr><td>CPU 1515R-2 PN</td><td>—</td><td>500 KB</td><td>4 轴</td><td>双口软冗余</td><td>产线级软冗余</td></tr>
       </tbody>
     </table>
-    <p class="hint" style="margin-top:8px">💡 <b>学习首选：S7-1215C</b>（双 PROFINET 口，支持 WEB，扩展能力好，PLCSIM 仿真齐全）。真实项目按点数选，IO 预留 20% 余量。</p>
+    <p class="hint mt-8">💡 <b>学习首选：S7-1215C</b>（双 PROFINET 口，支持 WEB，扩展能力好，PLCSIM 仿真齐全）。真实项目按点数选，IO 预留 20% 余量。</p>
   </section>
 
 </main>

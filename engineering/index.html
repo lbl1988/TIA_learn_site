@@ -5,25 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>工程化能力 · 博途学习站</title>
 <link rel="stylesheet" href="../assets/css/style.css">
-<style>
-.vid-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.vid-card{background:var(--panel-2);border:1px solid var(--line);border-radius:10px;overflow:hidden;display:flex;flex-direction:column;transition:.18s}
-.vid-card:hover{border-color:var(--brand);transform:translateY(-2px)}
-.vid-frame{position:relative;padding-top:56.25%;background:#000}
-.vid-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
-.vid-body{padding:10px 12px;display:flex;flex-direction:column;gap:5px;flex:1}
-.vid-title{font-size:13px;font-weight:600;color:var(--text);line-height:1.5}
-.vid-author{font-size:11px;color:var(--muted)}
-.vid-author b{color:var(--brand)}
-.vid-desc{font-size:11.5px;color:var(--muted);line-height:1.6}
-.vid-official{background:linear-gradient(135deg,#22d3ee12,#7c5cff12);border:1px dashed #22d3ee55;border-radius:10px;padding:12px 14px;margin-top:12px}
-.vid-official h4{font-size:12.5px;color:var(--cyan);margin-bottom:6px}
-.vid-official ul{list-style:none;display:flex;flex-direction:column;gap:5px}
-.vid-official li{font-size:12px;color:var(--muted);padding-left:16px;position:relative;line-height:1.6}
-.vid-official li::before{content:"▶";position:absolute;left:0;color:var(--cyan);font-size:9px}
-.vid-official a{color:var(--text)}
-@media(max-width:768px){.vid-grid{grid-template-columns:1fr}}
-</style>
 </head>
 <body>
 <nav class="nav">
@@ -45,15 +26,15 @@
 
 <main class="wrap">
   <div class="page-title">
-    <div style="flex:1">
+    <div class="flex-1">
       <div class="bread"><a href="../index.html">首页</a><span class="sep">/</span>工程化能力</div>
       <h1>工程化能力 <span class="tag new">NEW</span> · 贯穿三阶</h1>
-      <p class="hint" style="margin-top:6px">"会写程序"到"能交付项目"之间的关键跨越：5 个工程化模块横向赋能三阶主线。</p>
+      <p class="hint mt-6">"会写程序"到"能交付项目"之间的关键跨越：5 个工程化模块横向赋能三阶主线。</p>
     </div>
     <span class="tag brand">实战交付必备</span>
   </div>
 
-  <div class="eng" style="margin-bottom:22px">
+  <div class="eng mb-22">
     <a href="#udt" class="eng-card"><div class="ic">🧩</div><div class="nm">UDT / 程序库</div><div class="sb">多实例·软件单元</div></a>
     <a href="#规范" class="eng-card"><div class="ic">📐</div><div class="nm">项目规范</div><div class="sb">命名·编程指南</div></a>
     <a href="#vci" class="eng-card"><div class="ic">🔀</div><div class="nm">版本管理</div><div class="sb">VCI · Git · Copilot</div></a>
@@ -61,10 +42,10 @@
     <a href="#sec" class="eng-card"><div class="ic">🔐</div><div class="nm">安全编程</div><div class="sb">Know-How · 访问控制</div></a>
   </div>
 
-  <div id="udt" class="card" style="margin-bottom:16px">
+  <div id="udt" class="card mb-16">
     <h2>🧩 UDT / 程序库 · 多实例 / 软件单元</h2>
     <p class="hint">UDT（PLC 数据类型）把设备属性打包为结构体，配合 FB 多实例、库工程、软件单元（Software Unit）打造项目通用标准块，换项目直接"复制粘贴"。</p>
-    <div class="grid2" style="margin-top:14px">
+    <div class="grid2 mt-14">
       <div>
         <h3>UDT 示例：电机状态结构</h3>
 <pre class="code"><span class="c">// UDT_Motor（自定义数据类型）</span>
@@ -100,7 +81,7 @@ END_IF;
     </div>
   </div>
 
-  <div id="规范" class="card" style="margin-bottom:16px">
+  <div id="规范" class="card mb-16">
     <h2>📐 项目规范 · 命名 / 编程 / 交付</h2>
     <table class="tbl">
       <thead><tr><th>分类</th><th>规范</th><th>示例</th></tr></thead>
@@ -114,10 +95,10 @@ END_IF;
         <tr><td>报警</td><td>ALM_区域_设备_条件</td><td>ALM_Mix_Tank101_TempHi</td></tr>
       </tbody>
     </table>
-    <p class="hint" style="margin-top:10px">参考：《SIMATIC S7-1200/1500 编程指南》西门子官方文档。每个程序段加注释（//），变量名自带语义，尽量不用 M 区。</p>
+    <p class="hint mt-10">参考：《SIMATIC S7-1200/1500 编程指南》西门子官方文档。每个程序段加注释（//），变量名自带语义，尽量不用 M 区。</p>
   </div>
 
-  <div id="vci" class="card" style="margin-bottom:16px">
+  <div id="vci" class="card mb-16">
     <h2>🔀 版本管理 VCI / Git / AI Copilot（TIA V20+）</h2>
     <div class="grid2">
       <div>
@@ -144,20 +125,20 @@ END_IF;
     </div>
   </div>
 
-  <div id="vd" class="card" style="margin-bottom:16px">
+  <div id="vd" class="card mb-16">
     <h2>🎮 虚拟调试 PLCSIM Advanced + SIMIT + NX MCD</h2>
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:10px">
-      <div style="padding:14px;background:var(--panel-2);border-radius:8px;border:1px solid var(--line)">
+    <div class="grid3 mt-10">
+      <div class="panel-box-sm">
         <b style="color:var(--cyan)">Step 1 · PLCSIM Adv</b>
-        <p class="hint" style="margin-top:6px">虚拟 PLC，可仿真 PROFINET 网络、OPC UA、通信伙伴，支持 TIA StartDrive 驱动仿真。下载编译后直接加载。</p>
+        <p class="hint mt-6">虚拟 PLC，可仿真 PROFINET 网络、OPC UA、通信伙伴，支持 TIA StartDrive 驱动仿真。下载编译后直接加载。</p>
       </div>
-      <div style="padding:14px;background:var(--panel-2);border-radius:8px;border:1px solid var(--line)">
+      <div class="panel-box-sm">
         <b style="color:var(--brand)">Step 2 · SIMIT 对象仿真</b>
-        <p class="hint" style="margin-top:6px">构建被控对象模型（电机、气缸、阀门、传感器），与 PLCSIM 信号对接，实时模拟物理过程。代替真实设备测试 80% 的控制逻辑。</p>
+        <p class="hint mt-6">构建被控对象模型（电机、气缸、阀门、传感器），与 PLCSIM 信号对接，实时模拟物理过程。代替真实设备测试 80% 的控制逻辑。</p>
       </div>
-      <div style="padding:14px;background:var(--panel-2);border-radius:8px;border:1px solid var(--line)">
+      <div class="panel-box-sm">
         <b style="color:var(--ok)">Step 3 · NX MCD 机电联调</b>
-        <p class="hint" style="margin-top:6px">把 NX 3D 机械装配导入 MCD，分配刚体/铰链/运动副，对接 SIMIT 与 PLC，实现机电一体化虚拟调试——现场只装一次。</p>
+        <p class="hint mt-6">把 NX 3D 机械装配导入 MCD，分配刚体/铰链/运动副，对接 SIMIT 与 PLC，实现机电一体化虚拟调试——现场只装一次。</p>
       </div>
     </div>
   </div>
@@ -194,9 +175,9 @@ PLC 硬件属性 → 保护
   </div>
 
   <!-- 配套视频教学：工程化能力 -->
-  <section class="card" style="margin-top:18px">
+  <section class="card mt-18">
     <h2>🎬 配套视频教学 · 工程化能力</h2>
-    <p class="hint" style="margin-bottom:12px">对应 <a href="../videos/index.html" style="color:var(--brand)">视频板块</a>：项目规范、虚拟调试、版本管理、安全编程。横跨三阶贯穿学习。</p>
+    <p class="hint mb-12">对应 <a href="../videos/index.html" style="color:var(--brand)">视频板块</a>：项目规范、虚拟调试、版本管理、安全编程。横跨三阶贯穿学习。</p>
     <div class="vid-grid">
 
       <div class="vid-card">

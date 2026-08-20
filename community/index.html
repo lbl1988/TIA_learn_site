@@ -25,18 +25,18 @@
 
 <main class="wrap">
   <div class="page-title">
-    <div style="flex:1">
+    <div class="flex-1">
       <div class="bread"><a href="../index.html">首页</a><span class="sep">/</span>互动社区</div>
       <h1>💬 互动社区</h1>
-      <p class="hint" style="margin-top:6px">新手问答、避坑经验帖、常见报错速查——来自一线集成商工程师的经验。</p>
+      <p class="hint mt-6">新手问答、避坑经验帖、常见报错速查——来自一线集成商工程师的经验。</p>
     </div>
   </div>
 
-  <div class="grid2" style="gap:18px;margin-bottom:18px">
+  <div class="grid2 gap-18 mb-18">
     <section class="card">
       <h2>常见报错速查（TOP 10）</h2>
-<table class="tbl">
-  <tr><th style="width:40%">报错/现象</th><th>根因 + 解决</th></tr>
+<table class="tbl col-40">
+  <tr><th>报错/现象</th><th>根因 + 解决</th></tr>
   <tr><td>编译失败：<code>The block ... cannot be compiled</code></td><td>路径含中文 → TIA 装英文路径 + 用户名改英文。</td></tr>
   <tr><td>下载失败：<code>Online access failed</code></td><td>网卡/PnCable 设好 IP；网卡与 PLC IP 段一致；网线连接；防火墙/杀毒软件关闭或放行。</td></tr>
   <tr><td>HMI 变量连接后显示 ####</td><td>HMI 未编译下载；或变量地址/数据类型不匹配；或 CPU 未进入运行。</td></tr>
@@ -52,35 +52,35 @@
 
     <section class="card">
       <h2>避坑经验帖</h2>
-<div style="display:flex;flex-direction:column;gap:12px">
-<div style="padding:14px;background:var(--panel-2);border-radius:8px;border-left:3px solid var(--alarm)">
-<b style="color:var(--alarm)">🚫 路径千万不要有中文</b>
-<p class="hint" style="margin-top:4px">TIA Portal V17/V18 对中文路径极其敏感，C:\博途安装\ 会导致编译报 85xx 未知错误。安装路径、项目路径、用户名全用英文。推荐：C:\TIA\Proj\C100 这样。</p>
+<div class="flex-col gap-12">
+<div class="tip-box tip-alarm">
+<b>🚫 路径千万不要有中文</b>
+<p class="hint mt-4">TIA Portal V17/V18 对中文路径极其敏感，C:\博途安装\ 会导致编译报 85xx 未知错误。安装路径、项目路径、用户名全用英文。推荐：C:\TIA\Proj\C100 这样。</p>
 </div>
 
-<div style="padding:14px;background:var(--panel-2);border-radius:8px;border-left:3px solid var(--warn)">
-<b style="color:var(--warn)">⚠️ M 区是坏习惯，尽早用 DB 符号</b>
-<p class="hint" style="margin-top:4px">M0.0/MW10/MD20 没有语义、不支持 S7 通信 PUT/GET 优化寻址、导入导出难。全部变量进 DB，用符号寻址 "DB".Tag 带语义。</p>
+<div class="tip-box tip-warn">
+<b>⚠️ M 区是坏习惯，尽早用 DB 符号</b>
+<p class="hint mt-4">M0.0/MW10/MD20 没有语义、不支持 S7 通信 PUT/GET 优化寻址、导入导出难。全部变量进 DB，用符号寻址 "DB".Tag 带语义。</p>
 </div>
 
-<div style="padding:14px;background:var(--panel-2);border-radius:8px;border-left:3px solid var(--brand)">
-<b style="color:var(--brand)">✓ 优化块访问默认开启</b>
-<p class="hint" style="margin-top:4px">S7-1200/1500 默认优化块访问，不要用绝对地址 %DB1.DBW0。只有跨 CPU S7 PUT/GET 通信、Modbus TCP 寄存器才需要「非优化块访问」——单独建一个 NonOpt DB。</p>
+<div class="tip-box tip-brand">
+<b>✓ 优化块访问默认开启</b>
+<p class="hint mt-4">S7-1200/1500 默认优化块访问，不要用绝对地址 %DB1.DBW0。只有跨 CPU S7 PUT/GET 通信、Modbus TCP 寄存器才需要「非优化块访问」——单独建一个 NonOpt DB。</p>
 </div>
 
-<div style="padding:14px;background:var(--panel-2);border-radius:8px;border-left:3px solid var(--cyan)">
-<b style="color:var(--cyan)">✓ LAD 位逻辑 + SCL 运算混编</b>
-<p class="hint" style="margin-top:4px">纯 SCL 的位逻辑监控非常丑（没有触点流动），纯 LAD 的批量赋值/算法臃肿。混编才是最优解：设备启停、置复位、互锁放 LAD；数学运算、数组、解析放 SCL。</p>
+<div class="tip-box tip-cyan">
+<b>✓ LAD 位逻辑 + SCL 运算混编</b>
+<p class="hint mt-4">纯 SCL 的位逻辑监控非常丑（没有触点流动），纯 LAD 的批量赋值/算法臃肿。混编才是最优解：设备启停、置复位、互锁放 LAD；数学运算、数组、解析放 SCL。</p>
 </div>
 
-<div style="padding:14px;background:var(--panel-2);border-radius:8px;border-left:3px solid var(--ok)">
-<b style="color:var(--ok)">✓ OB35 放 PID、通信、运动</b>
-<p class="hint" style="margin-top:4px">OB1 扫描周期波动（通常 1-10ms），但 PID / 伺服报文 / TRACE 采样需要稳定周期。PID_Compact、工艺对象、循环通信放 OB35（100ms）或 OB32（10ms），Ts 参数匹配。</p>
+<div class="tip-box tip-ok">
+<b>✓ OB35 放 PID、通信、运动</b>
+<p class="hint mt-4">OB1 扫描周期波动（通常 1-10ms），但 PID / 伺服报文 / TRACE 采样需要稳定周期。PID_Compact、工艺对象、循环通信放 OB35（100ms）或 OB32（10ms），Ts 参数匹配。</p>
 </div>
 
-<div style="padding:14px;background:var(--panel-2);border-radius:8px;border-left:3px solid var(--warn)">
-<b style="color:var(--warn)">⚠️ S7-GRAPH 写完必编译两次</b>
-<p class="hint" style="margin-top:4px">GRAPH 第一次编译生成背景逻辑，第二次编译才生成 S7 执行代码。只编一次会出现程序逻辑不更新的灵异现象。</p>
+<div class="tip-box tip-warn">
+<b>⚠️ S7-GRAPH 写完必编译两次</b>
+<p class="hint mt-4">GRAPH 第一次编译生成背景逻辑，第二次编译才生成 S7 执行代码。只编一次会出现程序逻辑不更新的灵异现象。</p>
 </div>
 
 </div>
@@ -99,9 +99,9 @@
           <tr><td>ElecFans 西门子合集</td><td><a href="https://m.elecfans.com/zt/32178/" target="_blank">访问</a></td><td>入门视频+教程汇总</td></tr>
         </tbody>
       </table>
-      <div style="padding:18px;background:var(--panel-2);border-radius:10px;border:1px dashed var(--line)">
-        <h3 style="color:var(--muted);margin-bottom:8px">💡 提问模板（避免"没人答"）</h3>
-<pre class="code" style="margin:0">型号：S7-1215C DC/DC/DC，固件 V4.6
+      <div class="panel-box-dashed">
+        <h3 class="muted mb-8">💡 提问模板（避免"没人答"）</h3>
+<pre class="code m-0">型号：S7-1215C DC/DC/DC，固件 V4.6
 TIA 版本：V18 Update 2
 错误码：80B1（编译报错）
 现象：FC_Calc 参数传递类型不匹配

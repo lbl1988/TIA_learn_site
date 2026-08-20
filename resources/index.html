@@ -5,25 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>资源下载 · 博途学习站</title>
 <link rel="stylesheet" href="../assets/css/style.css">
-<style>
-.vid-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.vid-card{background:var(--panel-2);border:1px solid var(--line);border-radius:10px;overflow:hidden;display:flex;flex-direction:column;transition:.18s}
-.vid-card:hover{border-color:var(--brand);transform:translateY(-2px)}
-.vid-frame{position:relative;padding-top:56.25%;background:#000}
-.vid-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
-.vid-body{padding:10px 12px;display:flex;flex-direction:column;gap:5px;flex:1}
-.vid-title{font-size:13px;font-weight:600;color:var(--text);line-height:1.5}
-.vid-author{font-size:11px;color:var(--muted)}
-.vid-author b{color:var(--brand)}
-.vid-desc{font-size:11.5px;color:var(--muted);line-height:1.6}
-.vid-official{background:linear-gradient(135deg,#22d3ee12,#7c5cff12);border:1px dashed #22d3ee55;border-radius:10px;padding:12px 14px;margin-top:12px}
-.vid-official h4{font-size:12.5px;color:var(--cyan);margin-bottom:6px}
-.vid-official ul{list-style:none;display:flex;flex-direction:column;gap:5px}
-.vid-official li{font-size:12px;color:var(--muted);padding-left:16px;position:relative;line-height:1.6}
-.vid-official li::before{content:"▶";position:absolute;left:0;color:var(--cyan);font-size:9px}
-.vid-official a{color:var(--text)}
-@media(max-width:768px){.vid-grid{grid-template-columns:1fr}}
-</style>
 </head>
 <body>
 <nav class="nav">
@@ -45,25 +26,25 @@
 
 <main class="wrap">
   <div class="page-title">
-    <div style="flex:1">
+    <div class="flex-1">
       <div class="bread"><a href="../index.html">首页</a><span class="sep">/</span>资源下载</div>
       <h1>📦 资源下载中心</h1>
-      <p class="hint" style="margin-top:6px">配套可导入博途的 SCL 源文件、速查表、项目模板、官方手册索引。</p>
+      <p class="hint mt-6">配套可导入博途的 SCL 源文件、速查表、项目模板、官方手册索引。</p>
     </div>
   </div>
 
   <section class="card">
     <h2>PLC 源文件（SCL · 可导入博途）</h2>
-    <div class="grid2" style="gap:14px">
-      <div style="padding:18px;background:var(--panel-2);border-radius:10px;border:1px solid var(--line)">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+    <div class="grid2 gap-14">
+      <div class="panel-box">
+        <div class="card-head">
           <span class="tag ok">● 配套</span>
           <b>FB_PID.scl</b>
           <span class="tag brand">进阶篇 S7</span>
         </div>
         <p class="hint">位置式 PID 功能块（1.0 版）：抗积分饱和、手自动无扰动切换、首拍防突跳、高低报警输出。S7-1200/1500 + V15+ 直接导入。</p>
-        <table class="tbl" style="margin:10px 0">
-          <tr><th style="width:120px">参数</th><th>说明</th></tr>
+        <table class="tbl col-param">
+          <tr><th>参数</th><th>说明</th></tr>
           <tr><td>输入</td><td>使能 · 设定值 · 实际值 · Kp/Ki/Kd/Ts · 手自动切换 · 手动输出</td></tr>
           <tr><td>输出</td><td>0-100% 输出 · 误差 · 积分项 · 高低报警 · 饱和标志</td></tr>
           <tr><td>推荐调用</td><td>OB35 循环中断调用，Ts 与 OB 周期一致</td></tr>
@@ -74,15 +55,15 @@
         </div>
       </div>
 
-      <div style="padding:18px;background:var(--panel-2);border-radius:10px;border:1px solid var(--line)">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+      <div class="panel-box">
+        <div class="card-head">
           <span class="tag ok">● 配套</span>
           <b>FB_BatchPhase.scl</b>
           <span class="tag brand">进阶篇 ISA-88</span>
         </div>
         <p class="hint">ISA-88 批次 Phase 状态机 FB：6 状态 Idle/Running/Paused/Held/Complete/Aborted，Running 内含加料→升温→保温→出料 4 工艺子步。命令优先级 Abort 最高。</p>
-        <table class="tbl" style="margin:10px 0">
-          <tr><th style="width:120px">参数</th><th>说明</th></tr>
+        <table class="tbl col-param">
+          <tr><th>参数</th><th>说明</th></tr>
           <tr><td>命令</td><td>Start/Pause/Resume/Hold/Unhold/Abort/Reset（上升沿触发）</td></tr>
           <tr><td>设备</td><td>进料阀 / 搅拌 / 加热(0-100) / 排料阀</td></tr>
           <tr><td>状态</td><td>PhaseState(0/10/20/30/90/99) · SubStep · Done · Alarm</td></tr>
@@ -95,11 +76,11 @@
     </div>
   </section>
 
-  <section class="card" style="margin-top:18px">
+  <section class="card mt-18">
     <h2>速查表 & 工具</h2>
-    <div class="grid2" style="gap:14px">
-      <div style="padding:16px;background:var(--panel-2);border-radius:10px;border:1px solid var(--line)">
-        <h3 style="margin-bottom:6px">TIA Portal 快捷键速查</h3>
+    <div class="grid2 gap-14">
+      <div class="panel-box">
+        <h3 class="mb-8">TIA Portal 快捷键速查</h3>
 <table class="tbl">
 <tr><th>快捷键</th><th>作用</th></tr>
 <tr><td><code>Ctrl + K</code></td><td>全局搜索（块/变量/指令）</td></tr>
@@ -112,8 +93,8 @@
 <tr><td><code>F9</code></td><td>切换断点（调试）</td></tr>
 </table>
       </div>
-      <div style="padding:16px;background:var(--panel-2);border-radius:10px;border:1px solid var(--line)">
-        <h3 style="margin-bottom:6px">常用指令速查（LAD & SCL）</h3>
+      <div class="panel-box">
+        <h3 class="mb-8">常用指令速查（LAD & SCL）</h3>
 <table class="tbl">
 <tr><th>指令</th><th>LAD</th><th>SCL</th></tr>
 <tr><td>通电延时</td><td>TON</td><td>"T"(IN, PT) → .Q</td></tr>
@@ -128,7 +109,7 @@
     </div>
   </section>
 
-  <section class="card" style="margin-top:18px">
+  <section class="card mt-18">
     <h2>官方资源索引</h2>
     <table class="tbl">
       <thead><tr><th>资源</th><th>链接</th><th>说明</th></tr></thead>
@@ -143,7 +124,7 @@
     </table>
   </section>
 
-  <section class="card" style="margin-top:18px">
+  <section class="card mt-18">
     <h2>导入博途步骤（3 步）</h2>
 <pre class="code">1. 项目树 →  程序块 文件夹 → 右键 → <b>从源生成块</b>
 2. 选择 .scl 文件 → 自动生成 FB / FC
@@ -152,9 +133,9 @@
   </section>
 
   <!-- 配套视频教学：源文件导入与指令 -->
-  <section class="card" style="margin-top:18px">
+  <section class="card mt-18">
     <h2>🎬 配套视频教学 · 源文件导入与指令</h2>
-    <p class="hint" style="margin-bottom:12px">SCL 源文件导入博途、指令速查、PID/ISA-88 算法落地。对应 <a href="../videos/index.html" style="color:var(--brand)">视频板块</a>。</p>
+    <p class="hint mb-12">SCL 源文件导入博途、指令速查、PID/ISA-88 算法落地。对应 <a href="../videos/index.html" style="color:var(--brand)">视频板块</a>。</p>
     <div class="vid-grid">
 
       <div class="vid-card">

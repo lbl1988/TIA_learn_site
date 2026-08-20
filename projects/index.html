@@ -5,25 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>实战项目库 · 博途学习站</title>
 <link rel="stylesheet" href="../assets/css/style.css">
-<style>
-.vid-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.vid-card{background:var(--panel-2);border:1px solid var(--line);border-radius:10px;overflow:hidden;display:flex;flex-direction:column;transition:.18s}
-.vid-card:hover{border-color:var(--brand);transform:translateY(-2px)}
-.vid-frame{position:relative;padding-top:56.25%;background:#000}
-.vid-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
-.vid-body{padding:10px 12px;display:flex;flex-direction:column;gap:5px;flex:1}
-.vid-title{font-size:13px;font-weight:600;color:var(--text);line-height:1.5}
-.vid-author{font-size:11px;color:var(--muted)}
-.vid-author b{color:var(--brand)}
-.vid-desc{font-size:11.5px;color:var(--muted);line-height:1.6}
-.vid-official{background:linear-gradient(135deg,#22d3ee12,#7c5cff12);border:1px dashed #22d3ee55;border-radius:10px;padding:12px 14px;margin-top:12px}
-.vid-official h4{font-size:12.5px;color:var(--cyan);margin-bottom:6px}
-.vid-official ul{list-style:none;display:flex;flex-direction:column;gap:5px}
-.vid-official li{font-size:12px;color:var(--muted);padding-left:16px;position:relative;line-height:1.6}
-.vid-official li::before{content:"▶";position:absolute;left:0;color:var(--cyan);font-size:9px}
-.vid-official a{color:var(--text)}
-@media(max-width:768px){.vid-grid{grid-template-columns:1fr}}
-</style>
 </head>
 <body>
 <nav class="nav">
@@ -45,10 +26,10 @@
 
 <main class="wrap">
   <div class="page-title">
-    <div style="flex:1">
+    <div class="flex-1">
       <div class="bread"><a href="../index.html">首页</a><span class="sep">/</span>实战项目库</div>
       <h1>🏭 实战项目库</h1>
-      <p class="hint" style="margin-top:6px">按难度递进的完整项目案例，每个项目附说明、IO 表、程序结构，部分提供工程源文件。</p>
+      <p class="hint mt-6">按难度递进的完整项目案例，每个项目附说明、IO 表、程序结构，部分提供工程源文件。</p>
     </div>
   </div>
 
@@ -56,7 +37,7 @@
     <h2>入门级（LAD 为主 · 1-3 天完成）</h2>
     <div class="chapters">
       <div class="chapter">
-        <div class="no" style="background:#22d3ee22;border-color:#22d3ee55;color:var(--cyan)">E1</div>
+        <div class="no no-badge cyan">E1</div>
         <div>
           <h3>3 台输送机顺序启动 · 逆序停止</h3>
           <div class="desc">3 台电机带接触器反馈、热过载保护。启动：1#→2s→2#→2s→3#；停止顺序相反。任意一台过载全局停止并报警。</div>
@@ -66,7 +47,7 @@
       </div>
 
       <div class="chapter">
-        <div class="no" style="background:#22d3ee22;border-color:#22d3ee55;color:var(--cyan)">E2</div>
+        <div class="no no-badge cyan">E2</div>
         <div>
           <h3>星三角降压启动</h3>
           <div class="desc">三相异步电机：主接触器 KM + 星形 KM1 + 三角形 KM2。启动 KM+KM1，延时 TON 3s 切 KM+KM2。必须互锁，杜绝星三角同时吸合烧坏电机。</div>
@@ -76,7 +57,7 @@
       </div>
 
       <div class="chapter">
-        <div class="no" style="background:#22d3ee22;border-color:#22d3ee55;color:var(--cyan)">E3</div>
+        <div class="no no-badge cyan">E3</div>
         <div>
           <h3>8 站流水线计数包装</h3>
           <div class="desc">产品流经 8 个光电传感器，最后工位计数，每 10 个触发电磁阀吹气包装。CTU 计数、吹气完成后复位。</div>
@@ -87,11 +68,11 @@
     </div>
   </div>
 
-  <div class="card" style="margin-top:18px">
+  <div class="card mt-18">
     <h2>进阶级（结构化 + SCL · 1 周完成）</h2>
     <div class="chapters">
       <div class="chapter">
-        <div class="no" style="background:#7c5cff22;border-color:#7c5cff55;color:var(--brand)">M1</div>
+        <div class="no no-badge brand">M1</div>
         <div>
           <h3>多工位产线（加料→PID 加热→出料计量）<span class="tag ok">●配套</span></h3>
           <div class="desc">ISA-88 Phase 状态机驱动 3 工位：工位 1 进料阀到料位、工位 2 PID 恒温 80℃保温 60s、工位 3 电能表 Modbus RTU 读功率，排料完成回 Idle。含 SCL 源文件 + HMI 仿真。</div>
@@ -99,7 +80,7 @@
         </div>
         <div class="sidebar">
           <span class="tag brand">进阶级</span>
-          <div class="btn-group" style="justify-content:flex-end">
+          <div class="btn-group justify-end">
             <a href="../lab/isa88-hmi.html" class="btn ok">🧪 HMI 仿真</a>
             <a href="../resources/FB_BatchPhase.scl" class="btn">下载 SCL</a>
           </div>
@@ -107,7 +88,7 @@
       </div>
 
       <div class="chapter">
-        <div class="no" style="background:#7c5cff22;border-color:#7c5cff55;color:var(--brand)">M2</div>
+        <div class="no no-badge brand">M2</div>
         <div>
           <h3>HMI 配方管理 + 模拟量 PID 整定</h3>
           <div class="desc">TP900 HMI：产品 A/B/C 三套配方，HMI 下拉选择，配方切换后写 DB 参数；PID 控温，趋势图对比不同 P/I/D 下的阶跃响应与超调。</div>
@@ -117,7 +98,7 @@
       </div>
 
       <div class="chapter">
-        <div class="no" style="background:#7c5cff22;border-color:#7c5cff55;color:var(--brand)">M3</div>
+        <div class="no no-badge brand">M3</div>
         <div>
           <h3>S7-1200 + ET 200SP + 2 台变频器 PROFINET</h3>
           <div class="desc">S7-1215C 作 PROFINET Controller，ET 200SP 作 IO Device（含 AI/AO/DI/DO 模块），两台 G120C PN 变频器（报文 352 标准速度 + PZD）。PROFINET 设备命名、IP 分配、拓扑视图。</div>
@@ -128,11 +109,11 @@
     </div>
   </div>
 
-  <div class="card" style="margin-top:18px">
+  <div class="card mt-18">
     <h2>精通级（高级功能 · 2-4 周完成）</h2>
     <div class="chapters">
       <div class="chapter">
-        <div class="no" style="background:#22c55e22;border-color:#22c55e55;color:var(--ok)">H1</div>
+        <div class="no no-badge ok">H1</div>
         <div>
           <h3>V90 PN 伺服 4 轴搬运单元</h3>
           <div class="desc">S7-1511C + 4 台 V90 PN（工艺对象 TO_Positioning）：X/Y/Z 三轴笛卡尔 + 1 根旋转主轴。回原点（模式 7）→ 真空吸取 → 托盘 24 点阵列搬运 → 释放。各轴点动/绝对/相对位置切换。</div>
@@ -142,7 +123,7 @@
       </div>
 
       <div class="chapter">
-        <div class="no" style="background:#22c55e22;border-color:#22c55e55;color:var(--ok)">H2</div>
+        <div class="no no-badge ok">H2</div>
         <div>
           <h3>S7-1515R 软冗余 + MRP 环网</h3>
           <div class="desc">CPU1515R-2PN 双主站构成软冗余、SCALANCE XC 交换机构 MRP 环、S2 冗余 IO。模拟单 CPU 故障/交换机关机/链路中断，验证 300ms 切换时间与生产线不停。</div>
@@ -152,7 +133,7 @@
       </div>
 
       <div class="chapter">
-        <div class="no" style="background:#22c55e22;border-color:#22c55e55;color:var(--ok)">H3</div>
+        <div class="no no-badge ok">H3</div>
         <div>
           <h3>F-CPU 急停 + 安全门验证（SIL3）</h3>
           <div class="desc">S7-1511F 主站 + F-DI/F-DO ET200SP F 模块：急停 F_ESTOP（双通道 + 差异时间 500ms）、安全门 F_2W_DOOR、光栅 F_MUTE 启动抑制。输出 F_DIS 安全断接触器主回路。</div>
@@ -164,9 +145,9 @@
   </div>
 
   <!-- 配套视频教学：产线实战 -->
-  <section class="card" style="margin-top:18px">
+  <section class="card mt-18">
     <h2>🎬 配套视频教学 · 产线实战</h2>
-    <p class="hint" style="margin-bottom:12px">对应 <a href="../videos/index.html#p7" style="color:var(--ok)">视频板块 ⑦ 产线实战</a>：完整项目从零搭建，附 IO 表 / 接线图 / 设计报告。</p>
+    <p class="hint mb-12">对应 <a href="../videos/index.html#p7" style="color:var(--ok)">视频板块 ⑦ 产线实战</a>：完整项目从零搭建，附 IO 表 / 接线图 / 设计报告。</p>
     <div class="vid-grid">
 
       <div class="vid-card">
