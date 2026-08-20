@@ -320,7 +320,7 @@
         if(comp.type === 'timer_ton') cEl.classList.add('timer');
         if(comp.type === 'counter') cEl.classList.add('counter');
         if(comp.addr && state.running){
-          cEl.classList.add(isComponentEnergized(rung, comp) ? 'energized' : '');
+          if(isComponentEnergized(rung, comp)) cEl.classList.add('energized');
         }
         cEl.innerHTML = '<div class="sym">' + et.sym + '</div>' +
           (comp.addr ? '<div class="addr">' + comp.addr + '</div>' : '') +
@@ -377,7 +377,7 @@
 
       canvas.appendChild(rEl);
     });
-    updateIO();
+    renderIO();
   }
 
   function showPalettePicker(rungId){
@@ -421,10 +421,9 @@
       item.className = 'io-item' + (state.io.inputs[addr] ? ' on' : '');
       item.innerHTML = '<span class="addr">' + addr + '</span><span class="val">' + (state.io.inputs[addr] ? 'ON' : 'OFF') + '</span><span class="lamp"></span>';
       item.addEventListener('click', function(){
-        if(state.running){
-          state.io.inputs[addr] = !state.io.inputs[addr];
-          renderIO();
-        }
+        state.io.inputs[addr] = !state.io.inputs[addr];
+        renderIO();
+        if(state.running){ render(); }
       });
       inList.appendChild(item);
     });
@@ -460,10 +459,10 @@
 
       if(comp.type === 'contact_no'){
         if(!comp.addr) return false;
-        current = state.io.inputs[comp.addr] || false;
+        current = state.io.inputs[comp.addr] !== undefined ? (state.io.inputs[comp.addr] || false) : (state.io.outputs[comp.addr] || false);
       } else if(comp.type === 'contact_nc'){
         if(!comp.addr) return false;
-        current = !(state.io.inputs[comp.addr] || false);
+        current = !(state.io.inputs[comp.addr] !== undefined ? (state.io.inputs[comp.addr] || false) : (state.io.outputs[comp.addr] || false));
       } else if(comp.type === 'coil' || comp.type === 'coil_set' || comp.type === 'coil_reset'){
         if(!comp.addr) return false;
         if(!current) return false;
