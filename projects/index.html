@@ -43,7 +43,12 @@
           <div class="desc">3 台电机带接触器反馈、热过载保护。启动：1#→2s→2#→2s→3#；停止顺序相反。任意一台过载全局停止并报警。</div>
           <div class="kw"><span class="tag cyan">启保停</span><span class="tag cyan">TON 延时</span><span class="tag">互锁</span><span class="tag">过载保护</span></div>
         </div>
-        <div class="sidebar"><span class="tag cyan">入门级</span><a href="#" class="btn">获取项目</a></div>
+        <div class="sidebar"><span class="tag cyan">入门级</span>
+          <div class="btn-group justify-end">
+            <a href="../lab/lad-sim.html?preset=sequential" class="btn ok">🧪 LAD 仿真</a>
+            <a href="detail.html?id=e1" class="btn">获取项目</a>
+          </div>
+        </div>
       </div>
 
       <div class="chapter">
@@ -53,7 +58,12 @@
           <div class="desc">三相异步电机：主接触器 KM + 星形 KM1 + 三角形 KM2。启动 KM+KM1，延时 TON 3s 切 KM+KM2。必须互锁，杜绝星三角同时吸合烧坏电机。</div>
           <div class="kw"><span class="tag cyan">TON</span><span class="tag">硬互锁+软互锁</span><span class="tag">电流切换时序</span></div>
         </div>
-        <div class="sidebar"><span class="tag cyan">入门级</span><a href="#" class="btn">获取项目</a></div>
+        <div class="sidebar"><span class="tag cyan">入门级</span>
+          <div class="btn-group justify-end">
+            <a href="../lab/lad-sim.html?preset=star_delta" class="btn ok">🧪 LAD 仿真</a>
+            <a href="detail.html?id=e2" class="btn">获取项目</a>
+          </div>
+        </div>
       </div>
 
       <div class="chapter">
@@ -63,7 +73,12 @@
           <div class="desc">产品流经 8 个光电传感器，最后工位计数，每 10 个触发电磁阀吹气包装。CTU 计数、吹气完成后复位。</div>
           <div class="kw"><span class="tag cyan">CTU 计数</span><span class="tag">比较</span><span class="tag">沿触发</span></div>
         </div>
-        <div class="sidebar"><span class="tag cyan">入门级</span><a href="#" class="btn">获取项目</a></div>
+        <div class="sidebar"><span class="tag cyan">入门级</span>
+          <div class="btn-group justify-end">
+            <a href="../lab/lad-sim.html" class="btn ok">🧪 LAD 仿真</a>
+            <a href="detail.html?id=e3" class="btn">获取项目</a>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -82,7 +97,8 @@
           <span class="tag brand">进阶级</span>
           <div class="btn-group justify-end">
             <a href="../lab/isa88-hmi.html" class="btn ok">🧪 HMI 仿真</a>
-            <a href="../resources/FB_BatchPhase.scl" class="btn">下载 SCL</a>
+            <a href="../resources/FB_BatchPhase.scl" class="btn">📄 SCL 源</a>
+            <a href="detail.html?id=m1" class="btn">获取项目</a>
           </div>
         </div>
       </div>
@@ -94,7 +110,13 @@
           <div class="desc">TP900 HMI：产品 A/B/C 三套配方，HMI 下拉选择，配方切换后写 DB 参数；PID 控温，趋势图对比不同 P/I/D 下的阶跃响应与超调。</div>
           <div class="kw"><span class="tag brand">HMI 配方</span><span class="tag brand">PID_Compact 自整定</span><span class="tag">趋势曲线</span><span class="tag">HMI 变量</span></div>
         </div>
-        <div class="sidebar"><span class="tag brand">进阶级</span><a href="#" class="btn">获取项目</a></div>
+        <div class="sidebar"><span class="tag brand">进阶级</span>
+          <div class="btn-group justify-end">
+            <a href="../lab/pid-hmi.html" class="btn ok">🧪 PID 仿真</a>
+            <a href="../resources/FB_PID.scl" class="btn">📄 SCL 源</a>
+            <a href="detail.html?id=m2" class="btn">获取项目</a>
+          </div>
+        </div>
       </div>
 
       <div class="chapter">
@@ -104,7 +126,12 @@
           <div class="desc">S7-1215C 作 PROFINET Controller，ET 200SP 作 IO Device（含 AI/AO/DI/DO 模块），两台 G120C PN 变频器（报文 352 标准速度 + PZD）。PROFINET 设备命名、IP 分配、拓扑视图。</div>
           <div class="kw"><span class="tag brand">PROFINET</span><span class="tag brand">G120C PN</span><span class="tag">GSDML</span><span class="tag">ET 200SP</span></div>
         </div>
-        <div class="sidebar"><span class="tag brand">进阶级</span><a href="#" class="btn">获取项目</a></div>
+        <div class="sidebar"><span class="tag brand">进阶级</span>
+          <div class="btn-group justify-end">
+            <a href="../lab/index.html" class="btn ok">🧪 仿真实验室</a>
+            <a href="detail.html?id=m3" class="btn">获取项目</a>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -119,7 +146,12 @@
           <div class="desc">S7-1511C + 4 台 V90 PN（工艺对象 TO_Positioning）：X/Y/Z 三轴笛卡尔 + 1 根旋转主轴。回原点（模式 7）→ 真空吸取 → 托盘 24 点阵列搬运 → 释放。各轴点动/绝对/相对位置切换。</div>
           <div class="kw"><span class="tag ok">TO_Positioning</span><span class="tag ok">V90 PN</span><span class="tag ok">PROFIdrive</span><span class="tag">报文 105</span><span class="tag">回原点模式 7</span></div>
         </div>
-        <div class="sidebar"><span class="tag ok">精通级</span><a href="#" class="btn">获取项目</a></div>
+        <div class="sidebar"><span class="tag ok">精通级</span>
+          <div class="btn-group justify-end">
+            <a href="../lab/v90-sim.html" class="btn ok">🧪 V90 仿真</a>
+            <a href="detail.html?id=h1" class="btn">获取项目</a>
+          </div>
+        </div>
       </div>
 
       <div class="chapter">
@@ -129,7 +161,11 @@
           <div class="desc">CPU1515R-2PN 双主站构成软冗余、SCALANCE XC 交换机构 MRP 环、S2 冗余 IO。模拟单 CPU 故障/交换机关机/链路中断，验证 300ms 切换时间与生产线不停。</div>
           <div class="kw"><span class="tag ok">S7-1500R</span><span class="tag ok">MRP</span><span class="tag ok">S2 冗余 IO</span><span class="tag warn">切换时间测试</span></div>
         </div>
-        <div class="sidebar"><span class="tag ok">精通级</span><a href="#" class="btn">获取项目</a></div>
+        <div class="sidebar"><span class="tag ok">精通级</span>
+          <div class="btn-group justify-end">
+            <a href="detail.html?id=h2" class="btn">获取项目</a>
+          </div>
+        </div>
       </div>
 
       <div class="chapter">
@@ -139,7 +175,11 @@
           <div class="desc">S7-1511F 主站 + F-DI/F-DO ET200SP F 模块：急停 F_ESTOP（双通道 + 差异时间 500ms）、安全门 F_2W_DOOR、光栅 F_MUTE 启动抑制。输出 F_DIS 安全断接触器主回路。</div>
           <div class="kw"><span class="tag ok">F-CPU</span><span class="tag ok">F 指令集</span><span class="tag ok">SIL3 安全回路</span><span class="tag warn">F 验证记录</span></div>
         </div>
-        <div class="sidebar"><span class="tag ok">精通级</span><a href="#" class="btn">获取项目</a></div>
+        <div class="sidebar"><span class="tag ok">精通级</span>
+          <div class="btn-group justify-end">
+            <a href="detail.html?id=h3" class="btn">获取项目</a>
+          </div>
+        </div>
       </div>
     </div>
   </div>

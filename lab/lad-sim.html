@@ -742,6 +742,14 @@
 
   initIO();
   addRung();
+
+  const urlPreset = new URLSearchParams(window.location.search).get('preset');
+  if(urlPreset){
+    const presets = ['start_stop','reversible','star_delta','sequential'];
+    if(presets.indexOf(urlPreset) !== -1){
+      setTimeout(function(){ loadPreset(urlPreset); }, 100);
+    }
+  }
   render();
 })();
 </script>

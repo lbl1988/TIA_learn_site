@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>项目详情 · 博途学习站</title>
+<link rel="stylesheet" href="../assets/css/style.css">
+<style>
+.proj-hero{display:flex;align-items:center;gap:16px;margin-bottom:16px;padding:16px;border:1px solid var(--line);border-radius:var(--radius);background:var(--panel)}
+.proj-hero .badge{width:48px;height:48px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:#fff}
+.proj-hero h1{font-size:20px}
+.proj-hero .tags{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+.proj-section{margin-top:18px}
+.proj-section h2{font-size:15px;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.proj-section h2::before{content:"";width:3px;height:14px;background:var(--brand);border-radius:2px}
+.proj-desc{line-height:1.8;color:var(--muted)}
+.io-tbl{width:100%;border-collapse:collapse;font-size:13px}
+.io-tbl th,.io-tbl td{padding:8px 12px;border:1px solid var(--line);text-align:left}
+.io-tbl th{background:var(--panel-2);font-weight:600;font-size:12px;color:var(--muted)}
+.io-tbl tr:nth-child(even) td{background:var(--tbl-alt)}
+.io-tbl .dir-in{color:var(--cyan);font-weight:600}
+.io-tbl .dir-out{color:var(--ok);font-weight:600}
+.prog-structure{display:flex;flex-direction:column;gap:8px}
+.prog-block{border:1px solid var(--line);border-radius:8px;padding:10px;background:var(--panel-2)}
+.prog-block .block-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.prog-block .block-name{font-family:var(--font-mono);font-weight:600;font-size:13px}
+.prog-block .block-type{font-size:11px;color:var(--muted)}
+.prog-block .block-desc{font-size:12px;color:var(--muted);line-height:1.6}
+.sim-actions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+.sim-actions .btn{padding:10px 18px;font-size:14px}
+.sim-actions .btn.primary{background:var(--brand);color:#fff}
+.sim-actions .btn.ok{background:var(--ok);color:#fff}
+.sim-actions .btn.warn{background:var(--warn);color:#fff}
+.quick-nav{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
+.quick-nav a{padding:4px 10px;border:1px solid var(--line);border-radius:6px;font-size:12px;background:var(--panel-2);transition:all .15s}
+.quick-nav a:hover{border-color:var(--brand);background:var(--brand-soft)}
+.not-found{text-align:center;padding:60px 20px;color:var(--muted)}
+.not-found h2{margin-bottom:10px}
+</style>
+</head>
+<body>
+<nav class="nav">
+<div class="nav-inner">
+  <a href="../index.html" class="logo"><div class="ic">TIA</div><div>博途学习站<span class="sub">From Zero to Hero</span></div></a>
+  <div class="menu">
+    <a href="../index.html">首页</a>
+    <a href="../courses/beginner.html" class="t1"><span class="dot"></span>入门篇</a>
+    <a href="../courses/intermediate.html" class="t2"><span class="dot"></span>进阶篇</a>
+    <a href="../courses/advanced.html" class="t3"><span class="dot"></span>精通篇</a>
+    <a href="../engineering/index.html" class="eng"><span class="dot"></span>工程化</a>
+    <a href="../lab/index.html">仿真实验室</a>
+    <a href="../videos/index.html">视频学习</a>
+    <a href="../resources/index.html">资源下载</a>
+    <a href="index.html" class="active">项目库</a>
+  </div>
+</div>
+</nav>
+
+<main class="wrap" id="detailRoot"></main>
+
+<script>
+(function(){
+  const projects = {
+    e1: {
+      code: 'E1',
+      level: '入门级',
+      levelClass: 'cyan',
+      title: '3 台输送机顺序启动 · 逆序停止',
+      desc: '3 台电机带接触器反馈、热过载保护。启动：1#→2s→2#→2s→3#；停止顺序相反。任意一台过载全局停止并报警。',
+      tags: ['启保停', 'TON 延时', '互锁', '过载保护'],
+      ioTable: [
+        ['I0.0','启动按钮','DI','-','按下触发启动序列'],
+        ['I0.1','停止按钮','DI','-','按下触发停止序列'],
+        ['I0.2','1#接触器反馈','DI','-','1#电机已启动'],
+        ['I0.3','2#接触器反馈','DI','-','2#电机已启动'],
+        ['I0.4','3#接触器反馈','DI','-','3#电机已启动'],
+        ['I0.5','1#热过载','DI','-','1#电机过载报警'],
+        ['I0.6','2#热过载','DI','-','2#电机过载报警'],
+        ['I0.7','3#热过载','DI','-','3#电机过载报警'],
+        ['Q0.0','1#电机接触器','DO','-','控制 1#电机'],
+        ['Q0.1','2#电机接触器','DO','-','控制 2#电机'],
+        ['Q0.2','3#电机接触器','DO','-','控制 3#电机'],
+        ['Q0.3','总报警灯','DO','-','过载时点亮']
+      ],
+      structure: [
+        {name:'OB1', type:'组织块', desc:'主程序循环调用各 FC 功能块'},
+        {name:'FC10_StartSeq', type:'功能', desc:'启动序列控制：I0.0 触发后，依次启动 Q0.0→TON T37(2s)→Q0.1→TON T38(2s)→Q0.2'},
+        {name:'FC11_StopSeq', type:'功能', desc:'停止序列控制：I0.1 触发后，依次停止 Q0.2→TON T39(2s)→Q0.1→TON T40(2s)→Q0.0'},
+        {name:'FC12_Overload', type:'功能', desc:'过载保护：I0.5/I0.6/I0.7 任意触发时，复位所有输出并点亮 Q0.3 报警'},
+        {name:'DB1_Motor', type:'数据块', desc:'电机状态数据：启动标志、运行状态、过载标志'}
+      ],
+      simLink: '../lab/lad-sim.html',
+      simPreset: 'sequential',
+      simLabel: '🧪 LAD 仿真'
+    },
+    e2: {
+      code: 'E2',
+      level: '入门级',
+      levelClass: 'cyan',
+      title: '星三角降压启动',
+      desc: '三相异步电机：主接触器 KM + 星形 KM1 + 三角形 KM2。启动 KM+KM1，延时 TON 3s 切 KM+KM2。必须互锁，杜绝星三角同时吸合烧坏电机。',
+      tags: ['TON', '硬互锁+软互锁', '电流切换时序'],
+      ioTable: [
+        ['I0.0','启动按钮','DI','-','按下启动'],
+        ['I0.1','停止按钮','DI','-','按下停止'],
+        ['I0.2','热过载继电器','DI','-','电机过载保护'],
+        ['Q0.0','主接触器 KM','DO','-','主回路通断'],
+        ['Q0.1','星形接触器 KM1','DO','-','星形启动'],
+        ['Q0.2','三角形接触器 KM2','DO','-','三角形运行'],
+        ['Q0.3','运行指示灯','DO','-','电机运行状态']
+      ],
+      structure: [
+        {name:'OB1', type:'组织块', desc:'主程序循环'},
+        {name:'FC20_StarDelta', type:'功能', desc:'星三角控制：启动时 KM+KM1，TON T37(3s) 后切换 KM+KM2，KM1/KM2 硬互锁+软互锁'},
+        {name:'DB2_StarDelta', type:'数据块', desc:'星三角状态：启动标志、切换完成标志、当前状态(Star/Delta)'}
+      ],
+      simLink: '../lab/lad-sim.html',
+      simPreset: 'star_delta',
+      simLabel: '🧪 LAD 仿真'
+    },
+    e3: {
+      code: 'E3',
+      level: '入门级',
+      levelClass: 'cyan',
+      title: '8 站流水线计数包装',
+      desc: '产品流经 8 个光电传感器，最后工位计数，每 10 个触发电磁阀吹气包装。CTU 计数、吹气完成后复位。',
+      tags: ['CTU 计数', '比较', '沿触发'],
+      ioTable: [
+        ['I0.0','启动按钮','DI','-','系统启动'],
+        ['I0.1','停止按钮','DI','-','系统停止'],
+        ['I1.0~I1.7','8 路光电传感器','DI','产品流经各工位检测'],
+        ['Q0.0','流水线电机','DO','-','主输送带驱动'],
+        ['Q0.1','包装电磁阀','DO','-','吹气包装执行'],
+        ['Q0.2','包装完成指示','DO','-','包装完成信号'],
+        ['Q0.3','计数清零','DO','-','计数器复位输出']
+      ],
+      structure: [
+        {name:'OB1', type:'组织块', desc:'主程序循环'},
+        {name:'FC30_Conveyor', type:'功能', desc:'输送带控制：I1.x 任一上升沿触发 CTU C0 计数'},
+        {name:'FC31_Package', type:'功能', desc:'包装逻辑：C0 计数值=10 时触发 Q0.1 包装，TON T37(1s) 后复位 C0'},
+        {name:'DB3_Conveyor', type:'数据块', desc:'输送带数据：产品数、包装数、当前工位'}
+      ],
+      simLink: '../lab/lad-sim.html',
+      simPreset: '',
+      simLabel: '🧪 LAD 仿真'
+    },
+    m1: {
+      code: 'M1',
+      level: '进阶级',
+      levelClass: 'brand',
+      title: '多工位产线（加料→PID 加热→出料计量）',
+      desc: 'ISA-88 Phase 状态机驱动 3 工位：工位 1 进料阀到料位、工位 2 PID 恒温 80℃保温 60s、工位 3 电能表 Modbus RTU 读功率，排料完成回 Idle。含 SCL 源文件 + HMI 仿真。',
+      tags: ['ISA-88', 'CASE 状态机', 'SCL 手写 PID', 'Modbus RTU'],
+      ioTable: [
+        ['I0.0','启动按钮','DI','-','启动产线'],
+        ['I0.1','紧急停止','DI','-','全线停机'],
+        ['I0.2','料位传感器 LT1','DI','-','工位1料位到位'],
+        ['I0.3','温度传感器 TT1','PIW','-','工位2温度反馈'],
+        ['Q0.0','进料阀 V1','DO','-','工位1进料控制'],
+        ['Q0.1','加热蒸汽阀 V2','DO','-','工位2加热控制(PID输出)'],
+        ['Q0.2','出料阀 V3','DO','-','工位3出料控制'],
+        ['QW0','PID 输出','PQW','-','PID 加热输出(0~100%)'],
+        ['Modbus','电能表功率','MW','-','工位3实时功率读数']
+      ],
+      structure: [
+        {name:'OB1', type:'组织块', desc:'主程序：调用 Phase 状态机 + PID 功能块'},
+        {name:'FB_BatchPhase', type:'功能块', desc:'ISA-88 Phase 状态机：IDLE→WAITING→FEEDING→HEATING→HOLDING→DISCHARGING→DONE，各 Phase 含互锁条件'},
+        {name:'FB_PID', type:'功能块', desc:'位置式 PID：Kp/Ki/Kd 参数、抗积分饱和、手自动无扰动切换、首拍防突跳'},
+        {name:'FC_Modbus', type:'功能', desc:'Modbus RTU 读取电能表功率值，写入 DB 数据区'},
+        {name:'DB_Batch', type:'数据块', desc:'产线工艺参数：温度设定、保温时间、产量计数'},
+        {name:'DB_PID', type:'数据块', desc:'PID 参数：Kp=2.0, Ki=0.5, Kd=0.1, 设定值=80.0℃'}
+      ],
+      simLink: '../lab/isa88-hmi.html',
+      simPreset: '',
+      simLabel: '🧪 HMI 仿真',
+      sclLink: '../resources/FB_BatchPhase.scl'
+    },
+    m2: {
+      code: 'M2',
+      level: '进阶级',
+      levelClass: 'brand',
+      title: 'HMI 配方管理 + 模拟量 PID 整定',
+      desc: 'TP900 HMI：产品 A/B/C 三套配方，HMI 下拉选择，配方切换后写 DB 参数；PID 控温，趋势图对比不同 P/I/D 下的阶跃响应与超调。',
+      tags: ['HMI 配方', 'PID_Compact 自整定', '趋势曲线', 'HMI 变量'],
+      ioTable: [
+        ['I0.0','启动按钮','DI','-','启动生产'],
+        ['I0.1','配方选择 A','DI','-','选择 A 配方'],
+        ['I0.2','配方选择 B','DI','-','选择 B 配方'],
+        ['I0.3','配方选择 C','DI','-','选择 C 配方'],
+        ['PIW0','温度传感器','PIW','-','实时温度反馈'],
+        ['Q0.0','加热输出','DO','-','SSR 加热控制'],
+        ['QW0','PID 输出','PQW','-','PID 计算输出']
+      ],
+      structure: [
+        {name:'OB1', type:'组织块', desc:'主程序：配方切换+PID 控制'},
+        {name:'FC_RecipeSel', type:'功能', desc:'配方选择：读取 I0.1~I0.3，将对应配方参数写入 DB_PID'},
+        {name:'FB_PID', type:'功能块', desc:'PID_Compact 标准功能块，支持 HMI 在线调整 Kp/Ki/Kd'},
+        {name:'DB_Recipe_A/B/C', type:'数据块', desc:'三套配方参数：温度设定、流量、保温时间'},
+        {name:'DB_PID', type:'数据块', desc:'PID 运行参数：当前 Kp/Ki/Kd、设定值、输出值'}
+      ],
+      simLink: '../lab/pid-hmi.html',
+      simPreset: '',
+      simLabel: '🧪 PID 仿真',
+      sclLink: '../resources/FB_PID.scl'
+    },
+    m3: {
+      code: 'M3',
+      level: '进阶级',
+      levelClass: 'brand',
+      title: 'S7-1200 + ET 200SP + 2 台变频器 PROFINET',
+      desc: 'S7-1215C 作 PROFINET Controller，ET 200SP 作 IO Device（含 AI/AO/DI/DO 模块），两台 G120C PN 变频器（报文 352 标准速度 + PZD）。PROFINET 设备命名、IP 分配、拓扑视图。',
+      tags: ['PROFINET', 'G120C PN', 'GSDML', 'ET 200SP'],
+      ioTable: [
+        ['-','S7-1215C CPU','PROFINET Controller','192.168.0.1','主站'],
+        ['-','ET 200SP AI/AO/DI/DO','PROFINET Device','192.168.0.2','远程 IO'],
+        ['-','G120C PN #1','PROFINET Device','192.168.0.10','变频器1'],
+        ['-','G120C PN #2','PROFINET Device','192.168.0.11','变频器2'],
+        ['IW256','G120C #1 状态字','PIW','-','变频器1运行状态'],
+        ['IW258','G120C #1 实际值','PIW','-','变频器1实际转速'],
+        ['QW256','G120C #1 控制字','PQW','-','变频器1控制命令'],
+        ['QW258','G120C #1 速度给定','PQW','-','变频器1目标转速']
+      ],
+      structure: [
+        {name:'OB1', type:'组织块', desc:'主程序：变频器启停+速度给定'},
+        {name:'FC40_DriveCtrl', type:'功能', desc:'变频器控制：正转/反转/停止/速度设定，通过 PZD 区与 G120C 交换数据'},
+        {name:'FC41_ET200IO', type:'功能', desc:'ET200SP 远程 IO 读写：映射 AI/AO/DI/DO 到过程映像区'},
+        {name:'DB_Drive1/2', type:'数据块', desc:'变频器参数：控制字、速度给定、状态字、实际值'}
+      ],
+      simLink: '../lab/index.html',
+      simPreset: '',
+      simLabel: '🧪 查看仿真实验室',
+      sclLink: ''
+    },
+    h1: {
+      code: 'H1',
+      level: '精通级',
+      levelClass: 'ok',
+      title: 'V90 PN 伺服 4 轴搬运单元',
+      desc: 'S7-1511C + 4 台 V90 PN（工艺对象 TO_Positioning）：X/Y/Z 三轴笛卡尔 + 1 根旋转主轴。回原点（模式 7）→ 真空吸取 → 托盘 24 点阵列搬运 → 释放。各轴点动/绝对/相对位置切换。',
+      tags: ['TO_Positioning', 'V90 PN', 'PROFIdrive', '报文 105', '回原点模式 7'],
+      ioTable: [
+        ['I0.0','启动按钮','DI','-','启动搬运流程'],
+        ['I0.1','真空压力开关','DI','-','吸盘吸取确认'],
+        ['I0.2','工件到位','DI','-','工件到位检测'],
+        ['Q0.0','真空电磁阀','DO','-','吸盘控制'],
+        ['Q0.1','释放电磁阀','DO','-','工件释放'],
+        ['-','X 轴 TO','Axis','-','X 轴工艺对象(PROFIdrive)'],
+        ['-','Y 轴 TO','Axis','-','Y 轴工艺对象(PROFIdrive)'],
+        ['-','Z 轴 TO','Axis','-','Z 轴工艺对象(PROFIdrive)'],
+        ['-','R 轴 TO','Axis','-','旋转轴工艺对象(PROFIdrive)']
+      ],
+      structure: [
+        {name:'OB1', type:'组织块', desc:'主程序：调用 4 轴 TO + 搬运状态机'},
+        {name:'FB_PickPlace', type:'功能块', desc:'搬运状态机：IDLE→HOME→APPROACH→PICK→LIFT→MOVE→PLACE→RELEASE，各步含轴运动命令'},
+        {name:'FC_HomeAll', type:'功能', desc:'4 轴回原点(模式7)：同时启动各轴 MC_Home，等待全部完成'},
+        {name:'FC_PalletMap', type:'功能', desc:'24 点阵列映射：根据索引计算 X/Y/Z 目标坐标'},
+        {name:'DB_Pallet', type:'数据块', desc:'托盘参数：阵列行列数、间距、起始坐标'}
+      ],
+      simLink: '../lab/v90-sim.html',
+      simPreset: '',
+      simLabel: '🧪 V90 仿真',
+      sclLink: ''
+    },
+    h2: {
+      code: 'H2',
+      level: '精通级',
+      levelClass: 'ok',
+      title: 'S7-1515R 软冗余 + MRP 环网',
+      desc: 'CPU1515R-2PN 双主站构成软冗余、SCALANCE XC 交换机构 MRP 环、S2 冗余 IO。模拟单 CPU 故障/交换机关机/链路中断，验证 300ms 切换时间与生产线不停。',
+      tags: ['S7-1500R', 'MRP', 'S2 冗余 IO', '切换时间测试'],
+      ioTable: [
+        ['-','CPU 1515R-2PN #1','Primary','192.168.0.1','主站'],
+        ['-','CPU 1515R-2PN #2','Standby','192.168.0.2','备用站'],
+        ['-','SCALANCE XC 交换机','MRP Ring','-','环网'],
+        ['-','S2 冗余 IO','Redundant IO','-','ET200MP 双模块'],
+        ['I0.0 ~ I1.7','S2 冗余输入','DI','-','冗余 IO 输入'],
+        ['Q0.0 ~ Q1.7','S2 冗余输出','DO','-','冗余 IO 输出']
+      ],
+      structure: [
+        {name:'OB1', type:'组织块', desc:'主程序(主站/备用站同步执行)'},
+        {name:'OB100', type:'启动组织块', desc:'CPU 启动/切换时执行：数据同步、状态检查'},
+        {name:'FC50_Redundancy', type:'功能', desc:'冗余控制：主备切换检测、数据同步、切换日志'},
+        {name:'DB_Red', type:'数据块', desc:'冗余状态：当前主站、切换次数、最后切换时间'}
+      ],
+      simLink: '',
+      simPreset: '',
+      simLabel: ''
+    },
+    h3: {
+      code: 'H3',
+      level: '精通级',
+      levelClass: 'ok',
+      title: 'F-CPU 急停 + 安全门验证（SIL3）',
+      desc: 'S7-1511F 主站 + F-DI/F-DO ET200SP F 模块：急停 F_ESTOP（双通道 + 差异时间 500ms）、安全门 F_2W_DOOR、光栅 F_MUTE 启动抑制。输出 F_DIS 安全断接触器主回路。',
+      tags: ['F-CPU', 'F 指令集', 'SIL3 安全回路', 'F 验证记录'],
+      ioTable: [
+        ['F-DI0.0','急停通道 1','F-DI','-','急停按钮双通道1'],
+        ['F-DI0.1','急停通道 2','F-DI','-','急停按钮双通道2(差异时间<500ms)'],
+        ['F-DI0.2','安全门开关','F-DI','-','安全门闭合状态'],
+        ['F-DI0.3','光栅发射','F-DI','-','光栅启动抑制'],
+        ['F-DQ0.0','安全输出 F_DIS','F-DO','-','安全断接触器主回路'],
+        ['F-DQ0.1','安全输出 F_DQ1','F-DO','-','安全门监控输出']
+      ],
+      structure: [
+        {name:'OB1', type:'组织块', desc:'主程序：安全逻辑 + 标准逻辑并行'},
+        {name:'F_ESTOP', type:'F 功能块', desc:'急停安全回路：双通道检测、差异时间监控、F_DIS 输出'},
+        {name:'F_2W_DOOR', type:'F 功能块', desc:'安全门监控：双通道门开关检测、门未闭合时禁止启动'},
+        {name:'F_MUTE', type:'F 功能块', desc:'光栅启动抑制：光栅触发时禁止设备启动'},
+        {name:'DB_Safety', type:'数据块', desc:'安全参数：差异时间、屏蔽时间、验证记录'}
+      ],
+      simLink: '',
+      simPreset: '',
+      simLabel: ''
+    }
+  };
+
+  function getParam(name){
+    const url = new URL(window.location.href);
+    return url.searchParams.get(name);
+  }
+
+  function render(){
+    const id = getParam('id');
+    const root = document.getElementById('detailRoot');
+    if(!id || !projects[id]){
+      root.innerHTML = '<div class="not-found"><h2>❓ 项目未找到</h2><p>请返回<a href="index.html">项目库</a>选择有效项目。</p></div>';
+      return;
+    }
+    const p = projects[id];
+    document.title = p.title + ' · 博途学习站';
+
+    const tagColors = {cyan:'var(--cyan)', brand:'var(--brand)', ok:'var(--ok)', warn:'var(--warn)'};
+    const badgeColor = tagColors[p.levelClass] || 'var(--brand)';
+
+    let quickNavHtml = '';
+    if(p.simLink){
+      quickNavHtml += `<a href="${p.simLink}${p.simPreset ? '?preset='+p.simPreset : ''}" target="_blank">${p.simLabel}</a>`;
+    }
+    if(p.sclLink){
+      quickNavHtml += `<a href="${p.sclLink}" target="_blank">📄 SCL 源文件</a>`;
+    }
+    quickNavHtml += `<a href="index.html">← 返回项目库</a>`;
+
+    let ioHtml = p.ioTable.map(function(row){
+      const dirClass = row[2] === 'DI' || row[2] === 'F-DI' ? 'dir-in' : (row[2] === 'DO' || row[2] === 'F-DO' ? 'dir-out' : '');
+      const dirLabel = row[2];
+      return `<tr><td>${row[0]}</td><td>${row[1]}</td><td class="${dirClass}">${dirLabel}</td><td>${row[3]}</td><td>${row[4]}</td></tr>`;
+    }).join('');
+
+    let progHtml = p.structure.map(function(b){
+      return `<div class="prog-block"><div class="block-head"><span class="block-name">${b.name}</span><span class="block-type">${b.type}</span></div><div class="block-desc">${b.desc}</div></div>`;
+    }).join('');
+
+    let simActionsHtml = '';
+    if(p.simLink){
+      simActionsHtml += `<a href="${p.simLink}${p.simPreset ? '?preset='+p.simPreset : ''}" class="btn ok btn-block" style="text-align:center">${p.simLabel}</a>`;
+    }
+    if(p.sclLink){
+      simActionsHtml += `<a href="${p.sclLink}" class="btn btn-block" style="text-align:center">📄 下载 SCL 源文件</a>`;
+    }
+
+    root.innerHTML = `
+      <div class="quick-nav">${quickNavHtml}</div>
+      <div class="proj-hero">
+        <div class="badge" style="background:${badgeColor}">${p.code}</div>
+        <div>
+          <h1>${p.title}</h1>
+          <div class="tags">
+            <span class="tag ${p.levelClass}">${p.level}</span>
+            ${p.tags.map(function(t){ return '<span class="tag">'+t+'</span>'; }).join('')}
+          </div>
+        </div>
+      </div>
+
+      <div class="proj-section">
+        <h2>📋 项目概述</h2>
+        <p class="proj-desc">${p.desc}</p>
+        <div class="sim-actions">
+          ${simActionsHtml}
+        </div>
+      </div>
+
+      <div class="proj-section">
+        <h2>🔌 IO 分配表</h2>
+        <table class="io-tbl">
+          <thead><tr><th>地址</th><th>信号名</th><th>类型</th><th>模块/通道</th><th>说明</th></tr></thead>
+          <tbody>${ioHtml}</tbody>
+        </table>
+      </div>
+
+      <div class="proj-section">
+        <h2>🏗 程序结构</h2>
+        <div class="prog-structure">${progHtml}</div>
+      </div>
+
+      ${p.simLink || p.sclLink ? `
+      <div class="proj-section">
+        <h2>🔗 快速链接</h2>
+        <div class="sim-actions">
+          ${p.simLink ? `<a href="${p.simLink}${p.simPreset ? '?preset='+p.simPreset : ''}" class="btn ok btn-block" style="text-align:center">${p.simLabel}</a>` : ''}
+          ${p.sclLink ? `<a href="${p.sclLink}" class="btn btn-block" style="text-align:center">📄 下载 SCL</a>` : ''}
+        </div>
+      </div>` : ''}
+    `;
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>
