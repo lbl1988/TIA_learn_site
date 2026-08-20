@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LAD 点灯仿真 · 博途学习站</title>
+<link rel="stylesheet" href="../assets/css/style.css">
+<style>
+.sim-layout{display:grid;grid-template-columns:220px 1fr 260px;gap:16px;margin-top:12px}
+.sim-panel{background:var(--panel);border-radius:var(--radius);border:1px solid var(--line);padding:14px;box-shadow:var(--shadow)}
+.sim-panel h3{font-size:14px;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.sim-panel h3::before{content:"";width:3px;height:14px;background:var(--brand);border-radius:2px}
+.palette-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;margin-bottom:8px;cursor:grab;background:var(--panel-2);font-size:13px;transition:all .15s}
+.palette-item:hover{border-color:var(--brand);background:var(--brand-soft)}
+.palette-item:active{cursor:grabbing}
+.palette-item .sym{width:32px;text-align:center;font-family:var(--font-mono);font-size:16px;color:var(--brand);font-weight:600}
+.palette-item .info{flex:1}
+.palette-item .info .n{font-weight:600}
+.palette-item .info .d{font-size:11px;color:var(--muted)}
+.ladder-wrap{background:var(--panel);border-radius:var(--radius);border:1px solid var(--line);padding:14px;box-shadow:var(--shadow);min-height:400px}
+.ladder-toolbar{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.ladder-canvas{position:relative;background:var(--code-bg);border:1px solid var(--code-line);border-radius:8px;min-height:360px;overflow:auto}
+.rung{display:flex;align-items:stretch;min-height:72px;border-bottom:1px solid var(--code-line);position:relative}
+.rung:last-child{border-bottom:none}
+.rung-power-left{width:16px;border-right:2px solid var(--brand);flex-shrink:0}
+.rung-power-right{width:16px;border-left:2px solid var(--brand);flex-shrink:0}
+.rung-body{flex:1;display:flex;align-items:center;gap:2px;padding:4px 8px;min-height:64px;position:relative}
+.rung-body.wire-top{border-top:1px solid var(--brand-soft)}
+.rung-body.wire-bottom{border-bottom:1px solid var(--brand-soft)}
+.rung-comp{width:52px;height:56px;border:2px solid var(--line);border-radius:6px;background:var(--panel);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;position:relative;transition:all .15s;font-size:11px;text-align:center;user-select:none}
+.rung-comp:hover{border-color:var(--brand)}
+.rung-comp.selected{border-color:var(--brand);background:var(--brand-soft);box-shadow:0 0 0 2px var(--brand)}
+.rung-comp.energized{border-color:var(--ok);background:var(--ok-soft)}
+.rung-comp .sym{font-family:var(--font-mono);font-size:14px;font-weight:700;line-height:1}
+.rung-comp .addr{font-size:10px;color:var(--muted);margin-top:2px}
+.rung-comp.coil{border-style:dashed}
+.rung-comp.coil.energized{background:var(--ok-soft);color:var(--ok)}
+.rung-comp.timer{border-color:var(--warn)}
+.rung-comp.counter{border-color:var(--cyan)}
+.rung-comp .close-x{position:absolute;top:-6px;right:-6px;width:16px;height:16px;border-radius:50%;background:var(--alarm);color:#fff;font-size:10px;display:none;align-items:center;justify-content:center;line-height:1}
+.rung-comp:hover .close-x{display:flex}
+.rung-comp.empty{border-style:dashed;border-color:var(--line);color:var(--faint);cursor:pointer}
+.rung-comp.empty:hover{border-color:var(--brand);color:var(--brand)}
+.rung-join-top{position:absolute;top:-8px;left:0;right:0;height:8px;border-top:2px solid var(--brand-soft);cursor:pointer}
+.rung-join-bottom{position:absolute;bottom:-8px;left:0;right:0;height:8px;border-bottom:2px solid var(--brand-soft);cursor:pointer}
+.rung-join-top:hover,.rung-join-bottom:hover{background:var(--brand-soft)}
+.io-panel{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.io-group h4{font-size:12px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px}
+.io-list{display:flex;flex-direction:column;gap:4px}
+.io-item{display:flex;align-items:center;justify-content:space-between;padding:6px 8px;border:1px solid var(--line);border-radius:6px;font-size:12px;cursor:pointer;transition:all .15s;background:var(--panel-2)}
+.io-item:hover{border-color:var(--brand)}
+.io-item .addr{font-family:var(--font-mono);font-weight:600}
+.io-item .lamp{width:14px;height:14px;border-radius:50%;border:1px solid var(--line);transition:all .15s}
+.io-item.on .lamp{background:var(--ok);border-color:var(--ok);box-shadow:0 0 8px var(--ok)}
+.io-item.on{background:var(--ok-soft)}
+.io-item.output{cursor:default}
+.io-item.output.on{background:var(--ok-soft)}
+.io-item .val{font-size:10px;color:var(--muted)}
+.btn-sim{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px;border:1px solid var(--line);background:var(--panel-2);cursor:pointer;font-size:13px;transition:all .15s}
+.btn-sim:hover{border-color:var(--brand)}
+.btn-sim.primary{background:var(--brand);color:#fff;border-color:var(--brand)}
+.btn-sim.primary:hover{background:var(--brand-2)}
+.btn-sim.danger:hover{border-color:var(--alarm);color:var(--alarm)}
+.btn-sim.ok{background:var(--ok);color:#fff;border-color:var(--ok)}
+.btn-sim.ok:hover{background:#15803d}
+.sim-status{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:8px;background:var(--panel-2);font-size:13px}
+.sim-status .dot{width:10px;height:10px;border-radius:50%;background:var(--faint)}
+.sim-status.running .dot{background:var(--ok);animation:pulse 1s infinite}
+.sim-status.stopped .dot{background:var(--alarm)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.preset-list{display:flex;flex-direction:column;gap:6px;margin-top:10px}
+.preset-item{padding:8px 10px;border:1px solid var(--line);border-radius:6px;cursor:pointer;font-size:12px;background:var(--panel-2);transition:all .15s}
+.preset-item:hover{border-color:var(--brand);background:var(--brand-soft)}
+.preset-item .t{font-weight:600}
+.preset-item .d{color:var(--muted);font-size:11px}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal-box{background:var(--panel);border-radius:var(--radius);padding:20px;min-width:320px;max-width:90vw;box-shadow:var(--shadow)}
+.modal-box h3{margin-bottom:12px}
+.modal-box label{display:block;font-size:12px;color:var(--muted);margin:8px 0 4px}
+.modal-box input,.modal-box select{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:var(--panel-2);color:var(--text);font-size:13px}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+.timer-display{position:absolute;bottom:2px;right:2px;font-size:8px;color:var(--warn);font-family:var(--font-mono)}
+.counter-display{position:absolute;bottom:2px;right:2px;font-size:8px;color:var(--cyan);font-family:var(--font-mono)}
+.help-tip{margin-top:10px;padding:10px;background:var(--panel-2);border-radius:8px;font-size:12px;color:var(--muted);line-height:1.7}
+.help-tip code{background:var(--code-bg);padding:1px 5px;border-radius:3px;font-family:var(--font-mono);font-size:11px}
+@media(max-width:1100px){.sim-layout{grid-template-columns:1fr}.palette-col{order:2}.canvas-col{order:1}.io-col{order:3}}
+</style>
+</head>
+<body>
+<nav class="nav">
+<div class="nav-inner">
+  <a href="../index.html" class="logo"><div class="ic">TIA</div><div>博途学习站<span class="sub">From Zero to Hero</span></div></a>
+  <div class="menu">
+    <a href="../index.html">首页</a>
+    <a href="../courses/beginner.html" class="t1"><span class="dot"></span>入门篇</a>
+    <a href="../courses/intermediate.html" class="t2"><span class="dot"></span>进阶篇</a>
+    <a href="../courses/advanced.html" class="t3"><span class="dot"></span>精通篇</a>
+    <a href="../engineering/index.html" class="eng"><span class="dot"></span>工程化</a>
+    <a href="index.html" class="active">仿真实验室</a>
+    <a href="../videos/index.html">视频学习</a>
+    <a href="../resources/index.html">资源下载</a>
+    <a href="../projects/index.html">项目库</a>
+  </div>
+</div>
+</nav>
+
+<main class="wrap">
+  <div class="page-title">
+    <div class="flex-1">
+      <div class="bread"><a href="../index.html">首页</a><span class="sep">/</span><a href="index.html">仿真实验室</a><span class="sep">/</span>LAD 点灯仿真</div>
+      <h1>LAD 点灯仿真 <span class="tag cyan">入门篇</span></h1>
+      <p class="muted">拖放触点与线圈搭建梯形图，模拟 PLC 扫描周期运行</p>
+    </div>
+    <div class="sim-status stopped" id="simStatus"><span class="dot"></span><span id="simStatusText">已停止</span></div>
+  </div>
+
+  <div class="sim-layout">
+    <!-- Component Palette -->
+    <div class="sim-panel palette-col">
+      <h3>元件库</h3>
+      <div class="palette-item" draggable="true" data-type="contact_no">
+        <div class="sym">| |</div>
+        <div class="info"><div class="n">常开触点</div><div class="d">地址闭合时导通</div></div>
+      </div>
+      <div class="palette-item" draggable="true" data-type="contact_nc">
+        <div class="sym">| / |</div>
+        <div class="info"><div class="n">常闭触点</div><div class="d">地址断开时导通</div></div>
+      </div>
+      <div class="palette-item" draggable="true" data-type="coil">
+        <div class="sym">( )</div>
+        <div class="info"><div class="n">线圈</div><div class="d">输出继电器</div></div>
+      </div>
+      <div class="palette-item" draggable="true" data-type="coil_set">
+        <div class="sym">(S)</div>
+        <div class="info"><div class="n">置位线圈</div><div class="d">锁存输出</div></div>
+      </div>
+      <div class="palette-item" draggable="true" data-type="coil_reset">
+        <div class="sym">(R)</div>
+        <div class="info"><div class="n">复位线圈</div><div class="d">解除锁存</div></div>
+      </div>
+      <div class="palette-item" draggable="true" data-type="timer_ton">
+        <div class="sym">TON</div>
+        <div class="info"><div class="n">接通延时定时器</div><div class="d">导通计时</div></div>
+      </div>
+      <div class="palette-item" draggable="true" data-type="counter">
+        <div class="sym">CTU</div>
+        <div class="info"><div class="n">加计数器</div><div class="d">累积脉冲</div></div>
+      </div>
+
+      <h3 style="margin-top:16px">快速模板</h3>
+      <div class="preset-list">
+        <div class="preset-item" data-preset="start_stop">
+          <div class="t">启保停电路</div><div class="d">最基础的启停控制</div>
+        </div>
+        <div class="preset-item" data-preset="reversible">
+          <div class="t">正反转控制</div><div class="d">互锁正转/反转</div>
+        </div>
+        <div class="preset-item" data-preset="star_delta">
+          <div class="t">星三角启动</div><div class="d">降压启动 + 延时切换</div>
+        </div>
+        <div class="preset-item" data-preset="sequential">
+          <div class="t">顺序启动</div><div class="d">时间顺序依次启动</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ladder Canvas -->
+    <div class="ladder-wrap canvas-col">
+      <div class="ladder-toolbar">
+        <button class="btn-sim" id="btnAddRung">+ 添加阶梯</button>
+        <button class="btn-sim danger" id="btnClear">清空</button>
+        <button class="btn-sim" id="btnSim" style="margin-left:auto">▶ 仿真</button>
+        <button class="btn-sim" id="btnStep">⏭ 单步</button>
+        <button class="btn-sim primary" id="btnRun">● 运行</button>
+        <button class="btn-sim danger" id="btnStop">■ 停止</button>
+      </div>
+      <div class="ladder-canvas" id="ladderCanvas"></div>
+      <div class="help-tip">
+        <b>操作提示：</b> 从左侧拖放元件到阶梯中 · 点击元件编辑地址 · 点击阶梯右侧的
+        <code>||</code> 可添加连接到下一阶梯 · 双击空白处添加新阶梯
+      </div>
+    </div>
+
+    <!-- I/O Panel -->
+    <div class="sim-panel io-col">
+      <h3>PLCSIM 面板</h3>
+      <div class="io-panel">
+        <div class="io-group">
+          <h4>输入 (I)</h4>
+          <div class="io-list" id="inputList"></div>
+        </div>
+        <div class="io-group">
+          <h4>输出 (Q)</h4>
+          <div class="io-list" id="outputList"></div>
+        </div>
+      </div>
+      <div class="help-tip">
+        点击输入点切换状态（模拟传感器/按钮）<br>
+        输出点由程序控制，绿色=通电
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Component Edit Modal -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal-box">
+    <h3>编辑元件</h3>
+    <label>元件类型</label>
+    <input id="editType" disabled>
+    <label>地址</label>
+    <input id="editAddr" placeholder="例如 I0.0, Q0.0, T37, C0">
+    <label id="editParamLabel" style="display:none">参数</label>
+    <input id="editParam" style="display:none" placeholder="TON: 预设时间(ms), CTU: 预设值">
+    <div class="modal-actions">
+      <button class="btn-sim" id="editCancel">取消</button>
+      <button class="btn-sim primary" id="editOk">确定</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const state = {
+    rungs: [],
+    running: false,
+    timerHandle: null,
+    scanCount: 0,
+    io: { inputs: {}, outputs: {}, timers: {}, counters: {} },
+    selected: null,
+    editing: null
+  };
+
+  const EL_TYPE = {
+    contact_no: { sym: '| |', label: '常开触点', needsAddr: true },
+    contact_nc: { sym: '|/|', label: '常闭触点', needsAddr: true },
+    coil: { sym: '( )', label: '线圈', needsAddr: true, isOutput: true },
+    coil_set: { sym: '(S)', label: '置位线圈', needsAddr: true, isOutput: true },
+    coil_reset: { sym: '(R)', label: '复位线圈', needsAddr: true, isOutput: true },
+    timer_ton: { sym: 'TON', label: '定时器', needsAddr: true, needsParam: true, isOutput: true },
+    counter: { sym: 'CTU', label: '计数器', needsAddr: true, needsParam: true, isOutput: true }
+  };
+
+  function nextRungId(){ return 'r' + Date.now() + '_' + Math.random().toString(36).slice(2,5); }
+  function nextCompId(){ return 'c' + Date.now() + '_' + Math.random().toString(36).slice(2,5); }
+
+  function addRung(){
+    state.rungs.push({ id: nextRungId(), components: [], connectedNext: false });
+    render();
+  }
+
+  function removeRung(id){
+    const idx = state.rungs.findIndex(r => r.id === id);
+    if(idx >= 0) state.rungs.splice(idx, 1);
+    render();
+  }
+
+  function addComponent(rungId, type){
+    const rung = state.rungs.find(r => r.id === rungId);
+    if(!rung) return;
+    rung.components.push({ id: nextCompId(), type: type, addr: '', param: 0 });
+    render();
+  }
+
+  function removeComponent(rungId, compId){
+    const rung = state.rungs.find(r => r.id === rungId);
+    if(!rung) return;
+    rung.components = rung.components.filter(c => c.id !== compId);
+    render();
+  }
+
+  function editComponent(rungId, compId){
+    const rung = state.rungs.find(r => r.id === rungId);
+    if(!rung) return;
+    const comp = rung.components.find(c => c.id === compId);
+    if(!comp) return;
+    state.editing = { rungId, compId };
+    document.getElementById('editType').value = EL_TYPE[comp.type].label + ' (' + comp.type + ')';
+    document.getElementById('editAddr').value = comp.addr;
+    const needParam = EL_TYPE[comp.type].needsParam;
+    document.getElementById('editParamLabel').style.display = needParam ? 'block' : 'none';
+    document.getElementById('editParam').style.display = needParam ? 'block' : 'none';
+    document.getElementById('editParam').value = comp.param || '';
+    document.getElementById('editModal').classList.add('show');
+  }
+
+  function saveEdit(){
+    if(!state.editing) return;
+    const { rungId, compId } = state.editing;
+    const rung = state.rungs.find(r => r.id === rungId);
+    const comp = rung.components.find(c => c.id === compId);
+    if(!comp) return;
+    comp.addr = document.getElementById('editAddr').value.trim();
+    if(EL_TYPE[comp.type].needsParam){
+      comp.param = parseInt(document.getElementById('editParam').value) || 0;
+    }
+    document.getElementById('editModal').classList.remove('show');
+    state.editing = null;
+    render();
+  }
+
+  function render(){
+    const canvas = document.getElementById('ladderCanvas');
+    canvas.innerHTML = '';
+    if(state.rungs.length === 0){
+      canvas.innerHTML = '<div style="padding:40px;text-align:center;color:var(--faint)">双击空白处或点击"添加阶梯"开始搭建梯形图</div>';
+      return;
+    }
+    state.rungs.forEach(function(rung, idx){
+      const rEl = document.createElement('div');
+      rEl.className = 'rung';
+      rEl.innerHTML = '<div class="rung-power-left"></div><div class="rung-body" id="rb_' + rung.id + '"></div><div class="rung-power-right"></div>';
+      const body = rEl.querySelector('.rung-body');
+
+      rung.components.forEach(function(comp){
+        const cEl = document.createElement('div');
+        const et = EL_TYPE[comp.type];
+        cEl.className = 'rung-comp' + (comp.type.startsWith('coil') || comp.type === 'timer_ton' || comp.type === 'counter' ? ' coil' : '');
+        if(comp.type === 'timer_ton') cEl.classList.add('timer');
+        if(comp.type === 'counter') cEl.classList.add('counter');
+        if(comp.addr && state.running){
+          cEl.classList.add(isComponentEnergized(rung, comp) ? 'energized' : '');
+        }
+        cEl.innerHTML = '<div class="sym">' + et.sym + '</div>' +
+          (comp.addr ? '<div class="addr">' + comp.addr + '</div>' : '') +
+          '<div class="close-x">×</div>';
+        cEl.addEventListener('click', function(e){
+          if(e.target.classList.contains('close-x')){
+            if(!state.running) removeComponent(rung.id, comp.id);
+            return;
+          }
+          if(!state.running) editComponent(rung.id, comp.id);
+        });
+        body.appendChild(cEl);
+      });
+
+      if(rung.connectedNext){
+        const jEl = document.createElement('div');
+        jEl.className = 'rung-comp';
+        jEl.style.width = 'auto';
+        jEl.style.padding = '0 8px';
+        jEl.style.background = 'transparent';
+        jEl.style.border = 'none';
+        jEl.style.color = 'var(--brand)';
+        jEl.style.fontSize = '18px';
+        jEl.style.fontWeight = '700';
+        jEl.textContent = '||';
+        jEl.title = '连接到下一阶梯（OR 逻辑）';
+        jEl.addEventListener('click', function(){
+          rung.connectedNext = false;
+          render();
+        });
+        body.appendChild(jEl);
+      }
+
+      const addBtn = document.createElement('div');
+      addBtn.className = 'rung-comp empty';
+      addBtn.style.width = '32px';
+      addBtn.textContent = '+';
+      addBtn.title = '添加元件';
+      addBtn.addEventListener('click', function(){
+        showPalettePicker(rung.id);
+      });
+      body.appendChild(addBtn);
+
+      const delBtn = document.createElement('div');
+      delBtn.style.marginLeft = '8px';
+      delBtn.style.color = 'var(--faint)';
+      delBtn.style.cursor = 'pointer';
+      delBtn.textContent = '🗑';
+      delBtn.title = '删除阶梯';
+      delBtn.addEventListener('click', function(){
+        if(!state.running) removeRung(rung.id);
+      });
+      body.appendChild(delBtn);
+
+      canvas.appendChild(rEl);
+    });
+    updateIO();
+  }
+
+  function showPalettePicker(rungId){
+    const picker = document.createElement('div');
+    picker.className = 'modal-overlay show';
+    picker.innerHTML = '<div class="modal-box"><h3>选择元件</h3>' +
+      Object.entries(EL_TYPE).map(function([k,v]){
+        return '<div class="palette-item" data-type="' + k + '"><div class="sym">' + v.sym + '</div><div class="info"><div class="n">' + v.label + '</div><div class="d">' + (v.needsAddr ? '需要地址' : '') + '</div></div></div>';
+      }).join('') +
+      '<div class="modal-actions"><button class="btn-sim" id="pickerCancel">取消</button></div></div>';
+    document.body.appendChild(picker);
+    picker.querySelectorAll('.palette-item').forEach(function(item){
+      item.addEventListener('click', function(){
+        addComponent(rungId, item.dataset.type);
+        picker.remove();
+      });
+    });
+    picker.querySelector('#pickerCancel').addEventListener('click', function(){ picker.remove(); });
+    picker.addEventListener('click', function(e){ if(e.target === picker) picker.remove(); });
+  }
+
+  function initIO(){
+    state.io.inputs = {};
+    state.io.outputs = {};
+    state.io.timers = {};
+    state.io.counters = {};
+    for(let i=0; i<8; i++){
+      state.io.inputs['I0.'+i] = false;
+      state.io.outputs['Q0.'+i] = false;
+    }
+    renderIO();
+  }
+
+  function renderIO(){
+    const inList = document.getElementById('inputList');
+    const outList = document.getElementById('outputList');
+    inList.innerHTML = '';
+    outList.innerHTML = '';
+    Object.keys(state.io.inputs).forEach(function(addr){
+      const item = document.createElement('div');
+      item.className = 'io-item' + (state.io.inputs[addr] ? ' on' : '');
+      item.innerHTML = '<span class="addr">' + addr + '</span><span class="val">' + (state.io.inputs[addr] ? 'ON' : 'OFF') + '</span><span class="lamp"></span>';
+      item.addEventListener('click', function(){
+        if(state.running){
+          state.io.inputs[addr] = !state.io.inputs[addr];
+          renderIO();
+        }
+      });
+      inList.appendChild(item);
+    });
+    Object.keys(state.io.outputs).forEach(function(addr){
+      const item = document.createElement('div');
+      item.className = 'io-item output' + (state.io.outputs[addr] ? ' on' : '');
+      item.innerHTML = '<span class="addr">' + addr + '</span><span class="val">' + (state.io.outputs[addr] ? 'ON' : 'OFF') + '</span><span class="lamp"></span>';
+      outList.appendChild(item);
+    });
+  }
+
+  function isComponentEnergized(rung, comp){
+    let result = evalRungLogic(rung, comp);
+    if(comp.type === 'coil_set' && state.io.outputs[comp.addr]) result = true;
+    if(comp.type === 'coil_reset' && !state.io.outputs[comp.addr]) result = false;
+    return result;
+  }
+
+  function evalRungLogic(rung, targetComp){
+    let current = false;
+    let prevOpen = false;
+    let result = null;
+
+    for(let i = 0; i < rung.components.length; i++){
+      const comp = rung.components[i];
+      const isLast = (i === rung.components.length - 1);
+
+      if(comp === targetComp){
+        if(comp.type === 'coil' || comp.type === 'coil_set' || comp.type === 'coil_reset' || comp.type === 'timer_ton' || comp.type === 'counter'){
+          return current;
+        }
+      }
+
+      if(comp.type === 'contact_no'){
+        if(!comp.addr) return false;
+        current = state.io.inputs[comp.addr] || false;
+      } else if(comp.type === 'contact_nc'){
+        if(!comp.addr) return false;
+        current = !(state.io.inputs[comp.addr] || false);
+      } else if(comp.type === 'coil' || comp.type === 'coil_set' || comp.type === 'coil_reset'){
+        if(!comp.addr) return false;
+        if(!current) return false;
+      } else if(comp.type === 'timer_ton'){
+        if(!comp.addr) return false;
+        if(!current) return false;
+        if(!state.io.timers[comp.addr]) state.io.timers[comp.addr] = { acc: 0, done: false };
+        return state.io.timers[comp.addr].done;
+      } else if(comp.type === 'counter'){
+        if(!comp.addr) return false;
+        if(!state.io.counters[comp.addr]) state.io.counters[comp.addr] = { val: 0, done: false };
+        return state.io.counters[comp.addr].done;
+      }
+
+      if(rung.connectedNext && isLast && current){
+        const nextRung = state.rungs[state.rungs.indexOf(rung) + 1];
+        if(nextRung){
+          const nextResult = evalRungLogic(nextRung, null);
+          current = current || nextResult;
+        }
+      }
+    }
+    return current;
+  }
+
+  function scanOnce(){
+    state.scanCount++;
+    const newOutputs = {};
+    const newTimers = {};
+
+    state.rungs.forEach(function(rung){
+      rung.components.forEach(function(comp){
+        if(!comp.addr) return;
+        let powerFlow = evalRungLogic(rung, comp);
+
+        if(comp.type === 'coil'){
+          newOutputs[comp.addr] = powerFlow;
+        } else if(comp.type === 'coil_set'){
+          if(powerFlow) newOutputs[comp.addr] = true;
+        } else if(comp.type === 'coil_reset'){
+          if(powerFlow) newOutputs[comp.addr] = false;
+        } else if(comp.type === 'timer_ton'){
+          if(powerFlow){
+            if(!state.io.timers[comp.addr]) state.io.timers[comp.addr] = { acc: 0, done: false };
+            state.io.timers[comp.addr].acc += 100;
+            if(state.io.timers[comp.addr].acc >= comp.param){
+              state.io.timers[comp.addr].done = true;
+              newTimers[comp.addr] = true;
+            }
+          } else {
+            state.io.timers[comp.addr] = { acc: 0, done: false };
+          }
+        } else if(comp.type === 'counter'){
+          if(powerFlow){
+            if(!state.io.counters[comp.addr]) state.io.counters[comp.addr] = { val: 0, done: false };
+            if(comp.param && state.io.counters[comp.addr].val < comp.param){
+              state.io.counters[comp.addr].val++;
+              if(state.io.counters[comp.addr].val >= comp.param){
+                state.io.counters[comp.addr].done = true;
+              }
+            }
+          }
+        }
+      });
+    });
+
+    Object.keys(newOutputs).forEach(function(k){ state.io.outputs[k] = newOutputs[k]; });
+    Object.keys(newTimers).forEach(function(k){ state.io.timers[k].done = true; });
+
+    render();
+    renderIO();
+  }
+
+  function startSimulation(){
+    if(state.rungs.length === 0){ alert('请先搭建梯形图'); return; }
+    state.running = true;
+    state.scanCount = 0;
+    document.getElementById('simStatus').className = 'sim-status running';
+    document.getElementById('simStatusText').textContent = '运行中 · 扫描周期 #' + state.scanCount;
+    state.timerHandle = setInterval(function(){
+      scanOnce();
+      document.getElementById('simStatusText').textContent = '运行中 · 扫描周期 #' + state.scanCount;
+    }, 200);
+  }
+
+  function stopSimulation(){
+    state.running = false;
+    if(state.timerHandle){ clearInterval(state.timerHandle); state.timerHandle = null; }
+    document.getElementById('simStatus').className = 'sim-status stopped';
+    document.getElementById('simStatusText').textContent = '已停止';
+    state.scanCount = 0;
+    Object.keys(state.io.inputs).forEach(function(k){ state.io.inputs[k] = false; });
+    Object.keys(state.io.outputs).forEach(function(k){ state.io.outputs[k] = false; });
+    state.io.timers = {};
+    state.io.counters = {};
+    render();
+    renderIO();
+  }
+
+  function singleStep(){
+    if(!state.running){
+      state.running = true;
+      document.getElementById('simStatus').className = 'sim-status running';
+    }
+    scanOnce();
+  }
+
+  function loadPreset(name){
+    state.rungs = [];
+    state.io.inputs = {};
+    state.io.outputs = {};
+    state.io.timers = {};
+    state.io.counters = {};
+    initIO();
+
+    if(name === 'start_stop'){
+      state.rungs = [{
+        id: nextRungId(), connectedNext: false,
+        components: [
+          { id: nextCompId(), type: 'contact_no', addr: 'I0.0', param: 0 },
+          { id: nextCompId(), type: 'contact_nc', addr: 'I0.1', param: 0 },
+          { id: nextCompId(), type: 'coil_set', addr: 'Q0.0', param: 0 }
+        ]
+      },{
+        id: nextRungId(), connectedNext: false,
+        components: [
+          { id: nextCompId(), type: 'contact_no', addr: 'Q0.0', param: 0 },
+          { id: nextCompId(), type: 'coil', addr: 'Q0.1', param: 0 }
+        ]
+      }];
+    } else if(name === 'reversible'){
+      state.rungs = [{
+        id: nextRungId(), connectedNext: false,
+        components: [
+          { id: nextCompId(), type: 'contact_no', addr: 'I0.0', param: 0 },
+          { id: nextCompId(), type: 'contact_nc', addr: 'I0.2', param: 0 },
+          { id: nextCompId(), type: 'contact_nc', addr: 'Q0.2', param: 0 },
+          { id: nextCompId(), type: 'coil_set', addr: 'Q0.0', param: 0 }
+        ]
+      },{
+        id: nextRungId(), connectedNext: false,
+        components: [
+          { id: nextCompId(), type: 'contact_no', addr: 'I0.1', param: 0 },
+          { id: nextCompId(), type: 'contact_nc', addr: 'I0.3', param: 0 },
+          { id: nextCompId(), type: 'contact_nc', addr: 'Q0.1', param: 0 },
+          { id: nextCompId(), type: 'coil_set', addr: 'Q0.2', param: 0 }
+        ]
+      },{
+        id: nextRungId(), connectedNext: false,
+        components: [
+          { id: nextCompId(), type: 'contact_no', addr: 'Q0.0', param: 0 },
+          { id: nextCompId(), type: 'coil', addr: 'Q0.1', param: 0 }
+        ]
+      },{
+        id: nextRungId(), connectedNext: false,
+        components: [
+          { id: nextCompId(), type: 'contact_no', addr: 'Q0.2', param: 0 },
+          { id: nextCompId(), type: 'coil', addr: 'Q0.3', param: 0 }
+        ]
+      }];
+    } else if(name === 'star_delta'){
+      state.rungs = [{
+        id: nextRungId(), connectedNext: false,
+        components: [
+          { id: nextCompId(), type: 'contact_no', addr: 'I0.0', param: 0 },
+          { id: nextCompId(), type: 'contact_nc', addr: 'I0.1', param: 0 },
+          { id: nextCompId(), type: 'coil_set', addr: 'Q0.0', param: 0 }
+        ]
+      },{
+        id: nextRungId(), connectedNext: false,
+        components: [
+          { id: nextCompId(), type: 'contact_no', addr: 'Q0.0', param: 0 },
+          { id: nextCompId(), type: 'contact_nc', addr: 'Q0.3', param: 0 },
+          { id: nextCompId(), type: 'coil', addr: 'Q0.1', param: 0 }
+        ]
+      },{
+        id: nextRungId(), connectedNext: false,
+        components: [
+          { id: nextCompId(), type: 'contact_no', addr: 'Q0.0', param: 0 },
+          { id: nextCompId(), type: 'timer_ton', addr: 'T37', param: 5000 }
+        ]
+      },{
+        id: nextRungId(), connectedNext: false,
+        components: [
+          { id: nextCompId(), type: 'contact_no', addr: 'T37', param: 0 },
+          { id: nextCompId(), type: 'contact_nc', addr: 'Q0.1', param: 0 },
+          { id: nextCompId(), type: 'coil', addr: 'Q0.3', param: 0 }
+        ]
+      }];
+    } else if(name === 'sequential'){
+      state.rungs = [{
+        id: nextRungId(), connectedNext: false,
+        components: [
+          { id: nextCompId(), type: 'contact_no', addr: 'I0.0', param: 0 },
+          { id: nextCompId(), type: 'coil', addr: 'Q0.0', param: 0 }
+        ]
+      },{
+        id: nextRungId(), connectedNext: false,
+        components: [
+          { id: nextCompId(), type: 'contact_no', addr: 'Q0.0', param: 0 },
+          { id: nextCompId(), type: 'timer_ton', addr: 'T37', param: 3000 }
+        ]
+      },{
+        id: nextRungId(), connectedNext: false,
+        components: [
+          { id: nextCompId(), type: 'contact_no', addr: 'T37', param: 0 },
+          { id: nextCompId(), type: 'coil', addr: 'Q0.1', param: 0 }
+        ]
+      },{
+        id: nextRungId(), connectedNext: false,
+        components: [
+          { id: nextCompId(), type: 'contact_no', addr: 'Q0.1', param: 0 },
+          { id: nextCompId(), type: 'timer_ton', addr: 'T38', param: 3000 }
+        ]
+      },{
+        id: nextRungId(), connectedNext: false,
+        components: [
+          { id: nextCompId(), type: 'contact_no', addr: 'T38', param: 0 },
+          { id: nextCompId(), type: 'coil', addr: 'Q0.2', param: 0 }
+        ]
+      }];
+    }
+    render();
+  }
+
+  document.getElementById('btnAddRung').addEventListener('click', addRung);
+  document.getElementById('btnClear').addEventListener('click', function(){
+    if(state.running){ stopSimulation(); }
+    state.rungs = [];
+    render();
+  });
+  document.getElementById('btnRun').addEventListener('click', startSimulation);
+  document.getElementById('btnStop').addEventListener('click', stopSimulation);
+  document.getElementById('btnStep').addEventListener('click', singleStep);
+  document.getElementById('btnSim').addEventListener('click', startSimulation);
+
+  document.getElementById('btnSim').addEventListener('click', startSimulation);
+
+  document.getElementById('editCancel').addEventListener('click', function(){
+    document.getElementById('editModal').classList.remove('show');
+    state.editing = null;
+  });
+  document.getElementById('editOk').addEventListener('click', saveEdit);
+  document.getElementById('editAddr').addEventListener('keydown', function(e){
+    if(e.key === 'Enter') saveEdit();
+  });
+  document.getElementById('editModal').addEventListener('click', function(e){
+    if(e.target.id === 'editModal'){
+      e.target.classList.remove('show');
+      state.editing = null;
+    }
+  });
+
+  document.querySelectorAll('.palette-item').forEach(function(item){
+    item.addEventListener('dragstart', function(e){
+      e.dataTransfer.setData('type', item.dataset.type);
+    });
+  });
+
+  const canvas = document.getElementById('ladderCanvas');
+  canvas.addEventListener('dragover', function(e){ e.preventDefault(); });
+  canvas.addEventListener('drop', function(e){
+    e.preventDefault();
+    const type = e.dataTransfer.getData('type');
+    if(!type) return;
+    const rungId = e.target.closest('.rung');
+    if(!rungId){ addRung(); addComponent(state.rungs[state.rungs.length-1].id, type); }
+    else{ addComponent(rungId.id, type); }
+  });
+  canvas.addEventListener('dblclick', function(e){
+    if(e.target === canvas){ addRung(); }
+  });
+
+  document.querySelectorAll('.preset-item').forEach(function(item){
+    item.addEventListener('click', function(){ loadPreset(item.dataset.preset); });
+  });
+
+  initIO();
+  addRung();
+  render();
+})();
+</script>
+</body>
+</html>

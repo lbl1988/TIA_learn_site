@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>V90 伺服运动控制 · 博途学习站</title>
+<link rel="stylesheet" href="../assets/css/style.css">
+<style>
+.sim-layout{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:12px}
+.sim-panel{background:var(--panel);border-radius:var(--radius);border:1px solid var(--line);padding:14px;box-shadow:var(--shadow)}
+.sim-panel h3{font-size:14px;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.sim-panel h3::before{content:"";width:3px;height:14px;background:var(--brand);border-radius:2px}
+.cmd-section{display:flex;flex-direction:column;gap:10px}
+.cmd-card{border:1px solid var(--line);border-radius:10px;padding:12px;background:var(--panel-2);transition:all .15s}
+.cmd-card:hover{border-color:var(--brand)}
+.cmd-card.active{border-color:var(--brand);background:var(--brand-soft)}
+.cmd-card .cmd-title{display:flex;align-items:center;gap:8px;font-weight:600;margin-bottom:8px;font-size:13px}
+.cmd-card .cmd-title .tag{font-size:10px;padding:1px 6px;border-radius:4px;background:var(--panel);color:var(--muted)}
+.cmd-card .cmd-body{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.cmd-card label{font-size:11px;color:var(--muted)}
+.cmd-card input{width:100%;padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--text);font-size:12px;font-family:var(--font-mono)}
+.cmd-card .cmd-actions{display:flex;gap:6px;margin-top:10px}
+.btn-sim{display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:6px;border:1px solid var(--line);background:var(--panel);cursor:pointer;font-size:12px;transition:all .15s}
+.btn-sim:hover{border-color:var(--brand)}
+.btn-sim.primary{background:var(--brand);color:#fff;border-color:var(--brand)}
+.btn-sim.primary:hover{background:var(--brand-2)}
+.btn-sim.ok{background:var(--ok);color:#fff;border-color:var(--ok)}
+.btn-sim.ok:hover{background:#15803d}
+.btn-sim.warn{background:var(--warn);color:#fff;border-color:var(--warn)}
+.btn-sim.danger{background:var(--alarm);color:#fff;border-color:var(--alarm)}
+.status-panel{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
+.status-card{border:1px solid var(--line);border-radius:10px;padding:10px;text-align:center;background:var(--panel-2)}
+.status-card .label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+.status-card .value{font-size:22px;font-weight:700;font-family:var(--font-mono);color:var(--brand);margin:4px 0}
+.status-card .unit{font-size:11px;color:var(--muted)}
+.status-card.ok .value{color:var(--ok)}
+.status-card.warn .value{color:var(--warn)}
+.status-machine{display:flex;align-items:center;justify-content:center;gap:4px;margin:12px 0;flex-wrap:wrap}
+.state-node{padding:6px 10px;border:1px solid var(--line);border-radius:6px;font-size:11px;background:var(--panel);transition:all .2s}
+.state-node.active{background:var(--brand);color:#fff;border-color:var(--brand)}
+.state-node.done{background:var(--ok-soft);border-color:var(--ok);color:var(--ok)}
+.state-arrow{color:var(--faint);font-size:14px}
+.chart-container{position:relative;background:var(--code-bg);border:1px solid var(--code-line);border-radius:8px;height:240px;margin-bottom:12px;overflow:hidden}
+.chart-container canvas{width:100%;height:100%}
+.chart-legend{display:flex;gap:16px;font-size:11px;color:var(--muted)}
+.chart-legend .dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:4px;vertical-align:middle}
+.chart-legend .dot.pos{background:var(--brand)}
+.chart-legend .dot.vel{background:var(--cyan)}
+.chart-legend .dot.ref{background:var(--warn)}
+.param-section{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.param-card{border:1px solid var(--line);border-radius:8px;padding:10px;background:var(--panel-2)}
+.param-card .pl{font-size:10px;color:var(--muted);text-transform:uppercase;margin-bottom:6px}
+.param-row{display:flex;justify-content:space-between;align-items:center;font-size:12px;margin:3px 0}
+.param-row .v{font-family:var(--font-mono);font-weight:600}
+.motor-visual{display:flex;justify-content:center;margin:10px 0}
+.motor-svg{width:120px;height:120px}
+.help-tip{margin-top:10px;padding:10px;background:var(--panel-2);border-radius:8px;font-size:12px;color:var(--muted);line-height:1.7}
+.help-tip b{color:var(--text)}
+@media(max-width:1100px){.sim-layout{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<nav class="nav">
+<div class="nav-inner">
+  <a href="../index.html" class="logo"><div class="ic">TIA</div><div>博途学习站<span class="sub">From Zero to Hero</span></div></a>
+  <div class="menu">
+    <a href="../index.html">首页</a>
+    <a href="../courses/beginner.html" class="t1"><span class="dot"></span>入门篇</a>
+    <a href="../courses/intermediate.html" class="t2"><span class="dot"></span>进阶篇</a>
+    <a href="../courses/advanced.html" class="t3"><span class="dot"></span>精通篇</a>
+    <a href="../engineering/index.html" class="eng"><span class="dot"></span>工程化</a>
+    <a href="index.html" class="active">仿真实验室</a>
+    <a href="../videos/index.html">视频学习</a>
+    <a href="../resources/index.html">资源下载</a>
+    <a href="../projects/index.html">项目库</a>
+  </div>
+</div>
+</nav>
+
+<main class="wrap">
+  <div class="page-title">
+    <div class="flex-1">
+      <div class="bread"><a href="../index.html">首页</a><span class="sep">/</span><a href="index.html">仿真实验室</a><span class="sep">/</span>V90 伺服运动控制</div>
+      <h1>V90 伺服运动控制 <span class="tag warn">精通篇</span></h1>
+      <p class="muted">回原点 / 绝对定位 / 相对定位 / 速度设定 · 实时位置速度曲线可视化</p>
+    </div>
+  </div>
+
+  <div class="sim-layout">
+    <!-- Left: Motion Commands & Status -->
+    <div>
+      <div class="sim-panel">
+        <h3>运动指令</h3>
+        <div class="cmd-section">
+          <!-- Homing -->
+          <div class="cmd-card" id="cmd-home">
+            <div class="cmd-title">🔄 回原点 (Homing) <span class="tag">MC_Home</span></div>
+            <div class="cmd-body">
+              <div>
+                <label>回原点模式</label>
+                <select id="homeMode" style="width:100%;padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--text);font-size:12px">
+                  <option value="0">模式0: 限位开关</option>
+                  <option value="1">模式1: 编码器Z脉冲</option>
+                  <option value="2">模式2: 限位+Z脉冲</option>
+                </select>
+              </div>
+              <div>
+                <label>回原点速度 (mm/s)</label>
+                <input type="number" id="homeSpeed" value="20" min="1">
+              </div>
+              <div>
+                <label>原点偏移 (mm)</label>
+                <input type="number" id="homeOffset" value="0" step="0.1">
+              </div>
+            </div>
+            <div class="cmd-actions">
+              <button class="btn-sim ok" onclick="v90.execute('home')">▶ 执行回原点</button>
+            </div>
+          </div>
+
+          <!-- Absolute Position -->
+          <div class="cmd-card" id="cmd-abs">
+            <div class="cmd-title">📍 绝对定位 <span class="tag">MC_MoveAbsolute</span></div>
+            <div class="cmd-body">
+              <div>
+                <label>目标位置 (mm)</label>
+                <input type="number" id="absPos" value="100" step="0.1">
+              </div>
+              <div>
+                <label>运行速度 (mm/s)</label>
+                <input type="number" id="absVel" value="50" min="1">
+              </div>
+              <div>
+                <label>加速度 (mm/s²)</label>
+                <input type="number" id="absAcc" value="100" min="1">
+              </div>
+              <div>
+                <label>减速度 (mm/s²)</label>
+                <input type="number" id="absDec" value="100" min="1">
+              </div>
+            </div>
+            <div class="cmd-actions">
+              <button class="btn-sim primary" onclick="v90.execute('absolute')">▶ 执行定位</button>
+              <button class="btn-sim" onclick="v90.stop()" style="margin-left:auto">■ 停止</button>
+            </div>
+          </div>
+
+          <!-- Relative Position -->
+          <div class="cmd-card" id="cmd-rel">
+            <div class="cmd-title">➡️ 相对定位 <span class="tag">MC_MoveRelative</span></div>
+            <div class="cmd-body">
+              <div>
+                <label>移动距离 (mm)</label>
+                <input type="number" id="relDist" value="50" step="0.1">
+              </div>
+              <div>
+                <label>运行速度 (mm/s)</label>
+                <input type="number" id="relVel" value="30" min="1">
+              </div>
+              <div>
+                <label>加速度 (mm/s²)</label>
+                <input type="number" id="relAcc" value="80" min="1">
+              </div>
+              <div>
+                <label>减速度 (mm/s²)</label>
+                <input type="number" id="relDec" value="80" min="1">
+              </div>
+            </div>
+            <div class="cmd-actions">
+              <button class="btn-sim primary" onclick="v90.execute('relative')">▶ 执行定位</button>
+              <button class="btn-sim" onclick="v90.stop()" style="margin-left:auto">■ 停止</button>
+            </div>
+          </div>
+
+          <!-- Velocity -->
+          <div class="cmd-card" id="cmd-vel">
+            <div class="cmd-title">⚡ 速度运行 <span class="tag">MC_MoveVelocity</span></div>
+            <div class="cmd-body">
+              <div>
+                <label>目标速度 (mm/s)</label>
+                <input type="number" id="velTarget" value="30" step="0.1">
+              </div>
+              <div>
+                <label>运动方向</label>
+                <select id="velDir" style="width:100%;padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--text);font-size:12px">
+                  <option value="1">正向 (+)</option>
+                  <option value="-1">反向 (-)</option>
+                </select>
+              </div>
+              <div>
+                <label>加速度 (mm/s²)</label>
+                <input type="number" id="velAcc" value="100" min="1">
+              </div>
+              <div>
+                <label>持续时间 (秒, 0=持续运行)</label>
+                <input type="number" id="velDur" value="0" step="0.1">
+              </div>
+            </div>
+            <div class="cmd-actions">
+              <button class="btn-sim primary" onclick="v90.execute('velocity')">▶ 启动运行</button>
+              <button class="btn-sim" onclick="v90.stop()" style="margin-left:auto">■ 停止</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Status, Chart, Parameters -->
+    <div>
+      <div class="sim-panel">
+        <h3>实时状态</h3>
+        <div class="status-panel">
+          <div class="status-card" id="cardPos">
+            <div class="label">当前位置</div>
+            <div class="value" id="statPos">0.00</div>
+            <div class="unit">mm</div>
+          </div>
+          <div class="status-card" id="cardVel">
+            <div class="label">当前速度</div>
+            <div class="value" id="statVel">0.00</div>
+            <div class="unit">mm/s</div>
+          </div>
+          <div class="status-card ok" id="cardState">
+            <div class="label">状态</div>
+            <div class="value" id="statState" style="font-size:16px">STOP</div>
+            <div class="unit">就绪</div>
+          </div>
+        </div>
+
+        <h3>状态机</h3>
+        <div class="state-machine" id="stateMachine">
+          <div class="state-node" id="stIdle">IDLE</div>
+          <div class="state-arrow">→</div>
+          <div class="state-node" id="stHoming">HOMING</div>
+          <div class="state-arrow">→</div>
+          <div class="state-node" id="stMoving">MOVING</div>
+          <div class="state-arrow">→</div>
+          <div class="state-node" id="stDone">DONE</div>
+        </div>
+
+        <h3>位置 / 速度曲线</h3>
+        <div class="chart-container">
+          <canvas id="chart"></canvas>
+        </div>
+        <div class="chart-legend">
+          <span><span class="dot pos"></span>位置 (mm)</span>
+          <span><span class="dot vel"></span>速度 (mm/s)</span>
+          <span><span class="dot ref"></span>目标位置</span>
+        </div>
+
+        <h3 style="margin-top:14px">V90 参数</h3>
+        <div class="param-section">
+          <div class="param-card">
+            <div class="pl">驱动参数</div>
+            <div class="param-row"><span>额定转速</span><span class="v">3000 rpm</span></div>
+            <div class="param-row"><span>额定扭矩</span><span class="v">0.95 Nm</span></div>
+            <div class="param-row"><span>编码器分辨率</span><span class="v">2500 ppr</span></div>
+            <div class="param-row"><span>行程范围</span><span class="v">0 ~ 500 mm</span></div>
+          </div>
+          <div class="param-card">
+            <div class="pl">工艺对象 (TO)</div>
+            <div class="param-row"><span>Axis 状态</span><span class="v" id="toStatus">已就绪</span></div>
+            <div class="param-row"><span>跟随误差</span><span class="v" id="toError">0.00 mm</span></div>
+            <div class="param-row"><span>到位容差</span><span class="v">0.10 mm</span></div>
+            <div class="param-row"><span>滤波时间</span><span class="v">40 ms</span></div>
+          </div>
+        </div>
+
+        <div class="help-tip">
+          <b>操作说明：</b> 先执行<b>回原点</b>建立参考点 → 然后使用<b>绝对/相对定位</b>移动到目标位置 → <b>速度运行</b>可持续匀速运动
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+(function(){
+  const v90 = {
+    pos: 0,
+    vel: 0,
+    targetPos: 0,
+    targetVel: 0,
+    acc: 100,
+    dec: 100,
+    direction: 1,
+    state: 'IDLE',
+    stateDesc: '就绪',
+    running: false,
+    homeDone: false,
+    task: null,
+    chart: { t: [], pos: [], vel: [], ref: [] },
+    chartMaxPoints: 200,
+    timer: null,
+    lastTime: 0,
+
+    execute: function(cmd){
+      if(this.running && cmd !== 'home'){
+        this.stop();
+      }
+      switch(cmd){
+        case 'home': this.doHome(); break;
+        case 'absolute': this.doAbsolute(); break;
+        case 'relative': this.doRelative(); break;
+        case 'velocity': this.doVelocity(); break;
+      }
+    },
+
+    doHome: function(){
+      this.state = 'HOMING';
+      this.stateDesc = '回原点中';
+      this.updateStateUI();
+
+      const speed = parseFloat(document.getElementById('homeSpeed').value) || 20;
+      const offset = parseFloat(document.getElementById('homeOffset').value) || 0;
+      this.targetVel = speed;
+
+      this.running = true;
+      this.lastTime = performance.now();
+      this.task = {
+        type: 'home',
+        phase: 'moving-to-limit',
+        limitPos: -50,
+        homeSpeed: speed,
+        offset: offset
+      };
+      this.startLoop();
+    },
+
+    doAbsolute: function(){
+      if(!this.homeDone){
+        this.state = 'ERROR';
+        this.stateDesc = '请先执行回原点';
+        this.updateStateUI();
+        setTimeout(() => { this.state = 'IDLE'; this.stateDesc = '就绪'; this.updateStateUI(); }, 2000);
+        return;
+      }
+      this.state = 'MOVING';
+      this.stateDesc = '绝对定位中';
+      this.updateStateUI();
+
+      const target = parseFloat(document.getElementById('absPos').value) || 100;
+      const vel = parseFloat(document.getElementById('absVel').value) || 50;
+      const acc = parseFloat(document.getElementById('absAcc').value) || 100;
+      const dec = parseFloat(document.getElementById('absDec').value) || 100;
+
+      this.targetPos = target;
+      this.targetVel = vel;
+      this.acc = acc;
+      this.dec = dec;
+
+      this.running = true;
+      this.lastTime = performance.now();
+      this.task = { type: 'absolute', target: target, cruiseVel: vel };
+      this.startLoop();
+    },
+
+    doRelative: function(){
+      if(!this.homeDone){
+        this.state = 'ERROR';
+        this.stateDesc = '请先执行回原点';
+        this.updateStateUI();
+        setTimeout(() => { this.state = 'IDLE'; this.stateDesc = '就绪'; this.updateStateUI(); }, 2000);
+        return;
+      }
+      this.state = 'MOVING';
+      this.stateDesc = '相对定位中';
+      this.updateStateUI();
+
+      const dist = parseFloat(document.getElementById('relDist').value) || 50;
+      const vel = parseFloat(document.getElementById('relVel').value) || 30;
+      const acc = parseFloat(document.getElementById('relAcc').value) || 80;
+      const dec = parseFloat(document.getElementById('relDec').value) || 80;
+
+      this.targetPos = this.pos + dist;
+      this.targetVel = vel;
+      this.acc = acc;
+      this.dec = dec;
+
+      this.running = true;
+      this.lastTime = performance.now();
+      this.task = { type: 'relative', target: this.targetPos, cruiseVel: vel };
+      this.startLoop();
+    },
+
+    doVelocity: function(){
+      if(!this.homeDone){
+        this.state = 'ERROR';
+        this.stateDesc = '请先执行回原点';
+        this.updateStateUI();
+        setTimeout(() => { this.state = 'IDLE'; this.stateDesc = '就绪'; this.updateStateUI(); }, 2000);
+        return;
+      }
+      this.state = 'MOVING';
+      this.stateDesc = '速度运行中';
+      this.updateStateUI();
+
+      const vel = parseFloat(document.getElementById('velTarget').value) || 30;
+      const dir = parseInt(document.getElementById('velDir').value) || 1;
+      const acc = parseFloat(document.getElementById('velAcc').value) || 100;
+      const dur = parseFloat(document.getElementById('velDur').value) || 0;
+
+      this.targetVel = vel * dir;
+      this.acc = acc;
+      this.direction = dir;
+
+      this.running = true;
+      this.lastTime = performance.now();
+      this.task = { type: 'velocity', cruiseVel: vel * dir, duration: dur, elapsed: 0 };
+      this.startLoop();
+    },
+
+    stop: function(){
+      this.running = false;
+      if(this.timer){ cancelAnimationFrame(this.timer); this.timer = null; }
+      this.state = 'IDLE';
+      this.stateDesc = '已停止';
+      this.vel = 0;
+      this.updateStateUI();
+    },
+
+    startLoop: function(){
+      const self = this;
+      function loop(now){
+        if(!self.running) return;
+        const dt = Math.min((now - self.lastTime) / 1000, 0.05);
+        self.lastTime = now;
+        self.step(dt);
+        self.updateUI();
+        self.updateChart();
+        self.timer = requestAnimationFrame(loop);
+      }
+      this.timer = requestAnimationFrame(loop);
+    },
+
+    step: function(dt){
+      if(!this.task) return;
+
+      if(this.task.type === 'home'){
+        this.stepHome(dt);
+      } else if(this.task.type === 'absolute' || this.task.type === 'relative'){
+        this.stepPosition(dt);
+      } else if(this.task.type === 'velocity'){
+        this.stepVelocity(dt);
+      }
+    },
+
+    stepHome: function(dt){
+      const t = this.task;
+      if(t.phase === 'moving-to-limit'){
+        this.vel = t.homeSpeed;
+        this.pos += this.vel * dt;
+        if(this.pos >= 150){
+          this.pos = 150;
+          this.vel = 0;
+          t.phase = 'returning';
+        }
+      } else if(t.phase === 'returning'){
+        this.vel = -t.homeSpeed * 0.5;
+        this.pos += this.vel * dt;
+        if(this.pos <= 0){
+          this.pos = 0;
+          this.vel = 0;
+          t.phase = 'done';
+          this.homeDone = true;
+          this.state = 'DONE';
+          this.stateDesc = '回原点完成';
+          this.running = false;
+          this.updateStateUI();
+          setTimeout(() => { if(this.state === 'DONE'){ this.state = 'IDLE'; this.stateDesc = '就绪'; this.updateStateUI(); } }, 1500);
+        }
+      }
+    },
+
+    stepPosition: function(dt){
+      const t = this.task;
+      const diff = this.targetPos - this.pos;
+      const absDiff = Math.abs(diff);
+
+      if(absDiff < 0.05){
+        this.vel = 0;
+        this.pos = this.targetPos;
+        this.state = 'DONE';
+        this.stateDesc = '定位完成';
+        this.running = false;
+        this.updateStateUI();
+        setTimeout(() => { if(this.state === 'DONE'){ this.state = 'IDLE'; this.stateDesc = '就绪'; this.updateStateUI(); } }, 1500);
+        return;
+      }
+
+      const dir = diff > 0 ? 1 : -1;
+      const brakeDist = (this.vel * this.vel) / (2 * this.dec);
+
+      if(absDiff <= brakeDist + 0.5){
+        this.vel = Math.max(0, this.vel - this.dec * dt * dir);
+        if(this.vel < 0) this.vel = 0;
+      } else if(Math.abs(this.vel) < this.targetVel){
+        this.vel = Math.min(this.targetVel, Math.abs(this.vel) + this.acc * dt) * dir;
+      } else {
+        this.vel = this.targetVel * dir;
+      }
+
+      this.pos += this.vel * dt;
+      this.pos = Math.max(0, Math.min(500, this.pos));
+    },
+
+    stepVelocity: function(dt){
+      const t = this.task;
+      const target = t.cruiseVel;
+      const absTarget = Math.abs(target);
+
+      if(this.vel < absTarget){
+        this.vel = Math.min(absTarget, Math.abs(this.vel) + this.acc * dt);
+      } else {
+        this.vel = absTarget;
+      }
+      this.vel = this.vel * (target >= 0 ? 1 : -1);
+      this.pos += this.vel * dt;
+      this.pos = Math.max(0, Math.min(500, this.pos));
+
+      if(this.pos >= 500 || this.pos <= 0){
+        this.vel = 0;
+        this.pos = Math.max(0, Math.min(500, this.pos));
+        this.state = 'DONE';
+        this.stateDesc = '到达行程极限';
+        this.running = false;
+        this.updateStateUI();
+        return;
+      }
+
+      if(t.duration > 0){
+        t.elapsed += dt;
+        if(t.elapsed >= t.duration){
+          this.vel = 0;
+          this.state = 'DONE';
+          this.stateDesc = '运行时间到';
+          this.running = false;
+          this.updateStateUI();
+        }
+      }
+    },
+
+    updateUI: function(){
+      document.getElementById('statPos').textContent = this.pos.toFixed(2);
+      document.getElementById('statVel').textContent = this.vel.toFixed(2);
+      document.getElementById('toError').textContent = Math.abs(this.targetPos - this.pos).toFixed(2) + ' mm';
+    },
+
+    updateStateUI: function(){
+      document.getElementById('statState').textContent = this.state;
+      const stateDescEl = document.querySelector('#cardState .unit');
+      if(stateDescEl) stateDescEl.textContent = this.stateDesc;
+
+      ['stIdle','stHoming','stMoving','stDone'].forEach(id => {
+        document.getElementById(id).classList.remove('active','done');
+      });
+      if(this.state === 'IDLE') document.getElementById('stIdle').classList.add('active');
+      if(this.state === 'HOMING') document.getElementById('stHoming').classList.add('active','done');
+      if(this.state === 'MOVING') document.getElementById('stMoving').classList.add('active','done');
+      if(this.state === 'DONE') document.getElementById('stDone').classList.add('active','done');
+
+      const cardState = document.getElementById('cardState');
+      cardState.classList.remove('ok','warn');
+      if(this.state === 'DONE') cardState.classList.add('ok');
+      if(this.state === 'ERROR') cardState.classList.add('warn');
+    },
+
+    updateChart: function(){
+      const now = performance.now() / 1000;
+      this.chart.t.push(now);
+      this.chart.pos.push(this.pos);
+      this.chart.vel.push(this.vel);
+      this.chart.ref.push(this.targetPos);
+
+      while(this.chart.t.length > this.chartMaxPoints){
+        this.chart.t.shift();
+        this.chart.pos.shift();
+        this.chart.vel.shift();
+        this.chart.ref.shift();
+      }
+      this.drawChart();
+    },
+
+    drawChart: function(){
+      const canvas = document.getElementById('chart');
+      const ctx = canvas.getContext('2d');
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      ctx.scale(dpr, dpr);
+      const w = rect.width, h = rect.height;
+
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--code-bg').trim() || '#f4f6fb';
+      ctx.fillRect(0, 0, w, h);
+
+      const pad = 30;
+      const chartW = w - pad * 2;
+      const chartH = h - pad * 2;
+
+      ctx.strokeStyle = getComputedStyle(document.body).getPropertyValue('--line').trim() || '#e4e8f0';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(pad, pad);
+      ctx.lineTo(pad, h - pad);
+      ctx.lineTo(w - pad, h - pad);
+      ctx.stroke();
+
+      const maxPos = 500;
+      const maxVel = 100;
+
+      function xScale(i){ return pad + (i / (v90.chartMaxPoints - 1)) * chartW; }
+      function yPos(v){ return h - pad - (v / maxPos) * chartH; }
+      function yVel(v){ return h - pad - (Math.abs(v) / maxVel) * chartH; }
+
+      ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--muted').trim() || '#5b6272';
+      ctx.font = '10px monospace';
+      for(let i = 0; i <= 5; i++){
+        const y = pad + (i / 5) * chartH;
+        ctx.strokeStyle = getComputedStyle(document.body).getPropertyValue('--line').trim() || '#e4e8f0';
+        ctx.beginPath();
+        ctx.moveTo(pad, y);
+        ctx.lineTo(w - pad, y);
+        ctx.stroke();
+        ctx.fillText(Math.round(maxPos - (i / 5) * maxPos) + '', 4, y + 3);
+      }
+
+      if(v90.chart.t.length < 2) return;
+
+      ctx.strokeStyle = getComputedStyle(document.body).getPropertyValue('--warn').trim() || '#ea7c00';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      ctx.moveTo(pad, yPos(v90.targetPos));
+      ctx.lineTo(w - pad, yPos(v90.targetPos));
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.strokeStyle = getComputedStyle(document.body).getPropertyValue('--brand').trim() || '#6946ff';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      for(let i = 0; i < v90.chart.pos.length; i++){
+        const x = xScale(v90.chartMaxPoints - v90.chart.pos.length + i);
+        const y = yPos(v90.chart.pos[i]);
+        if(i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+
+      ctx.strokeStyle = getComputedStyle(document.body).getPropertyValue('--cyan').trim() || '#0891b2';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      for(let i = 0; i < v90.chart.vel.length; i++){
+        const x = xScale(v90.chartMaxPoints - v90.chart.vel.length + i);
+        const y = yVel(v90.chart.vel[i]);
+        if(i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    }
+  };
+
+  window.v90 = v90;
+
+  function init(){
+    v90.updateStateUI();
+    v90.updateUI();
+    v90.drawChart();
+    setInterval(() => {
+      if(!v90.running && v90.chart.t.length > 0){
+        v90.chart.t = [];
+        v90.chart.pos = [];
+        v90.chart.vel = [];
+        v90.chart.ref = [];
+        v90.drawChart();
+      }
+    }, 5000);
+  }
+
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>
+</body>
+</html>
