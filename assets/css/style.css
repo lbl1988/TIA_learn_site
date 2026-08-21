@@ -66,6 +66,7 @@
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
+:root{color-scheme:light dark}
 body{
   background:var(--bg);color:var(--text);
   font:14px/1.6 var(--font-sans);
@@ -138,11 +139,13 @@ a:hover{color:#a28bff}
 .form-input,.form-select{
   display:block;width:100%;padding:8px 12px;
   border-radius:var(--radius-sm);border:1px solid var(--line);
-  background:var(--panel-2);color:var(--text);
+  background:var(--panel-2)!important;color:var(--text)!important;
   font-size:13px;font-family:inherit;outline:none;transition:.15s;
+  -webkit-appearance:none;appearance:none;
 }
+.form-input::-webkit-input-color-scheme{background:var(--panel-2);color:var(--text)}
 .form-input:focus,.form-select:focus{border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-soft)}
-.form-select{cursor:pointer;-webkit-appearance:auto;appearance:auto}
+.form-select{cursor:pointer;-webkit-appearance:auto;appearance:auto;background:var(--panel-3)!important}
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .tool-box{padding:16px;border:1px solid var(--line);border-radius:var(--radius);background:var(--panel-2)}
 .mono{font-family:var(--font-mono);font-size:13px;line-height:2}
