@@ -131,6 +131,29 @@ a:hover{color:#a28bff}
 .btn.ok{background:var(--ok-soft);color:var(--ok);border-color:color-mix(in srgb,var(--ok) 27%,transparent)}
 .btn.ok:hover{background:color-mix(in srgb,var(--ok) 18%,transparent)}
 .btn-group{display:flex;flex-wrap:wrap;gap:8px}
+.btn-block{display:flex;justify-content:center;width:100%}
+
+/* ========== 表单 / 工具箱 ========== */
+.form-label{display:block;font-size:12px;color:var(--muted);margin-bottom:5px;font-weight:500}
+.form-input,.form-select{
+  display:block;width:100%;padding:8px 12px;
+  border-radius:var(--radius-sm);border:1px solid var(--line);
+  background:var(--panel-2);color:var(--text);
+  font-size:13px;font-family:inherit;outline:none;transition:.15s;
+}
+.form-input:focus,.form-select:focus{border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-soft)}
+.form-select{cursor:pointer;-webkit-appearance:auto;appearance:auto}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.tool-box{padding:16px;border:1px solid var(--line);border-radius:var(--radius);background:var(--panel-2)}
+.mono{font-family:var(--font-mono);font-size:13px;line-height:2}
+.mono code,.mono .muted{display:inline-block}
+.mono .muted{color:var(--faint);width:120px}
+.code-block{
+  font-family:var(--font-mono);font-size:12px;line-height:1.6;
+  background:var(--code-bg);border:1px solid var(--code-line);
+  border-radius:var(--radius-sm);padding:10px 14px;color:var(--text);
+  overflow-x:auto;margin-top:6px
+}
 
 /* ========== 徽章 / 标签 ========== */
 .tag{
