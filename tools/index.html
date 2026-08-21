@@ -41,16 +41,17 @@
       <div>
         <h3>DEC ↔ HEX ↔ BIN ↔ REAL 四合一</h3>
         <div class="tool-box">
-          <label class="form-label">输入（十进制）</label>
-          <input id="decIn" type="number" value="123" class="form-input">
+          <label class="form-label">输入（十进制，支持负数）</label>
+          <input id="decIn" type="number" value="123" class="form-input" oninput="conv()">
           <div class="mt-10">
-            <button class="btn btn-block" onclick="conv()">🔄 转换</button>
+            <button type="button" class="btn btn-block" onclick="conv()">🔄 转换</button>
           </div>
           <div class="mono mt-10">
             <div><span class="muted">HEX:</span> <code id="hexOut">—</code></div>
             <div><span class="muted">BIN:</span> <code id="binOut">—</code></div>
             <div><span class="muted">WORD (16位):</span> <code id="wordOut">—</code></div>
             <div><span class="muted">DWORD (32位):</span> <code id="dwordOut">—</code></div>
+            <div><span class="muted">REAL (浮点):</span> <code id="realOut">—</code></div>
             <div><span class="muted">INT 范围检查:</span> <code id="intCheck">—</code></div>
           </div>
         </div>
@@ -60,18 +61,18 @@
         <div class="tool-box">
           <div class="form-grid">
             <div><label class="form-label">信号类型</label>
-              <select id="sig" class="form-select">
+              <select id="sig" class="form-select" onchange="scale()">
                 <option value="4-20">4-20 mA</option>
                 <option value="0-10">0-10 V</option>
                 <option value="0-5">0-5 V</option>
                 <option value="0-27648">0-27648 原始值</option>
               </select>
             </div>
-            <div><label class="form-label">测量量程上限</label><input id="rHi" type="number" value="100" class="form-input"></div>
-            <div><label class="form-label">测量量程下限</label><input id="rLo" type="number" value="0" class="form-input"></div>
-            <div><label class="form-label">原始值（0-27648）</label><input id="raw" type="number" value="13824" class="form-input"></div>
+            <div><label class="form-label">测量量程上限</label><input id="rHi" type="number" value="100" class="form-input" oninput="scale()"></div>
+            <div><label class="form-label">测量量程下限</label><input id="rLo" type="number" value="0" class="form-input" oninput="scale()"></div>
+            <div><label class="form-label">原始值（0-27648）</label><input id="raw" type="number" value="13824" class="form-input" oninput="scale()"></div>
           </div>
-          <button class="btn btn-block mt-8" onclick="scale()">📐 计算工程量</button>
+          <button type="button" class="btn btn-block mt-8" onclick="scale()">📐 计算工程量</button>
           <div class="mono mt-10">
             <div><span class="muted">工程量值:</span> <code id="engVal" class="text-ok fs-15">—</code></div>
             <div><span class="muted">换算公式 SCL:</span>
@@ -91,8 +92,8 @@
         <h3>Modbus RTU CRC16 计算器</h3>
         <div class="tool-box">
           <label class="form-label">请求帧（HEX，空格分隔）</label>
-          <input id="rtuIn" type="text" value="01 03 00 00 00 02" class="form-input">
-          <button class="btn btn-block mt-8" onclick="crc()">✅ 生成 CRC16</button>
+          <input id="rtuIn" type="text" value="01 03 00 00 00 02" class="form-input" oninput="crc()">
+          <button type="button" class="btn btn-block mt-8" onclick="crc()">✅ 生成 CRC16</button>
           <div class="mono mt-10">
             <div><span class="muted">CRC 低字节:</span> <code id="crcLo">—</code></div>
             <div><span class="muted">CRC 高字节:</span> <code id="crcHi">—</code></div>
@@ -141,29 +142,56 @@
 
 <footer class="footer">
   <div>© 博途学习站 · 本站内容仅供学习交流使用 · 西门子产品名权属 Siemens AG</div>
-  <div><a href="../community/index.html">← 互动社区</a> · <a href="../index.html">回到首页</a></div>
+  <div><a href="../community/index.html">← 互动社区</a> · <a href="../index.html">回到首页</a> · <a href="../my-learning/index.html">我的学习</a></div>
 </footer>
 
 <script>
 /* ---------- 进制转换 ---------- */
 function conv(){
-  const v = parseInt(document.getElementById('decIn').value)||0;
-  document.getElementById('hexOut').textContent = v.toString(16).toUpperCase() + ' (HEX)';
-  document.getElementById('binOut').textContent = v.toString(2).padStart(16,'0');
-  document.getElementById('wordOut').textContent = (v & 0xFFFF).toString(16).toUpperCase().padStart(4,'0') + ' W#16#';
-  document.getElementById('dwordOut').textContent = (v >>> 0).toString(16).toUpperCase().padStart(8,'0') + ' DW#16#';
+  const raw = document.getElementById('decIn').value.trim();
+  const v = parseInt(raw) || 0;
+
+  // HEX
+  const hexVal = v >= 0 ? v.toString(16).toUpperCase() : '-' + Math.abs(v).toString(16).toUpperCase();
+  document.getElementById('hexOut').textContent = hexVal + ' (HEX)';
+
+  // BIN
+  const binVal = v >= 0 ? v.toString(2).padStart(16,'0') : '-' + Math.abs(v).toString(2).padStart(16,'0');
+  document.getElementById('binOut').textContent = binVal;
+
+  // WORD (16-bit unsigned)
+  const wordVal = (v & 0xFFFF) >>> 0;
+  document.getElementById('wordOut').textContent = wordVal.toString(16).toUpperCase().padStart(4,'0') + ' W#16#';
+
+  // DWORD (32-bit unsigned)
+  const dwordVal = (v >>> 0);
+  document.getElementById('dwordOut').textContent = dwordVal.toString(16).toUpperCase().padStart(8,'0') + ' DW#16#';
+
+  // REAL (IEEE 754 32-bit float)
+  const buf = new ArrayBuffer(4);
+  const f32 = new Float32Array(buf);
+  const u32 = new Uint32Array(buf);
+  f32[0] = v;
+  document.getElementById('realOut').textContent = '0x' + u32[0].toString(16).toUpperCase().padStart(8,'0');
+
+  // INT range check
   const intOk = (v >= -32768 && v <= 32767);
-  const dintOk = (v >= -2147483648n && BigInt(v) <= 2147483647n);
+  const dintOk = (v >= -2147483648 && v <= 2147483647);
   document.getElementById('intCheck').textContent = (intOk?'✅ INT 可用':'⚠️ 超 INT，改用 DINT') + (dintOk?' / DINT 可用':' / ⚠️ 超 DINT');
 }
 conv();
 
 /* ---------- 工程量换算 ---------- */
 function scale(){
-  const raw = parseFloat(document.getElementById('raw').value)||0;
-  const lo = parseFloat(document.getElementById('rLo').value)||0;
-  const hi = parseFloat(document.getElementById('rHi').value)||0;
-  const norm = (raw - 0) / (27648 - 0);
+  const raw = parseFloat(document.getElementById('raw').value) || 0;
+  const lo = parseFloat(document.getElementById('rLo').value) || 0;
+  const hi = parseFloat(document.getElementById('rHi').value) || 0;
+  const sig = document.getElementById('sig').value;
+
+  // All analog signal types map to 0-27648 in S7-1200/1500
+  let rawMin = 0, rawMax = 27648;
+  const clamped = Math.max(rawMin, Math.min(raw, rawMax));
+  const norm = (clamped - rawMin) / (rawMax - rawMin);
   const eng = lo + norm * (hi - lo);
   document.getElementById('engVal').textContent = eng.toFixed(2);
 }
@@ -172,7 +200,10 @@ scale();
 /* ---------- Modbus CRC16 ---------- */
 function crc(){
   const s = document.getElementById('rtuIn').value.trim().replace(/\s+/g,' ');
-  const bytes = s.split(' ').filter(x=>x).map(x=>parseInt(x,16)&0xFF);
+  const bytes = s.split(' ').filter(x=>x).map(x=>{
+    const b = parseInt(x,16);
+    return isNaN(b) ? 0 : (b & 0xFF);
+  });
   let crc = 0xFFFF;
   for (let i=0;i<bytes.length;i++){
     crc ^= bytes[i];
